@@ -3,6 +3,8 @@ import {
   CreateUserData,
   UpdateUserData,
   FindUsersParams,
+  AddAddressData,
+  PreferencesData,
 } from '../../domain/repositories/IUserRepository';
 import { UserEntity } from '../../domain/entities/User';
 import { UserModel, UserDocument } from '../database/models/User';
@@ -65,6 +67,89 @@ export class UserRepository implements IUserRepository {
 
   async deleteById(id: string): Promise<void> {
     await UserModel.findByIdAndDelete(id);
+  }
+
+  async setResetToken(email: string, token: string, expires: Date): Promise<boolean> {
+    const doc = await UserModel.findOneAndUpdate(
+      { email: email.toLowerCase() },
+      { $set: { resetPasswordToken: token, resetPasswordExpires: expires } },
+    );
+    return doc !== null;
+  }
+
+  async findByResetToken(token: string): Promise<UserEntity | null> {
+    const doc = await UserModel.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: new Date() },
+    }).select('+password +resetPasswordToken +resetPasswordExpires');
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async clearResetToken(id: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(id, {
+      $unset: { resetPasswordToken: 1, resetPasswordExpires: 1 },
+    });
+  }
+
+  async addAddress(userId: string, address: AddAddressData): Promise<UserEntity | null> {
+    if (address.isDefault) {
+      await UserModel.findByIdAndUpdate(userId, {
+        $set: { 'addresses.$[].isDefault': false },
+      });
+    }
+    const doc = await UserModel.findByIdAndUpdate(
+      userId,
+      { $push: { addresses: address } },
+      { new: true },
+    );
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async updateAddress(
+    userId: string,
+    addressId: string,
+    data: Partial<AddAddressData>,
+  ): Promise<UserEntity | null> {
+    if (data.isDefault) {
+      await UserModel.findByIdAndUpdate(userId, {
+        $set: { 'addresses.$[].isDefault': false },
+      });
+    }
+    const setFields: Record<string, unknown> = {};
+    for (const [key, val] of Object.entries(data)) {
+      if (val !== undefined) setFields[`addresses.$.${key}`] = val;
+    }
+    const doc = await UserModel.findOneAndUpdate(
+      { _id: userId, 'addresses._id': addressId },
+      { $set: setFields },
+      { new: true },
+    );
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async deleteAddress(userId: string, addressId: string): Promise<UserEntity | null> {
+    const doc = await UserModel.findByIdAndUpdate(
+      userId,
+      { $pull: { addresses: { _id: addressId } } },
+      { new: true },
+    );
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async updatePreferences(
+    userId: string,
+    prefs: Partial<PreferencesData>,
+  ): Promise<UserEntity | null> {
+    const setFields: Record<string, unknown> = {};
+    if (prefs.language !== undefined) setFields['preferences.language'] = prefs.language;
+    if (prefs.currency !== undefined) setFields['preferences.currency'] = prefs.currency;
+    if (prefs.notifications) {
+      for (const [key, val] of Object.entries(prefs.notifications)) {
+        if (val !== undefined) setFields[`preferences.notifications.${key}`] = val;
+      }
+    }
+    const doc = await UserModel.findByIdAndUpdate(userId, { $set: setFields }, { new: true });
+    return doc ? this.toEntity(doc) : null;
   }
 
   private toEntity(doc: UserDocument): UserEntity {

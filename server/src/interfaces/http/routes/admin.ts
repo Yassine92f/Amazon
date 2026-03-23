@@ -16,9 +16,11 @@ const router: IRouter = Router();
 router.use(authenticate, authorize(UserRole.ADMIN));
 
 router.get('/', adminController.getDashboardStats);
+router.get('/dashboard', adminController.getDashboardStats);
 router.get('/users', adminController.getUsers);
 router.get('/users/:id', adminController.getUserById);
 router.put('/users/:id/status', adminController.updateUserStatus);
+router.put('/users/:id/role', adminController.updateUserRole);
 router.delete('/users/:id', adminController.deleteUser);
 
 export default router;

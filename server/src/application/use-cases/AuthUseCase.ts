@@ -1,9 +1,16 @@
-import { UserRole, UserStatus } from '@ecommerce/shared';
+import crypto from 'crypto';
+import { UserStatus } from '@ecommerce/shared';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { IHashService } from '../../domain/services/IHashService';
 import { ITokenService } from '../../domain/services/ITokenService';
 import { UserEntity } from '../../domain/entities/User';
-import { RegisterDto, LoginDto, AuthResultDto, ChangePasswordDto } from '../dtos/AuthDtos';
+import {
+  RegisterDto,
+  LoginDto,
+  AuthResultDto,
+  ChangePasswordDto,
+  ResetPasswordDto,
+} from '../dtos/AuthDtos';
 
 export class AuthUseCase {
   constructor(
@@ -105,6 +112,39 @@ export class AuthUseCase {
 
     const hashed = await this.hashService.hash(dto.newPassword);
     await this.userRepo.updatePassword(user.id, hashed);
+  }
+
+  async forgotPassword(email: string): Promise<string> {
+    const user = await this.userRepo.findByEmail(email.toLowerCase().trim());
+    if (!user) {
+      // Return silently to avoid email enumeration
+      return 'ok';
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await this.userRepo.setResetToken(email, token, expires);
+
+    // In production, send email here. In dev, log the token.
+    console.log(`[DEV] Password reset token for ${email}: ${token}`);
+
+    return token;
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<void> {
+    const user = await this.userRepo.findByResetToken(dto.token);
+    if (!user) {
+      throw new AuthError(400, 'Token de reinitialisation invalide ou expire');
+    }
+
+    if (dto.newPassword.length < 8) {
+      throw new AuthError(400, 'Le mot de passe doit contenir au moins 8 caracteres');
+    }
+
+    const hashed = await this.hashService.hash(dto.newPassword);
+    await this.userRepo.updatePassword(user.id, hashed);
+    await this.userRepo.clearResetToken(user.id);
   }
 
   async getMe(userId: string): Promise<AuthResultDto['user']> {

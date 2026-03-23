@@ -30,6 +30,7 @@ export interface PaginatedUsersDto {
 export interface DashboardStatsDto {
   totalUsers: number;
   newUsersThisMonth: number;
+  usersTrend: number;
   totalSellers: number;
   totalOrders: number;
   totalRevenue: number;
@@ -79,6 +80,24 @@ export class AdminUseCase {
     return this.toUserDto(updated);
   }
 
+  async updateUserRole(id: string, role: UserRole): Promise<UserDto> {
+    const user = await this.userRepo.findById(id);
+    if (!user) {
+      throw new AdminError(404, 'Utilisateur introuvable');
+    }
+
+    if (user.role === UserRole.ADMIN) {
+      throw new AdminError(403, "Impossible de modifier le role d'un administrateur");
+    }
+
+    const updated = await this.userRepo.updateById(id, { role });
+    if (!updated) {
+      throw new AdminError(500, 'Erreur lors de la mise a jour');
+    }
+
+    return this.toUserDto(updated);
+  }
+
   async deleteUser(id: string): Promise<void> {
     const user = await this.userRepo.findById(id);
     if (!user) {
@@ -95,16 +114,26 @@ export class AdminUseCase {
   async getDashboardStats(): Promise<DashboardStatsDto> {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const [totalUsers, newUsersThisMonth, totalSellers] = await Promise.all([
+    const [totalUsers, newUsersThisMonth, newUsersLastMonth, totalSellers] = await Promise.all([
       UserModel.countDocuments(),
       UserModel.countDocuments({ createdAt: { $gte: startOfMonth } }),
+      UserModel.countDocuments({ createdAt: { $gte: lastMonthStart, $lt: startOfMonth } }),
       UserModel.countDocuments({ role: UserRole.SELLER }),
     ]);
+
+    const usersTrend =
+      newUsersLastMonth > 0
+        ? Math.round(((newUsersThisMonth - newUsersLastMonth) / newUsersLastMonth) * 100)
+        : newUsersThisMonth > 0
+          ? 100
+          : 0;
 
     return {
       totalUsers,
       newUsersThisMonth,
+      usersTrend,
       totalSellers,
       totalOrders: 0,
       totalRevenue: 0,
