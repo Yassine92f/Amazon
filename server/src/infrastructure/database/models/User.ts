@@ -33,6 +33,11 @@ export interface UserDocument extends Document {
   lastLoginAt?: Date;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  emailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  failedLoginAttempts: number;
+  accountLockedUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,6 +94,11 @@ const userSchema = new Schema<UserDocument>(
     lastLoginAt: Date,
     resetPasswordToken: { type: String, select: false },
     resetPasswordExpires: { type: Date, select: false },
+    emailVerified: { type: Boolean, default: false },
+    emailVerificationToken: { type: String, select: false, index: true },
+    emailVerificationExpires: { type: Date, select: false },
+    failedLoginAttempts: { type: Number, default: 0 },
+    accountLockedUntil: { type: Date },
   },
   { timestamps: true },
 );

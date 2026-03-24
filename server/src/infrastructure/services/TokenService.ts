@@ -20,12 +20,12 @@ export class TokenService implements ITokenService {
 
   verifyAccessToken(token: string): TokenPayload {
     const decoded = jwt.verify(token, config.jwt.secret) as jwt.JwtPayload & TokenPayload;
-    return { userId: decoded.userId, role: decoded.role };
+    return { userId: decoded.userId, role: decoded.role, email: decoded.email };
   }
 
   verifyRefreshToken(token: string): TokenPayload {
     const decoded = jwt.verify(token, config.jwt.refreshSecret) as jwt.JwtPayload & TokenPayload;
-    return { userId: decoded.userId, role: decoded.role };
+    return { userId: decoded.userId, role: decoded.role, email: decoded.email };
   }
 
   async blacklistRefreshToken(token: string): Promise<void> {

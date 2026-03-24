@@ -13,6 +13,12 @@ export interface IUserRepository {
   setResetToken(email: string, token: string, expires: Date): Promise<boolean>;
   findByResetToken(token: string): Promise<UserEntity | null>;
   clearResetToken(id: string): Promise<void>;
+  setEmailVerificationToken(id: string, token: string, expires: Date): Promise<void>;
+  findByEmailVerificationToken(token: string): Promise<UserEntity | null>;
+  markEmailVerified(id: string): Promise<void>;
+  incrementFailedLoginAttempts(id: string): Promise<number>;
+  lockAccount(id: string, until: Date): Promise<void>;
+  resetFailedLoginAttempts(id: string): Promise<void>;
   addAddress(userId: string, address: AddAddressData): Promise<UserEntity | null>;
   updateAddress(
     userId: string,
