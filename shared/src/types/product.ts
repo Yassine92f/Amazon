@@ -46,6 +46,28 @@ export interface ProductSearchFilters extends PaginationParams {
   tags?: string[];
 }
 
+// Lightweight projection for listing pages and cards
+export interface ProductSummary {
+  _id: string;
+  name: string;
+  slug: string;
+  price: number;
+  compareAtPrice?: number;
+  image: string;
+  rating: number;
+  reviewCount: number;
+  brand?: string;
+  sellerName: string;
+  freeShipping: boolean;
+  badge?: string;
+  inStock: boolean;
+}
+
+// Category with product count (for category grid)
+export interface CategoryWithCount extends Category {
+  productCount: number;
+}
+
 // DTOs
 export interface CreateProductRequest {
   name: string;
