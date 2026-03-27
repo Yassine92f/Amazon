@@ -62,14 +62,48 @@ export interface Order extends BaseEntity {
 }
 
 // DTOs
+
+export interface AddToCartRequest {
+  productId: string;
+  variantId: string;
+  quantity: number;
+}
+
+export interface UpdateCartItemRequest {
+  quantity: number;
+}
+
 export interface CreateOrderRequest {
   items: { productId: string; variantId: string; quantity: number }[];
   deliveryType: DeliveryType;
   shippingAddressId: string;
+  couponCode?: string;
 }
 
 export interface UpdateOrderStatusRequest {
   status: OrderStatus;
+}
+
+export interface OrderSummary {
+  _id: string;
+  orderNumber: string;
+  itemCount: number;
+  totalAmount: number;
+  status: OrderStatus;
+  createdAt: string;
+}
+
+export interface ApplyCouponRequest {
+  code: string;
+}
+
+export interface CouponValidation {
+  valid: boolean;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  discountedAmount: number;
+  message?: string;
 }
 
 // Wishlist
