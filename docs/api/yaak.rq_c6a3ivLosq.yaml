@@ -1,0 +1,29 @@
+type: http_request
+model: http_request
+id: rq_c6a3ivLosq
+createdAt: 2026-05-28T08:19:02.611574
+updatedAt: 2026-05-28T08:36:38.135481
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "smailbelghazi@gmail.com",
+      "password": "Password123",
+      "firstName": "Smain",
+      "lastName": "Belghazi"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: zp75QUzQk0
+method: POST
+name: Register
+sortPriority: 0.0
+url: ${[ baseUrl ]}/auth/register
+urlParameters: []

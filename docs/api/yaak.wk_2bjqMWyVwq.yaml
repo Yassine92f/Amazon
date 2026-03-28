@@ -1,0 +1,16 @@
+type: workspace
+model: workspace
+id: wk_2bjqMWyVwq
+createdAt: 2026-05-28T08:16:46.813330
+updatedAt: 2026-05-28T08:37:12.967831
+authentication:
+  disabled: false
+  token: ${[ accessToken ]}
+authenticationType: bearer
+description: ''
+headers: []
+name: Ecommerce
+encryptionKeyChallenge: null
+settingValidateCertificates: true
+settingFollowRedirects: true
+settingRequestTimeout: 0
