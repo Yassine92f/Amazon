@@ -1,0 +1,46 @@
+type: http_request
+model: http_request
+id: rq_AdmUsrLs01
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_AdminFold01
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: 'Paginated user list. Filters: query (email/firstName/lastName), role, status. Sort: sortBy + sortOrder.'
+headers: []
+method: GET
+name: List Users
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/admin/users
+urlParameters:
+- enabled: true
+  name: page
+  value: '1'
+  id: usrlspg
+- enabled: true
+  name: limit
+  value: '20'
+  id: usrlslm
+- enabled: false
+  name: query
+  value: ''
+  id: usrlsqr
+- enabled: false
+  name: role
+  value: user
+  id: usrlsrl
+- enabled: false
+  name: status
+  value: active
+  id: usrlsst
+- enabled: false
+  name: sortBy
+  value: createdAt
+  id: usrlssb
+- enabled: false
+  name: sortOrder
+  value: desc
+  id: usrlsso
