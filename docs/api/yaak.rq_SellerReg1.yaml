@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_SellerReg1
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_SellerFold
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "shopName": "AudioVault Premium",
+      "description": "Premium audio gear from verified distributors."
+    }
+bodyType: application/json
+description: Upgrade current user → role:SELLER and create a SellerProfile.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: srregdr
+method: POST
+name: Become Seller
+sortPriority: 0.0
+url: ${[ baseUrl ]}/sellers/register
+urlParameters: []

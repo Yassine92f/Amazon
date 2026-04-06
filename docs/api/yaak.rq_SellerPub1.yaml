@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_SellerPub1
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_SellerFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Public shop page by slug.
+headers: []
+method: GET
+name: Get Public Shop
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/sellers/${[ shopSlug ]}
+urlParameters: []
