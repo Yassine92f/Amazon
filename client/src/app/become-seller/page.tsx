@@ -8,6 +8,7 @@ import Header from '../../components/Header';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { registerSeller } from '../../lib/catalog';
 import { useAuthStore } from '../../store';
+import { t } from '../../lib/i18n';
 
 function OnboardingForm() {
   const router = useRouter();
@@ -28,7 +29,7 @@ function OnboardingForm() {
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Failed to register shop';
+        t.becomeSeller.registerError;
       setError(message);
     }
     setLoading(false);
@@ -51,10 +52,10 @@ function OnboardingForm() {
               />
             </svg>
           </div>
-          <h1 className="mb-2 text-xl font-extrabold text-brand-900">Shop created</h1>
-          <p className="mb-6 text-sm text-muted">
-            Your account is now a seller. Please log in again so your token reflects the new role.
-          </p>
+          <h1 className="mb-2 text-xl font-extrabold text-brand-900">
+            {t.becomeSeller.successTitle}
+          </h1>
+          <p className="mb-6 text-sm text-muted">{t.becomeSeller.successDesc}</p>
           <button
             type="button"
             onClick={async () => {
@@ -63,7 +64,7 @@ function OnboardingForm() {
             }}
             className="w-full rounded-md bg-brand-500 py-2.5 text-sm font-bold text-white"
           >
-            Log out and sign in again
+            {t.becomeSeller.successCta}
           </button>
         </motion.div>
       </div>
@@ -78,11 +79,11 @@ function OnboardingForm() {
         className="mx-auto max-w-lg"
       >
         <div className="mb-8 text-center">
-          <p className="text-sm font-bold uppercase tracking-widest text-brand-600">Seller Hub</p>
-          <h1 className="mt-2 text-3xl font-extrabold text-brand-900">Open your shop</h1>
-          <p className="mt-2 text-sm text-muted">
-            Become a seller on Abracadabra and start listing products in minutes.
+          <p className="text-sm font-bold uppercase tracking-widest text-brand-600">
+            {t.becomeSeller.eyebrow}
           </p>
+          <h1 className="mt-2 text-3xl font-extrabold text-brand-900">{t.becomeSeller.title}</h1>
+          <p className="mt-2 text-sm text-muted">{t.becomeSeller.subtitle}</p>
         </div>
 
         <form onSubmit={submit} className="rounded-2xl border border-border bg-white p-8 shadow-md">
@@ -93,7 +94,9 @@ function OnboardingForm() {
           )}
 
           <div className="mb-4">
-            <label className="mb-1 block text-sm font-semibold text-text">Shop name</label>
+            <label className="mb-1 block text-sm font-semibold text-text">
+              {t.becomeSeller.shopName}
+            </label>
             <input
               type="text"
               required
@@ -101,21 +104,22 @@ function OnboardingForm() {
               maxLength={60}
               value={shopName}
               onChange={(e) => setShopName(e.target.value)}
-              placeholder="AudioVault Premium"
+              placeholder={t.becomeSeller.shopNamePlaceholder}
               className="w-full rounded-md border border-border bg-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500"
             />
           </div>
 
           <div className="mb-6">
             <label className="mb-1 block text-sm font-semibold text-text">
-              Description <span className="text-xs font-normal text-muted">(optional)</span>
+              {t.becomeSeller.description}{' '}
+              <span className="text-xs font-normal text-muted">{t.becomeSeller.optional}</span>
             </label>
             <textarea
               maxLength={500}
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Tell buyers what your shop is about, what you sell, your shipping promise…"
+              placeholder={t.becomeSeller.descriptionPlaceholder}
               className="w-full resize-none rounded-md border border-border bg-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500"
             />
           </div>
@@ -127,13 +131,13 @@ function OnboardingForm() {
             whileTap={{ scale: 0.98 }}
             className="w-full rounded-md bg-brand-500 py-3 text-sm font-bold text-white disabled:opacity-60"
           >
-            {loading ? 'Creating shop…' : 'Create shop'}
+            {loading ? t.becomeSeller.creating : t.becomeSeller.create}
           </motion.button>
 
           <p className="mt-4 text-center text-xs text-muted">
-            By creating a shop you accept the{' '}
+            {t.becomeSeller.termsPrefix}
             <Link href="/" className="font-semibold text-brand-600 hover:underline">
-              seller terms
+              {t.becomeSeller.terms}
             </Link>
             .
           </p>

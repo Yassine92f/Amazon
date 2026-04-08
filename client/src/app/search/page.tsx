@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CatalogShell from '../../components/catalog/CatalogShell';
 import Header from '../../components/Header';
+import { t } from '../../lib/i18n';
 
 function SearchContent() {
   const params = useSearchParams();
@@ -11,8 +12,8 @@ function SearchContent() {
 
   return (
     <CatalogShell
-      title={query ? `“${query}”` : 'All products'}
-      subtitle={query ? 'Search results' : undefined}
+      title={query ? `“${query}”` : t.catalog.allProducts}
+      subtitle={query ? t.catalog.searchResults : undefined}
       fixedQuery={query || undefined}
     />
   );
@@ -24,7 +25,9 @@ export default function SearchPage() {
       <Header />
       <Suspense
         fallback={
-          <div className="container-main py-10 text-center text-sm text-muted">Loading…</div>
+          <div className="container-main py-10 text-center text-sm text-muted">
+            {t.common.loading}
+          </div>
         }
       >
         <SearchContent />

@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { t } from '../../lib/i18n';
 
 const TABS = [
-  { href: '/seller', label: 'Dashboard' },
-  { href: '/seller/products', label: 'Products' },
-  { href: '/seller/orders', label: 'Orders', disabled: true, hint: 'cart-orders' },
-  { href: '/seller/reviews', label: 'Reviews', disabled: true, hint: 'cart-orders' },
-  { href: '/seller/settings', label: 'Settings' },
+  { href: '/seller', label: t.seller.dashboard },
+  { href: '/seller/products', label: t.seller.products },
+  { href: '/seller/orders', label: t.seller.orders, disabled: true, hint: 'cart-orders' },
+  { href: '/seller/reviews', label: t.seller.reviews, disabled: true, hint: 'cart-orders' },
+  { href: '/seller/settings', label: t.seller.settings },
 ];
 
 export default function SellerNav() {
@@ -32,8 +33,8 @@ export default function SellerNav() {
                 className="flex shrink-0 items-center gap-1.5 px-3 py-3.5 text-sm font-semibold text-muted opacity-60"
               >
                 {tab.label}
-                <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold text-muted">
-                  SOON
+                <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-muted">
+                  {t.common.soon}
                 </span>
               </span>
             );
