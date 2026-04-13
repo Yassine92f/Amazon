@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '../store';
 
 interface Props {
@@ -12,15 +12,17 @@ interface Props {
 export function ProtectedRoute({ children, roles }: Props) {
   const { isAuthenticated, isLoading, user } = useAuthStore();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.replace('/login');
+      const redirect = pathname !== '/' ? `?redirect=${encodeURIComponent(pathname)}` : '';
+      router.replace(`/login${redirect}`);
     }
     if (!isLoading && isAuthenticated && roles && user && !roles.includes(user.role)) {
       router.replace('/');
     }
-  }, [isLoading, isAuthenticated, user, roles, router]);
+  }, [isLoading, isAuthenticated, user, roles, router, pathname]);
 
   if (isLoading) {
     return (

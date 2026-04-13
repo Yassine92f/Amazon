@@ -78,6 +78,42 @@ export class AuthController {
     }
   };
 
+  forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email } = req.body;
+      if (!email) {
+        throw new AppError(400, 'Email requis');
+      }
+
+      await this.authUseCase.forgotPassword(email);
+
+      res.json({
+        success: true,
+        message: 'Si un compte existe avec cet email, un lien de reinitialisation a ete envoye',
+      });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { token, newPassword } = req.body;
+      if (!token || !newPassword) {
+        throw new AppError(400, 'Token et nouveau mot de passe requis');
+      }
+      if (newPassword.length < 8) {
+        throw new AppError(400, 'Le mot de passe doit contenir au moins 8 caracteres');
+      }
+
+      await this.authUseCase.resetPassword({ token, newPassword });
+
+      res.json({ success: true, message: 'Mot de passe reinitialise avec succes' });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
   changePassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { userId } = req as AuthRequest;

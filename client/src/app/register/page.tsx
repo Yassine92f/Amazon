@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { useAuthStore } from '../../store';
+import { GuestRoute } from '../../components/GuestRoute';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const { register, error, clearError, isLoading } = useAuthStore();
   const [firstName, setFirstName] = useState('');
@@ -16,7 +17,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [localError, setLocalError] = useState('');
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLocalError('');
 
@@ -247,7 +248,7 @@ export default function RegisterPage() {
           </form>
 
           <p className="mt-6 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Déjà un compte ?{' '}
+            Deja un compte ?{' '}
             <Link
               href="/login"
               className="font-semibold transition-colors hover:underline"
@@ -259,5 +260,13 @@ export default function RegisterPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <GuestRoute>
+      <RegisterForm />
+    </GuestRoute>
   );
 }

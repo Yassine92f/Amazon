@@ -84,6 +84,28 @@ export class AdminController {
     }
   };
 
+  updateUserRole = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id as string;
+      const { role } = req.body;
+
+      if (!id) {
+        throw new AppError(400, 'ID utilisateur requis');
+      }
+      if (!role) {
+        throw new AppError(400, 'Le role est requis');
+      }
+      if (!Object.values(UserRole).includes(role)) {
+        throw new AppError(400, 'Role invalide');
+      }
+
+      const user = await this.adminUseCase.updateUserRole(id, role);
+      res.json({ success: true, data: user });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
   deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const id = req.params.id as string;

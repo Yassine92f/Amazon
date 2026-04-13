@@ -31,6 +31,8 @@ export interface UserDocument extends Document {
     };
   };
   lastLoginAt?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,6 +87,8 @@ const userSchema = new Schema<UserDocument>(
       },
     },
     lastLoginAt: Date,
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
   },
   { timestamps: true },
 );
