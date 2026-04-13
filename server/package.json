@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "seed": "tsx src/scripts/seed.ts",
+    "seed:no-clean": "tsx src/scripts/seed.ts --no-clean"
   },
   "dependencies": {
     "@ecommerce/shared": "workspace:*",

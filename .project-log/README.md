@@ -15,6 +15,7 @@ These entries are the **source material** for project reports, retrospectives, a
 
 ### 2026-05-28
 
+- [Catalog & Search Backend + Pencil Designs (Section 2 kickoff)](2026-05-28-catalog-search-backend.md)
 - [Auth & Admin Hardening — Rate Limiting, Lockout, Email, Verification, Audit Log, Tests](2026-05-28-auth-admin-hardening.md)
 
 ### 2026-04-13

@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_SellerPut1
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_SellerFold
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "description": "Updated shop bio with new product lines.",
+      "logo": "https://cdn.example.com/shops/audiovault/logo.png"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: srpdhdr
+method: PUT
+name: Update My Shop
+sortPriority: 2000.0
+url: ${[ baseUrl ]}/sellers/me/shop
+urlParameters: []

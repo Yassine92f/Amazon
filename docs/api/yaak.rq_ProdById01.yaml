@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_ProdById01
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_ProdFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: Get By ID
+sortPriority: 2000.0
+url: ${[ baseUrl ]}/products/by-id/${[ productId ]}
+urlParameters: []
