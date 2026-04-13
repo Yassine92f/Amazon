@@ -3,12 +3,14 @@
 import { useState, FormEvent } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { api } from '../../lib/api';
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, logout } = useAuthStore();
+  const router = useRouter();
   const [firstName, setFirstName] = useState(user?.firstName ?? '');
   const [lastName, setLastName] = useState(user?.lastName ?? '');
   const [phone, setPhone] = useState(user?.phone ?? '');
@@ -82,7 +84,7 @@ export default function ProfilePage() {
         </header>
 
         {/* Content */}
-        <div className="mx-auto flex max-w-[1100px] gap-8 p-8">
+        <div className="mx-auto flex max-w-[1100px] items-start gap-8 p-8">
           {/* Side panel */}
           <motion.div
             initial={{ opacity: 0, x: -10 }}
@@ -147,6 +149,31 @@ export default function ProfilePage() {
                   : ''}
               </span>
             </div>
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+                router.push('/');
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-[13px] font-medium transition-colors hover:bg-red-50"
+              style={{ border: '1px solid var(--color-border)', color: 'var(--color-error)' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                className="h-4 w-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                />
+              </svg>
+              Se deconnecter
+            </button>
           </motion.div>
 
           {/* Main form panel */}
@@ -310,7 +337,7 @@ export default function ProfilePage() {
               </div>
               <button
                 type="submit"
-                className="w-fit rounded-lg bg-brand-500 px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-600"
+                className="w-fit self-start rounded-lg bg-brand-500 px-5 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-brand-600"
               >
                 Modifier le mot de passe
               </button>
