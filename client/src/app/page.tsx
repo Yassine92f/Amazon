@@ -1,6 +1,32 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import {
+  Sparkles,
+  Zap,
+  Flame,
+  Truck,
+  ShieldCheck,
+  RefreshCw,
+  MessagesSquare,
+  ShoppingBag,
+  Headphones,
+  Footprints,
+  Gift,
+  Package,
+  Cpu,
+  Smartphone,
+  Laptop,
+  Watch,
+  Gamepad2,
+  Shirt,
+  House,
+  Dumbbell,
+  BookOpen,
+  ArrowRight,
+  Globe,
+} from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import Header from '@/components/Header';
@@ -43,29 +69,49 @@ const CATEGORY_GRADIENTS = [
   'from-emerald-50 to-emerald-100',
 ];
 
-const trustSignals = [
-  { icon: '🚚', title: t.home.trust.shippingTitle, desc: t.home.trust.shippingDesc },
-  { icon: '🛡️', title: t.home.trust.paymentTitle, desc: t.home.trust.paymentDesc },
-  { icon: '🔄', title: t.home.trust.returnsTitle, desc: t.home.trust.returnsDesc },
-  { icon: '💬', title: t.home.trust.supportTitle, desc: t.home.trust.supportDesc },
+const trustSignals: { Icon: LucideIcon; title: string; desc: string }[] = [
+  { Icon: Truck, title: t.home.trust.shippingTitle, desc: t.home.trust.shippingDesc },
+  { Icon: ShieldCheck, title: t.home.trust.paymentTitle, desc: t.home.trust.paymentDesc },
+  { Icon: RefreshCw, title: t.home.trust.returnsTitle, desc: t.home.trust.returnsDesc },
+  { Icon: MessagesSquare, title: t.home.trust.supportTitle, desc: t.home.trust.supportDesc },
 ];
+
+// Slug → icon for the dynamic category grid (mirrors the header nav).
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  electronics: Cpu,
+  phones: Smartphone,
+  audio: Headphones,
+  computers: Laptop,
+  wearables: Watch,
+  gaming: Gamepad2,
+  fashion: Shirt,
+  home: House,
+  sports: Dumbbell,
+  books: BookOpen,
+  beauty: Sparkles,
+  toys: Package,
+};
 
 function SectionHeader({
   title,
   href,
   actionLabel,
   extra,
+  Icon,
 }: {
   title: string;
   href?: string;
   actionLabel?: string;
   // Optional content (e.g. a countdown) shown right after the title.
   extra?: React.ReactNode;
+  // Optional leading icon shown before the title.
+  Icon?: LucideIcon;
 }) {
   return (
     <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2">
       <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-brand-900">
         <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />
+        {Icon && <Icon className="h-5 w-5 text-brand-500" aria-hidden />}
         {title}
       </h2>
       {extra}
@@ -75,13 +121,7 @@ function SectionHeader({
           className="ml-auto flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-500 hover:text-brand-600 transition-colors"
         >
           {actionLabel}
-          <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
-            <path
-              fillRule="evenodd"
-              d="M6.22 4.22a.75.75 0 011.06 0l3.25 3.25a.75.75 0 010 1.06l-3.25 3.25a.75.75 0 01-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 010-1.06z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <ArrowRight className="h-4 w-4" aria-hidden />
         </Link>
       )}
     </div>
@@ -177,6 +217,7 @@ export default function Home() {
             >
               <div className="relative z-10 max-w-md">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white backdrop-blur-sm">
+                  <Sparkles className="h-4 w-4" aria-hidden />
                   {t.home.heroEyebrow}
                 </span>
                 <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-4xl">
@@ -213,9 +254,11 @@ export default function Home() {
                   </Link>
                 </div>
               </div>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[120px] opacity-20 select-none hidden lg:block">
-                🛍️
-              </span>
+              <ShoppingBag
+                className="pointer-events-none absolute right-6 top-1/2 hidden h-40 w-40 -translate-y-1/2 text-white/20 lg:block"
+                strokeWidth={1.25}
+                aria-hidden
+              />
             </motion.div>
 
             <div className="hidden lg:flex w-[320px] flex-col gap-5">
@@ -233,9 +276,11 @@ export default function Home() {
                   <p className="mt-1 text-sm font-semibold text-brand-500">
                     {t.home.sideFrom('249 €')}
                   </p>
-                  <span className="pointer-events-none absolute right-3 bottom-3 text-5xl opacity-50 select-none">
-                    🎧
-                  </span>
+                  <Headphones
+                    className="pointer-events-none absolute right-3 bottom-3 h-14 w-14 text-brand-500/40"
+                    strokeWidth={1.5}
+                    aria-hidden
+                  />
                 </Link>
               </motion.div>
               <motion.div variants={fadeUp} className="relative flex-1 overflow-hidden rounded-xl">
@@ -252,9 +297,11 @@ export default function Home() {
                   <p className="mt-1 text-sm font-semibold text-brand-700">
                     {t.home.sideFrom('19 €')}
                   </p>
-                  <span className="pointer-events-none absolute right-3 bottom-3 text-5xl opacity-50 select-none">
-                    👟
-                  </span>
+                  <Footprints
+                    className="pointer-events-none absolute right-3 bottom-3 h-14 w-14 text-brand-800/40"
+                    strokeWidth={1.5}
+                    aria-hidden
+                  />
                 </Link>
               </motion.div>
             </div>
@@ -265,6 +312,7 @@ export default function Home() {
         <div className="bg-white py-8">
           <section className="container-main">
             <SectionHeader
+              Icon={Zap}
               title={t.home.flashDeals}
               href="/search?sale=true"
               actionLabel={t.common.viewAll}
@@ -312,20 +360,23 @@ export default function Home() {
               variants={staggerContainer}
               className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4"
             >
-              {categories.map((cat, i) => (
-                <motion.div key={cat._id} variants={fadeUp}>
-                  <Link
-                    href={`/c/${cat.slug}`}
-                    className={`flex h-[130px] flex-col items-start justify-end rounded-xl bg-gradient-to-br ${
-                      CATEGORY_GRADIENTS[i % CATEGORY_GRADIENTS.length]
-                    } p-5 transition-all hover:-translate-y-1 hover:shadow-md sm:h-[140px]`}
-                  >
-                    <span className="text-3xl">{cat.icon ?? '📦'}</span>
-                    <p className="mt-1.5 text-[15px] font-bold text-brand-900">{cat.name}</p>
-                    <p className="text-xs text-muted">{t.home.browseAll}</p>
-                  </Link>
-                </motion.div>
-              ))}
+              {categories.map((cat, i) => {
+                const CatIcon = CATEGORY_ICONS[cat.slug] ?? Package;
+                return (
+                  <motion.div key={cat._id} variants={fadeUp}>
+                    <Link
+                      href={`/c/${cat.slug}`}
+                      className={`flex h-[130px] flex-col items-start justify-end rounded-xl bg-gradient-to-br ${
+                        CATEGORY_GRADIENTS[i % CATEGORY_GRADIENTS.length]
+                      } p-5 transition-all hover:-translate-y-1 hover:shadow-md sm:h-[140px]`}
+                    >
+                      <CatIcon className="h-8 w-8 text-brand-700" strokeWidth={1.75} aria-hidden />
+                      <p className="mt-1.5 text-[15px] font-bold text-brand-900">{cat.name}</p>
+                      <p className="text-xs text-muted">{t.home.browseAll}</p>
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </motion.div>
           )}
         </section>
@@ -334,6 +385,7 @@ export default function Home() {
         <div className="bg-white py-8">
           <section className="container-main">
             <SectionHeader
+              Icon={Flame}
               title={t.home.trendingNow}
               href="/search?sortBy=totalSold"
               actionLabel={t.common.viewAll}
@@ -345,6 +397,7 @@ export default function Home() {
         {/* ── New Arrivals ── */}
         <section className="container-main py-10">
           <SectionHeader
+            Icon={Sparkles}
             title={t.home.newArrivals}
             href="/search?sortBy=createdAt"
             actionLabel={t.common.viewAll}
@@ -362,8 +415,8 @@ export default function Home() {
         >
           <div className="container-main flex flex-col sm:flex-row items-center justify-between gap-6 py-8 sm:py-10">
             <div className="flex items-center gap-5">
-              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10 text-3xl">
-                🎁
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                <Gift className="h-7 w-7 text-white" aria-hidden />
               </span>
               <div>
                 <p className="text-lg sm:text-xl font-bold text-white">{t.home.promoTitle}</p>
@@ -396,8 +449,8 @@ export default function Home() {
                 variants={fadeUp}
                 className="flex items-center gap-4 rounded-xl border border-border bg-white p-5"
               >
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-2xl">
-                  {sig.icon}
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <sig.Icon className="h-6 w-6" aria-hidden />
                 </span>
                 <div>
                   <p className="text-[15px] font-bold text-brand-900">{sig.title}</p>
@@ -443,6 +496,9 @@ export default function Home() {
             <div>
               <h4 className="text-sm font-bold mb-3">{t.footer.sellers}</h4>
               <nav className="flex flex-col gap-2">
+                <Link href="/sellers" className="text-sm text-white/50 hover:text-white">
+                  {t.footer.allShops}
+                </Link>
                 <Link href="/become-seller" className="text-sm text-white/50 hover:text-white">
                   {t.footer.becomeSeller}
                 </Link>
@@ -481,7 +537,10 @@ export default function Home() {
             <span>{t.footer.rights}</span>
             <div className="flex items-center gap-4">
               <span>{t.common.currency}</span>
-              <span>{t.common.language}</span>
+              <span className="flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5" aria-hidden />
+                {t.common.language}
+              </span>
             </div>
           </div>
         </div>

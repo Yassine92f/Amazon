@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { SearchX } from 'lucide-react';
 import FiltersSidebar, { type FilterState } from './FiltersSidebar';
 import CatalogProductCard from './CatalogProductCard';
 import Pagination from './Pagination';
@@ -253,7 +254,7 @@ function ErrorPanel({ message }: { message: string }) {
 function EmptyState() {
   return (
     <div className="rounded-lg border border-dashed border-border-strong bg-white p-12 text-center">
-      <div className="mb-3 text-4xl">🔍</div>
+      <SearchX className="mx-auto mb-3 h-10 w-10 text-brand-300" strokeWidth={1.5} aria-hidden />
       <h3 className="mb-1 text-base font-bold text-brand-900">{t.catalog.emptyTitle}</h3>
       <p className="text-sm text-muted">{t.catalog.emptyDesc}</p>
     </div>

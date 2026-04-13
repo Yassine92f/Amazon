@@ -10,6 +10,7 @@ import {
   type ProductDto,
   type ProductInput,
 } from '../../../../../lib/catalog';
+import { t } from '../../../../../lib/i18n';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -34,16 +35,18 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   if (notFound) {
     return (
       <div className="container-main py-20 text-center">
-        <h1 className="mb-2 text-xl font-bold text-brand-900">Product not found</h1>
-        <p className="text-sm text-muted">
-          This product doesn&apos;t exist or doesn&apos;t belong to your shop.
-        </p>
+        <h1 className="mb-2 text-xl font-bold text-brand-900">{t.seller.form.productNotFound}</h1>
+        <p className="text-sm text-muted">{t.seller.form.productNotFoundDesc}</p>
       </div>
     );
   }
 
   if (!product) {
-    return <div className="container-main py-20 text-center text-sm text-muted">Loading…</div>;
+    return (
+      <div className="container-main py-20 text-center text-sm text-muted">
+        {t.seller.form.loading}
+      </div>
+    );
   }
 
   const submit = async (input: ProductInput, isActive: boolean) => {
@@ -60,7 +63,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       initial={product}
       onSubmit={submit}
       onDelete={handleDelete}
-      submitLabel="Save changes"
+      submitLabel={t.seller.form.saveChanges}
     />
   );
 }

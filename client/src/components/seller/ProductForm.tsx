@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import { Plus, X, ArrowLeft } from 'lucide-react';
 import {
   listCategories,
   type CategoryDto,
   type ProductDto,
   type ProductInput,
 } from '../../lib/catalog';
+import { t } from '../../lib/i18n';
 
 interface VariantInput {
   name: string;
@@ -74,13 +76,13 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
   }, []);
 
   const addTag = () => {
-    const t = tagDraft.trim().toLowerCase();
-    if (!t || tags.includes(t)) return;
-    setTags([...tags, t]);
+    const tag = tagDraft.trim().toLowerCase();
+    if (!tag || tags.includes(tag)) return;
+    setTags([...tags, tag]);
     setTagDraft('');
   };
 
-  const removeTag = (t: string) => setTags(tags.filter((x) => x !== t));
+  const removeTag = (tag: string) => setTags(tags.filter((x) => x !== tag));
 
   const addImage = () => {
     const url = imageDraft.trim();
@@ -88,7 +90,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
     try {
       new URL(url);
     } catch {
-      setError('Image must be a valid URL');
+      setError(t.seller.form.errInvalidImage);
       return;
     }
     setImages([...images, url]);
@@ -111,15 +113,15 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
     e.preventDefault();
     setError('');
     if (!categoryId) {
-      setError('Choose a category');
+      setError(t.seller.form.errCategory);
       return;
     }
     if (images.length === 0) {
-      setError('Add at least one product image');
+      setError(t.seller.form.errImage);
       return;
     }
     if (variants.some((v) => !v.name.trim() || !v.sku.trim() || !v.price)) {
-      setError('Each variant needs a name, SKU and price');
+      setError(t.seller.form.errVariant);
       return;
     }
 
@@ -148,7 +150,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
     } catch (err: unknown) {
       const m =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Failed to save';
+        t.seller.form.errSave;
       setError(m);
     }
     setSubmitting(false);
@@ -163,7 +165,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
     } catch (err: unknown) {
       const m =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Failed to delete';
+        t.seller.form.errDelete;
       setError(m);
       setDeleting(false);
       setConfirmDelete(false);
@@ -176,12 +178,13 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
         <div>
           <Link
             href="/seller/products"
-            className="mb-1 inline-block text-xs font-semibold text-muted hover:text-brand-700"
+            className="mb-1 inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-brand-700"
           >
-            ← Products
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+            {t.seller.form.backToProducts}
           </Link>
           <h1 className="text-2xl font-extrabold text-brand-900">
-            {initial ? 'Edit product' : 'New product'}
+            {initial ? t.seller.form.editTitle : t.seller.form.newTitle}
           </h1>
         </div>
         <div className="flex gap-2">
@@ -189,7 +192,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
             href="/seller/products"
             className="rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-text"
           >
-            Cancel
+            {t.seller.form.cancel}
           </Link>
           <motion.button
             type="submit"
@@ -198,7 +201,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
             whileTap={{ scale: 0.98 }}
             className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
           >
-            {submitting ? 'Saving…' : submitLabel}
+            {submitting ? t.seller.form.saving : submitLabel}
           </motion.button>
         </div>
       </div>
@@ -213,9 +216,11 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
         <div className="space-y-6">
           {/* Basic info */}
           <section className="rounded-2xl border border-border bg-white p-6">
-            <h2 className="mb-4 text-base font-bold text-brand-900">Basic information</h2>
+            <h2 className="mb-4 text-base font-bold text-brand-900">{t.seller.form.basicInfo}</h2>
             <div className="mb-4">
-              <label className="mb-1 block text-sm font-semibold text-text">Product name</label>
+              <label className="mb-1 block text-sm font-semibold text-text">
+                {t.seller.form.name}
+              </label>
               <input
                 type="text"
                 required
@@ -223,13 +228,15 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 maxLength={140}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Sony WH-1000XM5 Wireless Headphones"
+                placeholder={t.seller.form.namePlaceholder}
                 className="w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
               />
             </div>
             <div className="mb-4">
               <div className="mb-1 flex items-center justify-between">
-                <label className="text-sm font-semibold text-text">Description</label>
+                <label className="text-sm font-semibold text-text">
+                  {t.seller.form.description}
+                </label>
                 <span className="text-xs text-muted">{description.length} / 5000</span>
               </div>
               <textarea
@@ -239,37 +246,42 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 rows={5}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the product, features, what's in the box…"
+                placeholder={t.seller.form.descPlaceholder}
                 className="w-full resize-y rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-semibold text-text">Brand</label>
+                <label className="mb-1 block text-sm font-semibold text-text">
+                  {t.seller.form.brand}
+                </label>
                 <input
                   type="text"
                   maxLength={60}
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
-                  placeholder="e.g. Sony"
+                  placeholder={t.seller.form.brandPlaceholder}
                   className="w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-sm font-semibold text-text">Tags</label>
+                <label className="mb-1 block text-sm font-semibold text-text">
+                  {t.seller.form.tags}
+                </label>
                 <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border bg-bg px-2 py-1.5">
-                  {tags.map((t) => (
+                  {tags.map((tag) => (
                     <span
-                      key={t}
+                      key={tag}
                       className="flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 text-xs font-semibold text-brand-700"
                     >
-                      {t}
+                      {tag}
                       <button
                         type="button"
-                        onClick={() => removeTag(t)}
+                        onClick={() => removeTag(tag)}
                         className="hover:text-brand-900"
+                        aria-label="×"
                       >
-                        ×
+                        <X className="h-3 w-3" aria-hidden />
                       </button>
                     </span>
                   ))}
@@ -283,7 +295,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                         addTag();
                       }
                     }}
-                    placeholder="Add tag…"
+                    placeholder={t.seller.form.tagPlaceholder}
                     className="min-w-[100px] flex-1 bg-transparent px-1 py-1 text-sm outline-none"
                   />
                 </div>
@@ -294,8 +306,10 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
           {/* Images */}
           <section className="rounded-2xl border border-border bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-base font-bold text-brand-900">Images</h2>
-              <span className="text-xs text-muted">{images.length} / 10 · 1st = main</span>
+              <h2 className="text-base font-bold text-brand-900">{t.seller.form.images}</h2>
+              <span className="text-xs text-muted">
+                {images.length} / 10 · {t.seller.form.imagesHint}
+              </span>
             </div>
             <div className="mb-3 flex gap-2">
               <input
@@ -308,7 +322,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                     addImage();
                   }
                 }}
-                placeholder="https://cdn.example.com/your-image.jpg"
+                placeholder={t.seller.form.imagePlaceholder}
                 className="flex-1 rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
               />
               <button
@@ -316,11 +330,11 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 onClick={addImage}
                 className="rounded-md bg-brand-500 px-4 py-2.5 text-sm font-bold text-white"
               >
-                Add
+                {t.seller.form.add}
               </button>
             </div>
             {images.length === 0 ? (
-              <p className="text-xs text-muted">No image yet — paste a URL above.</p>
+              <p className="text-xs text-muted">{t.seller.form.noImage}</p>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {images.map((url, i) => (
@@ -332,15 +346,16 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                     <img src={url} alt="" className="h-full w-full object-cover" />
                     {i === 0 && (
                       <span className="absolute left-1 top-1 rounded-full bg-brand-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                        Main
+                        {t.seller.form.main}
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => removeImage(i)}
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs text-red-600 shadow"
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-red-600 shadow"
+                      aria-label="×"
                     >
-                      ×
+                      <X className="h-3 w-3" aria-hidden />
                     </button>
                   </div>
                 ))}
@@ -352,15 +367,16 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
           <section className="rounded-2xl border border-border bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold text-brand-900">Variants</h2>
-                <p className="text-xs text-muted">Different sizes, colors, configurations.</p>
+                <h2 className="text-base font-bold text-brand-900">{t.seller.form.variants}</h2>
+                <p className="text-xs text-muted">{t.seller.form.variantsDesc}</p>
               </div>
               <button
                 type="button"
                 onClick={addVariant}
-                className="rounded-md border border-border bg-white px-3 py-1.5 text-xs font-bold text-text hover:border-brand-300"
+                className="flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-bold text-text hover:border-brand-300"
               >
-                + Add variant
+                <Plus className="h-3.5 w-3.5" aria-hidden />
+                {t.seller.form.addVariant}
               </button>
             </div>
             <div className="space-y-3">
@@ -381,17 +397,15 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
             <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-red-900">Delete this product</h3>
-                  <p className="mt-1 text-xs text-red-800">
-                    Permanent. Removes the listing for all buyers.
-                  </p>
+                  <h3 className="text-base font-bold text-red-900">{t.seller.form.dangerTitle}</h3>
+                  <p className="mt-1 text-xs text-red-800">{t.seller.form.dangerDesc}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setConfirmDelete(true)}
                   className="rounded-md border border-red-200 bg-white px-4 py-2 text-sm font-bold text-red-600"
                 >
-                  Delete product
+                  {t.seller.form.deleteProduct}
                 </button>
               </div>
             </section>
@@ -401,7 +415,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
         {/* Sidebar */}
         <aside className="space-y-4">
           <div className="rounded-2xl border border-border bg-white p-5">
-            <h3 className="mb-3 text-sm font-bold text-brand-900">Status</h3>
+            <h3 className="mb-3 text-sm font-bold text-brand-900">{t.seller.form.status}</h3>
             <label className="mb-2 flex cursor-pointer items-center gap-3 rounded-md border border-border bg-bg p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
               <input
                 type="radio"
@@ -410,8 +424,8 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 className="accent-brand-500"
               />
               <span className="flex-1">
-                <span className="block text-sm font-bold text-text">Active</span>
-                <span className="block text-xs text-muted">Visible to buyers</span>
+                <span className="block text-sm font-bold text-text">{t.seller.form.active}</span>
+                <span className="block text-xs text-muted">{t.seller.form.activeHint}</span>
               </span>
             </label>
             <label className="flex cursor-pointer items-center gap-3 rounded-md border border-border bg-bg p-3 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50">
@@ -422,21 +436,21 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 className="accent-brand-500"
               />
               <span className="flex-1">
-                <span className="block text-sm font-bold text-text">Inactive</span>
-                <span className="block text-xs text-muted">Hidden from buyers</span>
+                <span className="block text-sm font-bold text-text">{t.seller.form.inactive}</span>
+                <span className="block text-xs text-muted">{t.seller.form.inactiveHint}</span>
               </span>
             </label>
           </div>
 
           <div className="rounded-2xl border border-border bg-white p-5">
-            <h3 className="mb-3 text-sm font-bold text-brand-900">Category</h3>
+            <h3 className="mb-3 text-sm font-bold text-brand-900">{t.seller.form.category}</h3>
             <select
               required
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
             >
-              <option value="">Choose a category…</option>
+              <option value="">{t.seller.form.chooseCategory}</option>
               {categories.map((c) => (
                 <option key={c._id} value={c._id}>
                   {c.name}
@@ -446,11 +460,11 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
           </div>
 
           <div className="rounded-2xl border border-brand-200 bg-brand-50 p-5">
-            <h3 className="mb-2 text-sm font-bold text-brand-900">Tips</h3>
+            <h3 className="mb-2 text-sm font-bold text-brand-900">{t.seller.form.tips}</h3>
             <ul className="space-y-1.5 text-xs text-brand-800">
-              <li>• Use the brand + exact model in the name</li>
-              <li>• Add at least 3 images (different angles)</li>
-              <li>• Set Compare-at price to display a sale badge</li>
+              <li>• {t.seller.form.tip1}</li>
+              <li>• {t.seller.form.tip2}</li>
+              <li>• {t.seller.form.tip3}</li>
             </ul>
           </div>
         </aside>
@@ -459,9 +473,12 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
       {confirmDelete && onDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-white p-6">
-            <h3 className="mb-2 text-base font-bold text-brand-900">Delete this product?</h3>
+            <h3 className="mb-2 text-base font-bold text-brand-900">
+              {t.seller.form.deleteConfirmTitle}
+            </h3>
             <p className="mb-5 text-sm text-muted">
-              <span className="font-semibold text-text">{name}</span> will be permanently removed.
+              <span className="font-semibold text-text">{name}</span>{' '}
+              {t.seller.form.deleteConfirmSuffix}
             </p>
             <div className="flex justify-end gap-2">
               <button
@@ -469,7 +486,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 onClick={() => setConfirmDelete(false)}
                 className="rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-text"
               >
-                Cancel
+                {t.seller.form.cancel}
               </button>
               <button
                 type="button"
@@ -477,7 +494,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 disabled={deleting}
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
               >
-                {deleting ? 'Deleting…' : 'Delete'}
+                {deleting ? t.seller.form.deleting : t.seller.form.delete}
               </button>
             </div>
           </div>
@@ -515,14 +532,14 @@ function VariantRow({
   return (
     <div className="rounded-md border border-border bg-bg p-4">
       <div className="mb-3 flex items-center justify-between">
-        <span className="text-sm font-bold text-text">Variant {index + 1}</span>
+        <span className="text-sm font-bold text-text">{t.seller.form.variantN(index + 1)}</span>
         {onRemove && (
           <button
             type="button"
             onClick={onRemove}
             className="text-xs font-semibold text-red-600 hover:underline"
           >
-            Remove
+            {t.seller.form.remove}
           </button>
         )}
       </div>
@@ -530,7 +547,7 @@ function VariantRow({
         <input
           type="text"
           required
-          placeholder="Name (e.g. Black)"
+          placeholder={t.seller.form.vName}
           value={variant.name}
           onChange={(e) => onChange({ name: e.target.value })}
           className="rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
@@ -538,7 +555,7 @@ function VariantRow({
         <input
           type="text"
           required
-          placeholder="SKU"
+          placeholder={t.seller.form.vSku}
           value={variant.sku}
           onChange={(e) => onChange({ sku: e.target.value })}
           className="rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
@@ -550,7 +567,7 @@ function VariantRow({
           required
           min="0"
           step="0.01"
-          placeholder="Price (€)"
+          placeholder={t.seller.form.vPrice}
           value={variant.price}
           onChange={(e) => onChange({ price: e.target.value })}
           className="rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
@@ -559,7 +576,7 @@ function VariantRow({
           type="number"
           min="0"
           step="0.01"
-          placeholder="Compare-at (€)"
+          placeholder={t.seller.form.vCompare}
           value={variant.compareAtPrice}
           onChange={(e) => onChange({ compareAtPrice: e.target.value })}
           className="rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
@@ -568,14 +585,14 @@ function VariantRow({
           type="number"
           min="0"
           step="1"
-          placeholder="Stock"
+          placeholder={t.seller.form.vStock}
           value={variant.stock}
           onChange={(e) => onChange({ stock: e.target.value })}
           className="rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </div>
       <div>
-        <p className="mb-1 text-xs font-semibold text-muted">Attributes</p>
+        <p className="mb-1 text-xs font-semibold text-muted">{t.seller.form.attributes}</p>
         <div className="mb-2 flex flex-wrap gap-1.5">
           {variant.attributes.map((a) => (
             <span
@@ -588,8 +605,9 @@ function VariantRow({
                 type="button"
                 onClick={() => removeAttr(a.key)}
                 className="text-muted hover:text-text"
+                aria-label="×"
               >
-                ×
+                <X className="h-3 w-3" aria-hidden />
               </button>
             </span>
           ))}
@@ -599,22 +617,23 @@ function VariantRow({
             type="text"
             value={attrKey}
             onChange={(e) => setAttrKey(e.target.value)}
-            placeholder="key (color)"
+            placeholder={t.seller.form.attrKey}
             className="w-32 rounded-md border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-brand-500"
           />
           <input
             type="text"
             value={attrVal}
             onChange={(e) => setAttrVal(e.target.value)}
-            placeholder="value (black)"
+            placeholder={t.seller.form.attrValue}
             className="w-32 rounded-md border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-brand-500"
           />
           <button
             type="button"
             onClick={addAttr}
-            className="rounded-md border border-border bg-white px-3 py-1.5 text-xs font-bold text-text"
+            className="flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-xs font-bold text-text"
           >
-            + Add
+            <Plus className="h-3.5 w-3.5" aria-hidden />
+            {t.seller.form.attrAdd}
           </button>
         </div>
       </div>

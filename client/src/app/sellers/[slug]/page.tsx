@@ -4,16 +4,26 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
+import { Store, BadgeCheck } from 'lucide-react';
 import Header from '../../../components/Header';
 import StarRating from '../../../components/StarRating';
 import CatalogProductCard from '../../../components/catalog/CatalogProductCard';
+import Pagination from '../../../components/catalog/Pagination';
 import { t, formatNumber, formatMonthYear } from '../../../lib/i18n';
 import {
   getPublicShop,
   searchProducts,
   type SellerDto,
-  type ProductSummaryDto,
+  type ProductSearchParams,
+  type ProductSearchResult,
 } from '../../../lib/catalog';
+
+const SORT_OPTIONS: { value: NonNullable<ProductSearchParams['sortBy']>; label: string }[] = [
+  { value: 'totalSold', label: t.shop.sort.totalSold },
+  { value: 'createdAt', label: t.shop.sort.createdAt },
+  { value: 'price', label: t.shop.sort.price },
+  { value: 'rating', label: t.shop.sort.rating },
+];
 
 const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
 
@@ -29,35 +39,59 @@ function Stat({ value, label }: { value: string; label: string }) {
 export default function PublicShopPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const [shop, setShop] = useState<SellerDto | null>(null);
-  const [products, setProducts] = useState<ProductSummaryDto[]>([]);
-  const [productTotal, setProductTotal] = useState(0);
   const [notFound, setNotFound] = useState(false);
-  const [loading, setLoading] = useState(true);
 
+  const [result, setResult] = useState<ProductSearchResult | null>(null);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<NonNullable<ProductSearchParams['sortBy']>>('totalSold');
+
+  const productTotal = result?.total ?? 0;
+  const products = result?.items ?? [];
+
+  // Resolve the shop once per slug.
   useEffect(() => {
     let cancelled = false;
+    setShop(null);
+    setNotFound(false);
+    setPage(1);
     getPublicShop(slug)
       .then((s) => {
-        if (cancelled) return;
-        setShop(s);
-        return searchProducts({ sellerId: s._id, page: 1, limit: 20 });
-      })
-      .then((res) => {
-        if (cancelled || !res) return;
-        setProducts(res.items);
-        setProductTotal(res.total);
-        setLoading(false);
+        if (!cancelled) setShop(s);
       })
       .catch(() => {
-        if (!cancelled) {
-          setNotFound(true);
-          setLoading(false);
-        }
+        if (!cancelled) setNotFound(true);
       });
     return () => {
       cancelled = true;
     };
   }, [slug]);
+
+  // Re-fetch this shop's products whenever the page or sort changes.
+  useEffect(() => {
+    if (!shop) return;
+    let cancelled = false;
+    setProductsLoading(true);
+    searchProducts({
+      sellerId: shop._id,
+      page,
+      limit: 12,
+      sortBy,
+      sortOrder: sortBy === 'price' ? 'asc' : 'desc',
+    })
+      .then((res) => {
+        if (!cancelled) {
+          setResult(res);
+          setProductsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProductsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [shop, page, sortBy]);
 
   if (notFound) {
     return (
@@ -133,7 +167,9 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
                   className="object-cover"
                 />
               ) : (
-                <span className="flex h-full w-full items-center justify-center text-4xl">🏪</span>
+                <span className="flex h-full w-full items-center justify-center text-brand-300">
+                  <Store className="h-10 w-10" strokeWidth={1.5} aria-hidden />
+                </span>
               )}
             </div>
 
@@ -145,13 +181,7 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
                 </h1>
                 {shop.isVerified && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
-                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                      <path
-                        fillRule="evenodd"
-                        d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
+                    <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
                     {t.shop.verified}
                   </span>
                 )}
@@ -192,15 +222,35 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
 
         {/* ── Products ── */}
         <section className="mb-16 mt-10">
-          <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-brand-900">
-            <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />
-            {t.shop.products}
-            {productTotal > 0 && (
-              <span className="text-sm font-medium text-muted">({formatNumber(productTotal)})</span>
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <h2 className="flex items-center gap-2 text-xl font-bold text-brand-900">
+              <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />
+              {t.shop.products}
+              {productTotal > 0 && (
+                <span className="text-sm font-medium text-muted">
+                  ({formatNumber(productTotal)})
+                </span>
+              )}
+            </h2>
+            {productTotal > 1 && (
+              <select
+                value={sortBy}
+                onChange={(e) => {
+                  setSortBy(e.target.value as NonNullable<ProductSearchParams['sortBy']>);
+                  setPage(1);
+                }}
+                className="ml-auto rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-text outline-none focus:border-brand-500"
+              >
+                {SORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {t.shop.sortPrefix} : {o.label}
+                  </option>
+                ))}
+              </select>
             )}
-          </h2>
+          </div>
 
-          {loading ? (
+          {productsLoading ? (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div
@@ -214,24 +264,41 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
               {t.shop.noProducts}
             </p>
           ) : (
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
-              className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
-            >
-              {products.map((p) => (
-                <motion.div
-                  key={p._id}
-                  variants={{
-                    hidden: { opacity: 0, y: 16 },
-                    visible: { opacity: 1, y: 0, transition: spring },
-                  }}
-                >
-                  <CatalogProductCard product={p} />
-                </motion.div>
-              ))}
-            </motion.div>
+            <>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+                className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+              >
+                {products.map((p) => (
+                  <motion.div
+                    key={p._id}
+                    variants={{
+                      hidden: { opacity: 0, y: 16 },
+                      visible: { opacity: 1, y: 0, transition: spring },
+                    }}
+                  >
+                    <CatalogProductCard product={p} />
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {result && result.totalPages > 1 && (
+                <div className="mt-10">
+                  <Pagination
+                    page={page}
+                    totalPages={result.totalPages}
+                    onChange={(p) => {
+                      setPage(p);
+                      if (typeof window !== 'undefined') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }}
+                  />
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

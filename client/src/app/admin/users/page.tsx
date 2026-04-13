@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ProtectedRoute } from '../../../components/ProtectedRoute';
 import { api } from '../../../lib/api';
+import { t } from '../../../lib/i18n';
 import Link from 'next/link';
 
 interface UserRow {
@@ -37,11 +38,11 @@ interface ConfirmModal {
 }
 
 const navItems = [
-  { label: 'Dashboard', href: '/admin', active: false },
-  { label: 'Utilisateurs', href: '/admin/users', active: true },
-  { label: 'Vendeurs', href: '/admin', active: false },
-  { label: 'Commandes', href: '/admin', active: false },
-  { label: 'Parametres', href: '/admin', active: false },
+  { label: t.admin.navDashboard, href: '/admin', active: false },
+  { label: t.admin.navUsers, href: '/admin/users', active: true },
+  { label: t.admin.navSellers, href: '/admin', active: false },
+  { label: t.admin.navOrders, href: '/admin', active: false },
+  { label: t.admin.navSettings, href: '/admin', active: false },
 ];
 
 export default function AdminUsersPage() {
@@ -156,10 +157,10 @@ export default function AdminUsersPage() {
         >
           <div className="flex items-center gap-2 px-5 pb-6">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-extrabold text-white">
-              M
+              A
             </span>
             <span className="text-base font-bold" style={{ color: 'var(--color-text)' }}>
-              Admin Panel
+              {t.admin.panel}
             </span>
           </div>
           <nav className="flex flex-col gap-0.5 px-2">
@@ -183,10 +184,10 @@ export default function AdminUsersPage() {
         <div className="flex flex-1 flex-col gap-5 overflow-auto p-8">
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-              Utilisateurs
+              {t.admin.usersTitle}
             </h1>
             <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-              {data?.total ?? 0} utilisateurs inscrits
+              {t.admin.usersCount(String(data?.total ?? 0))}
             </p>
           </div>
 
@@ -236,10 +237,10 @@ export default function AdminUsersPage() {
                 color: 'var(--color-text)',
               }}
             >
-              <option value="">Role</option>
-              <option value="user">User</option>
-              <option value="seller">Seller</option>
-              <option value="admin">Admin</option>
+              <option value="">{t.admin.filterRole}</option>
+              <option value="user">{t.roles.user}</option>
+              <option value="seller">{t.roles.seller}</option>
+              <option value="admin">{t.roles.admin}</option>
             </select>
             <select
               value={statusFilter}
@@ -254,10 +255,10 @@ export default function AdminUsersPage() {
                 color: 'var(--color-text)',
               }}
             >
-              <option value="">Statut</option>
-              <option value="active">Actif</option>
-              <option value="suspended">Suspendu</option>
-              <option value="pending">En attente</option>
+              <option value="">{t.admin.filterStatus}</option>
+              <option value="active">{t.userStatus.active}</option>
+              <option value="suspended">{t.userStatus.suspended}</option>
+              <option value="pending">{t.userStatus.pending}</option>
             </select>
           </div>
 
@@ -300,7 +301,7 @@ export default function AdminUsersPage() {
                       className="px-5 py-3 font-semibold"
                       style={{ color: 'var(--color-text-muted)' }}
                     >
-                      Role
+                      {t.admin.colRole}
                     </th>
                     <th
                       className="px-5 py-3 font-semibold"
@@ -359,9 +360,9 @@ export default function AdminUsersPage() {
                                 ? 'bg-blue-50 text-blue-500 hover:opacity-70 cursor-pointer'
                                 : 'bg-brand-50 text-brand-600 hover:opacity-70 cursor-pointer'
                           }`}
-                          title={u.role === 'admin' ? '' : 'Cliquer pour changer le role'}
+                          title={u.role === 'admin' ? '' : t.admin.changeRoleHint}
                         >
-                          {u.role}
+                          {t.roles[u.role] ?? u.role}
                         </button>
                       </td>
                       <td className="px-5 py-3">
@@ -374,11 +375,7 @@ export default function AdminUsersPage() {
                                 : 'bg-gray-50 text-gray-500'
                           }`}
                         >
-                          {u.status === 'active'
-                            ? 'actif'
-                            : u.status === 'suspended'
-                              ? 'suspendu'
-                              : u.status}
+                          {t.userStatus[u.status] ?? u.status}
                         </span>
                       </td>
                       <td className="px-5 py-3" style={{ color: 'var(--color-text-muted)' }}>
@@ -477,7 +474,7 @@ export default function AdminUsersPage() {
                         className="px-5 py-8 text-center text-sm"
                         style={{ color: 'var(--color-text-muted)' }}
                       >
-                        Aucun utilisateur trouve
+                        {t.admin.noUsersFound}
                       </td>
                     </tr>
                   )}
@@ -621,7 +618,7 @@ export default function AdminUsersPage() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <h3 className="mb-4 text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                  Changer le role
+                  {t.admin.changeRoleTitle}
                 </h3>
                 <select
                   value={newRole}
@@ -633,8 +630,8 @@ export default function AdminUsersPage() {
                     color: 'var(--color-text)',
                   }}
                 >
-                  <option value="user">User</option>
-                  <option value="seller">Seller</option>
+                  <option value="user">{t.roles.user}</option>
+                  <option value="seller">{t.roles.seller}</option>
                 </select>
                 <div className="flex justify-end gap-3">
                   <button
