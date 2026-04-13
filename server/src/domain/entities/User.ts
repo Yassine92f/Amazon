@@ -13,6 +13,8 @@ export interface UserEntity {
   addresses: AddressEntity[];
   preferences: UserPreferencesEntity;
   lastLoginAt?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
