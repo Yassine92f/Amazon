@@ -98,18 +98,29 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     setProduct(null);
     setNotFound(false);
     getProductBySlug(slug)
-      .then((p) => {
+      .then(async (p) => {
         if (cancelled) return;
         setProduct(p);
         const cheapest = [...p.variants].sort((a, b) => a.price - b.price)[0];
         setVariantId(cheapest?._id ?? null);
         setActiveImage(0);
         setQuantity(1);
-        return searchProducts({ categoryId: p.categoryId, page: 1, limit: 6 });
-      })
-      .then((res) => {
-        if (cancelled || !res) return;
-        setRelated(res.items.filter((r) => r.slug !== slug).slice(0, 5));
+        // Recommendations: best-sellers from the same brand first, then the same
+        // category, de-duplicated and excluding the current product.
+        const [byBrand, byCategory] = await Promise.all([
+          p.brand
+            ? searchProducts({ brand: p.brand, sortBy: 'totalSold', limit: 6 })
+            : Promise.resolve(null),
+          searchProducts({ categoryId: p.categoryId, sortBy: 'totalSold', limit: 8 }),
+        ]);
+        if (cancelled) return;
+        const seen = new Set<string>();
+        const merged = [...(byBrand?.items ?? []), ...byCategory.items].filter((r) => {
+          if (r.slug === slug || seen.has(r._id)) return false;
+          seen.add(r._id);
+          return true;
+        });
+        setRelated(merged.slice(0, 5));
       })
       .catch(() => {
         if (!cancelled) setNotFound(true);

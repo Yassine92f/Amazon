@@ -8,7 +8,7 @@ const TABS = [
   { href: '/seller', label: t.seller.dashboard },
   { href: '/seller/products', label: t.seller.products },
   { href: '/seller/orders', label: t.seller.orders, disabled: true, hint: 'cart-orders' },
-  { href: '/seller/reviews', label: t.seller.reviews, disabled: true, hint: 'cart-orders' },
+  { href: '/seller/reviews', label: t.seller.reviews },
   { href: '/seller/settings', label: t.seller.settings },
 ];
 

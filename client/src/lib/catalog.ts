@@ -150,6 +150,79 @@ export interface ReviewListResult extends PaginatedResponse<ReviewDto> {
   };
 }
 
+// Seller-facing review (with the product it belongs to)
+export interface SellerReviewDto {
+  _id: string;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  authorName: string;
+  rating: number;
+  title: string;
+  comment: string;
+  sellerResponse?: { comment: string; respondedAt: string };
+  createdAt: string;
+}
+export type SellerReviewListResult = PaginatedResponse<SellerReviewDto>;
+
+export async function listMyReviews(
+  params: { page?: number; limit?: number; onlyUnanswered?: boolean } = {},
+): Promise<SellerReviewListResult> {
+  const query: Record<string, string> = {};
+  if (params.page) query.page = String(params.page);
+  if (params.limit) query.limit = String(params.limit);
+  if (params.onlyUnanswered) query.onlyUnanswered = 'true';
+  const { data } = await api.get('/products/me/reviews', { params: query });
+  return data.data;
+}
+
+export async function replyToReview(reviewId: string, comment: string): Promise<SellerReviewDto> {
+  const { data } = await api.post(`/products/reviews/${reviewId}/reply`, { comment });
+  return data.data;
+}
+
+// ── Admin product moderation ───────────────────────────────────────────
+export interface AdminProductDto {
+  _id: string;
+  name: string;
+  slug: string;
+  brand?: string;
+  image: string;
+  sellerId: string;
+  shopName: string;
+  minPrice: number;
+  rating: number;
+  reviewCount: number;
+  totalSold: number;
+  inStock: boolean;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export async function listAdminProducts(
+  params: { page?: number; limit?: number; query?: string; isActive?: boolean } = {},
+): Promise<PaginatedResponse<AdminProductDto>> {
+  const query: Record<string, string> = {};
+  if (params.page) query.page = String(params.page);
+  if (params.limit) query.limit = String(params.limit);
+  if (params.query) query.query = params.query;
+  if (params.isActive !== undefined) query.isActive = String(params.isActive);
+  const { data } = await api.get('/admin/products', { params: query });
+  return data.data;
+}
+
+export async function setAdminProductActive(
+  id: string,
+  isActive: boolean,
+): Promise<AdminProductDto> {
+  const { data } = await api.put(`/admin/products/${id}/status`, { isActive });
+  return data.data;
+}
+
+export async function deleteAdminProduct(id: string): Promise<void> {
+  await api.delete(`/admin/products/${id}`);
+}
+
 // ── Categories API ─────────────────────────────────────────────────────
 
 export async function listCategories(): Promise<CategoryDto[]> {

@@ -2,8 +2,10 @@ import { Router, type IRouter } from 'express';
 import { UserRole } from '@ecommerce/shared';
 import { ProductController } from '../controllers/ProductController';
 import { ReviewController } from '../controllers/ReviewController';
+import { SellerReviewController } from '../controllers/SellerReviewController';
 import { ProductUseCase } from '../../../application/use-cases/ProductUseCase';
 import { ReviewBrowseUseCase } from '../../../application/use-cases/ReviewBrowseUseCase';
+import { SellerReviewUseCase } from '../../../application/use-cases/SellerReviewUseCase';
 import { ProductRepository } from '../../../infrastructure/repositories/ProductRepository';
 import { CategoryRepository } from '../../../infrastructure/repositories/CategoryRepository';
 import { SellerRepository } from '../../../infrastructure/repositories/SellerRepository';
@@ -11,7 +13,11 @@ import { ReviewRepository } from '../../../infrastructure/repositories/ReviewRep
 import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
-import { createProductSchema, updateProductSchema } from '../schemas/productSchemas';
+import {
+  createProductSchema,
+  updateProductSchema,
+  replyToReviewSchema,
+} from '../schemas/productSchemas';
 
 const productRepository = new ProductRepository();
 const categoryRepository = new CategoryRepository();
@@ -21,11 +27,28 @@ const userRepository = new UserRepository();
 
 const productUseCase = new ProductUseCase(productRepository, categoryRepository, sellerRepository);
 const reviewUseCase = new ReviewBrowseUseCase(reviewRepository, userRepository);
+const sellerReviewUseCase = new SellerReviewUseCase(
+  reviewRepository,
+  productRepository,
+  sellerRepository,
+  userRepository,
+);
 
 const productController = new ProductController(productUseCase);
 const reviewController = new ReviewController(reviewUseCase);
+const sellerReviewController = new SellerReviewController(sellerReviewUseCase);
 
 const router: IRouter = Router();
+
+// Seller — reviews on own products (declared BEFORE :slug routes to avoid conflict)
+router.get('/me/reviews', authenticate, authorize(UserRole.SELLER), sellerReviewController.list);
+router.post(
+  '/reviews/:reviewId/reply',
+  authenticate,
+  authorize(UserRole.SELLER),
+  validate(replyToReviewSchema),
+  sellerReviewController.respond,
+);
 
 // Seller — own product management (declared BEFORE :slug routes to avoid conflict)
 router.get('/me/list', authenticate, authorize(UserRole.SELLER), productController.listMyProducts);

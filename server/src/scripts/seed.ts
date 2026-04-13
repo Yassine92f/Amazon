@@ -478,6 +478,68 @@ const products: ProductSeed[] = [
   },
 ];
 
+// Admin + buyer accounts (buyers author the seeded product reviews).
+const ADMIN = { email: 'admin@abracadabra.local', firstName: 'Admin', lastName: 'Abracadabra' };
+
+const buyers = [
+  { email: 'alice@abracadabra.local', firstName: 'Alice', lastName: 'Martin' },
+  { email: 'bruno@abracadabra.local', firstName: 'Bruno', lastName: 'Diallo' },
+  { email: 'chloe@abracadabra.local', firstName: 'Chloé', lastName: 'Nguyen' },
+  { email: 'driss@abracadabra.local', firstName: 'Driss', lastName: 'El Amrani' },
+  { email: 'emma@abracadabra.local', firstName: 'Emma', lastName: 'Rossi' },
+];
+
+// Pool of realistic French reviews drawn at random per product.
+const reviewPool: { rating: number; title: string; comment: string }[] = [
+  {
+    rating: 5,
+    title: 'Parfait, rien à redire',
+    comment:
+      'Livraison rapide et produit conforme à la description. Je recommande vivement, la qualité est au rendez-vous.',
+  },
+  {
+    rating: 5,
+    title: 'Excellent rapport qualité-prix',
+    comment:
+      'Très satisfait de mon achat, je ne m’attendais pas à une telle finition à ce prix. À recommander.',
+  },
+  {
+    rating: 4,
+    title: 'Très bon produit',
+    comment:
+      'Conforme à mes attentes, quelques détails perfectibles mais rien de bloquant. Je rachèterais.',
+  },
+  {
+    rating: 4,
+    title: 'Satisfait dans l’ensemble',
+    comment:
+      'Bon produit, emballage soigné. Un point en moins pour le délai de livraison un peu long.',
+  },
+  {
+    rating: 3,
+    title: 'Correct sans plus',
+    comment:
+      'Le produit fait le travail mais sans surprise. La qualité est moyenne pour le prix demandé.',
+  },
+  {
+    rating: 5,
+    title: 'Je suis conquis',
+    comment:
+      'Au-delà de mes espérances, je l’utilise tous les jours. Service client réactif en prime.',
+  },
+  {
+    rating: 2,
+    title: 'Déçu',
+    comment:
+      'La qualité ne correspond pas vraiment aux photos. Heureusement le vendeur a été à l’écoute.',
+  },
+  {
+    rating: 4,
+    title: 'Bonne surprise',
+    comment: 'Je recommande, l’ensemble est solide et bien pensé. Parfait pour un usage quotidien.',
+  },
+];
+
 interface RunOptions {
   cleanFirst: boolean;
 }
@@ -499,6 +561,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     await ProductModel.deleteMany({ sellerId: { $in: sellerIds } });
     await SellerModel.deleteMany({ _id: { $in: sellerIds } });
     await UserModel.deleteMany({ _id: { $in: sellerUserIds } });
+    await UserModel.deleteMany({ email: { $in: [ADMIN.email, ...buyers.map((b) => b.email)] } });
     await CategoryModel.deleteMany({ slug: { $in: categories.map((c) => c.slug) } });
   }
 
@@ -531,6 +594,34 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     console.log(`[seed]   seller: ${s.shopName} <${s.email}>`);
   }
 
+  // Admin account (for the admin dashboard + product moderation).
+  await UserModel.create({
+    email: ADMIN.email,
+    password: hashedPassword,
+    firstName: ADMIN.firstName,
+    lastName: ADMIN.lastName,
+    role: UserRole.ADMIN,
+    status: UserStatus.ACTIVE,
+    emailVerified: true,
+  });
+  console.log(`[seed]   admin: <${ADMIN.email}>`);
+
+  // Buyer accounts (authors of the seeded reviews).
+  const buyerIds: mongoose.Types.ObjectId[] = [];
+  for (const b of buyers) {
+    const user = await UserModel.create({
+      email: b.email,
+      password: hashedPassword,
+      firstName: b.firstName,
+      lastName: b.lastName,
+      role: UserRole.USER,
+      status: UserStatus.ACTIVE,
+      emailVerified: true,
+    });
+    buyerIds.push(user._id as mongoose.Types.ObjectId);
+  }
+  console.log(`[seed]   ${buyers.length} buyers`);
+
   // ── Categories (parents first) ─────────────────────────────
   const catIdBySlug = new Map<string, mongoose.Types.ObjectId>();
 
@@ -561,13 +652,14 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
   }
 
   // ── Products ───────────────────────────────────────────────
+  const createdProducts: mongoose.Types.ObjectId[] = [];
   for (const p of products) {
     const sellerId = sellerIdByShopSlug.get(p.shopSlug);
     const categoryId = catIdBySlug.get(p.categorySlug);
     if (!sellerId) throw new Error(`Unknown shop ${p.shopSlug}`);
     if (!categoryId) throw new Error(`Unknown category ${p.categorySlug}`);
 
-    await ProductModel.create({
+    const doc = await ProductModel.create({
       sellerId,
       categoryId,
       name: p.name,
@@ -591,13 +683,48 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       isActive: true,
       isFeatured: p.isFeatured ?? false,
     });
+    createdProducts.push(doc._id as mongoose.Types.ObjectId);
     console.log(`[seed]   product: ${p.name}`);
   }
+
+  // ── Reviews ────────────────────────────────────────────────
+  // Authored by buyers. orderId is synthetic until Section 3 (orders) lands;
+  // some reviews ship with a seller response, most are left open so the seller
+  // hub can demonstrate replying to them.
+  let reviewTotal = 0;
+  for (const productId of createdProducts) {
+    const n = 3 + Math.floor(Math.random() * 2); // 3–4 reviews per product
+    const shuffled = [...buyerIds].sort(() => Math.random() - 0.5).slice(0, n);
+    for (let i = 0; i < shuffled.length; i++) {
+      const tpl = reviewPool[Math.floor(Math.random() * reviewPool.length)];
+      const withResponse = i === 0 && Math.random() < 0.4;
+      await ReviewModel.create({
+        userId: shuffled[i],
+        productId,
+        orderId: new mongoose.Types.ObjectId(),
+        rating: tpl.rating,
+        title: tpl.title,
+        comment: tpl.comment,
+        images: [],
+        sellerResponse: withResponse
+          ? {
+              comment: 'Merci beaucoup pour votre retour, ravi que le produit vous plaise !',
+              respondedAt: new Date(),
+            }
+          : undefined,
+      });
+      reviewTotal++;
+    }
+  }
+  console.log(`[seed]   ${reviewTotal} reviews`);
 
   console.log('\n[seed] ✅ Done.');
   console.log(`[seed]   ${sellers.length} sellers (login with password "${DEFAULT_PASSWORD}")`);
   console.log(`[seed]   ${categories.length} categories`);
-  console.log(`[seed]   ${products.length} products`);
+  console.log(`[seed]   ${products.length} products, ${reviewTotal} reviews`);
+  console.log(
+    `[seed]   admin <${ADMIN.email}>, ${buyers.length} buyers — all password "${DEFAULT_PASSWORD}"`,
+  );
   console.log('[seed]\n[seed] Sample logins:');
   for (const s of sellers) console.log(`[seed]   ${s.email}  (shop /sellers/${s.shopSlug})`);
 
