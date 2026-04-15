@@ -18,6 +18,10 @@ app.use(
   }),
 );
 
+// Stripe webhook needs the untouched raw body to verify the signature, so it
+// must be parsed as a Buffer BEFORE the global JSON parser runs.
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+
 // Parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
