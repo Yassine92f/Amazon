@@ -59,6 +59,33 @@ export class OrderRepository implements IOrderRepository {
     return { orders: docs.map((d) => this.toEntity(d)), total };
   }
 
+  async findByProductIds(
+    productIds: string[],
+    filters: OrderListFilters,
+  ): Promise<OrderListResult> {
+    const ids = productIds
+      .filter((id) => mongoose.isValidObjectId(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
+    if (ids.length === 0) return { orders: [], total: 0 };
+
+    const query: Record<string, unknown> = { 'items.productId': { $in: ids } };
+    if (filters.status) query.status = filters.status;
+    if (filters.fromDate || filters.toDate) {
+      const createdAt: Record<string, Date> = {};
+      if (filters.fromDate) createdAt.$gte = filters.fromDate;
+      if (filters.toDate) createdAt.$lte = filters.toDate;
+      query.createdAt = createdAt;
+    }
+
+    const skip = (filters.page - 1) * filters.limit;
+    const [docs, total] = await Promise.all([
+      OrderModel.find(query).sort({ createdAt: -1 }).skip(skip).limit(filters.limit),
+      OrderModel.countDocuments(query),
+    ]);
+
+    return { orders: docs.map((d) => this.toEntity(d)), total };
+  }
+
   async updateById(id: string, data: UpdateOrderData): Promise<OrderEntity | null> {
     if (!mongoose.isValidObjectId(id)) return null;
     const doc = await OrderModel.findByIdAndUpdate(id, data, { new: true });

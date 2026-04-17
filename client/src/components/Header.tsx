@@ -21,6 +21,8 @@ import {
   ToyBrick,
 } from 'lucide-react';
 import { useAuthStore } from '../store';
+import { useCartStore } from '../store/cart';
+import { useWishlistStore } from '../store/wishlist';
 import { t } from '../lib/i18n';
 import { UserRole } from '@ecommerce/shared';
 
@@ -44,6 +46,9 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
+  const cartCount = useCartStore((s) => s.cart?.totalItems ?? 0);
+  const openCart = useCartStore((s) => s.openDrawer);
+  const wishlistCount = useWishlistStore((s) => s.count);
   const router = useRouter();
 
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : '';
@@ -136,84 +141,96 @@ export default function Header() {
 
           {/* Action Icons */}
           <div className="flex shrink-0 items-center gap-4 md:gap-5">
+            {/* Admin link */}
+            {isAuthenticated && user?.role === UserRole.ADMIN && (
+              <Link
+                href="/admin"
+                className="hidden sm:flex items-center gap-1.5 text-muted transition-colors hover:text-brand-600"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  className="h-[22px] w-[22px]"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
+                  />
+                </svg>
+                <span className="text-[13px] font-medium hidden lg:inline">{t.header.admin}</span>
+              </Link>
+            )}
+
+            {/* Wishlist — available to everyone */}
+            <Link
+              href="/wishlist"
+              aria-label={t.header.wishlist}
+              className="relative hidden sm:flex items-center gap-1.5 text-muted transition-colors hover:text-brand-600"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                className="h-[22px] w-[22px]"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                />
+              </svg>
+              <span className="text-[13px] font-medium hidden lg:inline">{t.header.wishlist}</span>
+              {wishlistCount > 0 && (
+                <span className="absolute -right-1.5 -top-1.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white lg:hidden">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Cart — available to everyone, opens the drawer */}
+            <motion.button
+              type="button"
+              onClick={openCart}
+              aria-label={t.cart.drawerTitle}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors hover:bg-brand-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                className="h-[22px] w-[22px]"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                />
+              </svg>
+              {cartCount > 0 && (
+                <motion.span
+                  key={cartCount}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                  className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white"
+                >
+                  {cartCount}
+                </motion.span>
+              )}
+            </motion.button>
+
             {isAuthenticated && user ? (
               <>
-                {/* Admin link */}
-                {user.role === UserRole.ADMIN && (
-                  <Link
-                    href="/admin"
-                    className="hidden sm:flex items-center gap-1.5 text-muted transition-colors hover:text-brand-600"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={1.8}
-                      className="h-[22px] w-[22px]"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
-                      />
-                    </svg>
-                    <span className="text-[13px] font-medium hidden lg:inline">
-                      {t.header.admin}
-                    </span>
-                  </Link>
-                )}
-
-                {/* Wishlist */}
-                <button
-                  type="button"
-                  className="hidden sm:flex items-center gap-1.5 text-muted transition-colors hover:text-brand-600"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                    className="h-[22px] w-[22px]"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                    />
-                  </svg>
-                  <span className="text-[13px] font-medium hidden lg:inline">
-                    {t.header.wishlist}
-                  </span>
-                </button>
-
-                {/* Cart */}
-                <motion.button
-                  type="button"
-                  whileTap={{ scale: 0.92 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600 transition-colors hover:bg-brand-100"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.8}
-                    className="h-[22px] w-[22px]"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                    />
-                  </svg>
-                  <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-                    3
-                  </span>
-                </motion.button>
-
                 {/* User avatar dropdown */}
                 <div className="relative">
                   <button

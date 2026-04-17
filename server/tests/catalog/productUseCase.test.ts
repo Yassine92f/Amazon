@@ -125,6 +125,9 @@ function makeProductRepo(initial?: ProductEntity): IProductRepository {
       }),
     ),
     countBySeller: jest.fn(async () => products.size),
+    findIdsBySeller: jest.fn(async (sellerId: string) =>
+      [...products.values()].filter((p) => p.sellerId === sellerId).map((p) => p.id),
+    ),
     countByCategory: jest.fn(async () => products.size),
     decrementVariantStock: jest.fn(async () => true),
     incrementVariantStock: jest.fn(async () => undefined),

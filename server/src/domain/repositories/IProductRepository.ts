@@ -74,6 +74,8 @@ export interface IProductRepository {
   deleteById(id: string): Promise<void>;
   search(filters: ProductListFilters): Promise<ProductSearchResult>;
   countBySeller(sellerId: string, activeOnly?: boolean): Promise<number>;
+  // Ids of every product owned by a seller — used to scope orders to a seller.
+  findIdsBySeller(sellerId: string): Promise<string[]>;
   countByCategory(categoryId: string): Promise<number>;
   // Atomically decrement a variant's stock only if enough is available.
   // Returns true on success, false if the product/variant is missing or stock is insufficient.

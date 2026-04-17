@@ -40,6 +40,8 @@ export interface IOrderRepository {
   create(data: CreateOrderData): Promise<OrderEntity>;
   findById(id: string): Promise<OrderEntity | null>;
   findByUser(userId: string, filters: OrderListFilters): Promise<OrderListResult>;
+  // Orders that contain at least one of the given product ids (seller scope).
+  findByProductIds(productIds: string[], filters: OrderListFilters): Promise<OrderListResult>;
   updateById(id: string, data: UpdateOrderData): Promise<OrderEntity | null>;
   countByUser(userId: string): Promise<number>;
 }
