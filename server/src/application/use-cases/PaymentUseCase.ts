@@ -9,14 +9,23 @@ import {
 import { IPaymentService } from '../../domain/services/IPaymentService';
 import { IPaymentRepository } from '../../domain/repositories/IPaymentRepository';
 import { IOrderRepository } from '../../domain/repositories/IOrderRepository';
+import { IUserRepository } from '../../domain/repositories/IUserRepository';
+import { IEmailService } from '../../domain/services/IEmailService';
 
 const CURRENCY = 'eur';
+
+export interface PaymentUseCaseConfig {
+  clientUrl: string;
+}
 
 export class PaymentUseCase {
   constructor(
     private paymentService: IPaymentService,
     private paymentRepo: IPaymentRepository,
     private orderRepo: IOrderRepository,
+    private userRepo: IUserRepository,
+    private emailService: IEmailService,
+    private config: PaymentUseCaseConfig,
   ) {}
 
   // Creates (or refreshes) a Stripe PaymentIntent for a pending order owned by the user.
@@ -164,6 +173,25 @@ export class PaymentUseCase {
         paymentIntentId,
         paidAt,
       });
+      // Send the confirmation email once, on the PENDING → CONFIRMED transition.
+      // Best-effort: a mail failure must never break payment reconciliation.
+      try {
+        const user = await this.userRepo.findById(order.userId);
+        if (user) {
+          await this.emailService.sendOrderConfirmation(user.email, user.firstName, {
+            orderNumber: order.orderNumber,
+            totalAmount: order.totalAmount,
+            items: order.items.map((i) => ({
+              name: `${i.productName} — ${i.variantName}`,
+              quantity: i.quantity,
+              total: i.totalPrice,
+            })),
+            orderUrl: `${this.config.clientUrl}/orders/${order.id}`,
+          });
+        }
+      } catch {
+        // swallow — email is a notification, not part of the transaction
+      }
     }
   }
 

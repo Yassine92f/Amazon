@@ -1,7 +1,31 @@
 import { DeliveryType, OrderStatus, PaymentStatus, UserRole } from '@ecommerce/shared';
 import { PaymentUseCase } from '../../src/application/use-cases/PaymentUseCase';
 import { IOrderRepository } from '../../src/domain/repositories/IOrderRepository';
-import { buildPayment, makeOrderRepo, makePaymentRepo, makePaymentService } from './helpers';
+import {
+  buildPayment,
+  buildUser,
+  makeOrderRepo,
+  makePaymentRepo,
+  makePaymentService,
+  makeUserRepo,
+  makeEmailService,
+} from './helpers';
+
+// Build a PaymentUseCase with default mocks for the user repo, email service and
+// config (order-confirmation email deps) so each test only passes the 3 it cares about.
+const mk = (
+  service: ReturnType<typeof makePaymentService>,
+  paymentRepo: ReturnType<typeof makePaymentRepo>,
+  orderRepo: ReturnType<typeof makeOrderRepo>,
+) =>
+  new PaymentUseCase(
+    service,
+    paymentRepo,
+    orderRepo,
+    makeUserRepo(buildUser()),
+    makeEmailService(),
+    { clientUrl: 'http://localhost:3000' },
+  );
 
 async function seedOrder(orderRepo: IOrderRepository, overrides = {}) {
   return orderRepo.create({
@@ -22,7 +46,7 @@ describe('PaymentUseCase.createIntent', () => {
   it('rejects an order that is not owned by the user', async () => {
     const orderRepo = makeOrderRepo();
     const order = await seedOrder(orderRepo);
-    const useCase = new PaymentUseCase(makePaymentService(), makePaymentRepo(), orderRepo);
+    const useCase = mk(makePaymentService(), makePaymentRepo(), orderRepo);
     await expect(useCase.createIntent('intruder', order.id)).rejects.toMatchObject({
       statusCode: 403,
     });
@@ -32,7 +56,7 @@ describe('PaymentUseCase.createIntent', () => {
     const orderRepo = makeOrderRepo();
     const order = await seedOrder(orderRepo);
     await orderRepo.updateById(order.id, { status: OrderStatus.CONFIRMED });
-    const useCase = new PaymentUseCase(makePaymentService(), makePaymentRepo(), orderRepo);
+    const useCase = mk(makePaymentService(), makePaymentRepo(), orderRepo);
     await expect(useCase.createIntent('user-1', order.id)).rejects.toMatchObject({
       statusCode: 400,
     });
@@ -43,7 +67,7 @@ describe('PaymentUseCase.createIntent', () => {
     const order = await seedOrder(orderRepo);
     const service = makePaymentService();
     const paymentRepo = makePaymentRepo();
-    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+    const useCase = mk(service, paymentRepo, orderRepo);
 
     const result = await useCase.createIntent('user-1', order.id);
 
@@ -68,7 +92,7 @@ describe('PaymentUseCase.confirmPayment', () => {
       }),
     ]);
     const service = makePaymentService(); // retrievePaymentIntent → 'succeeded'
-    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+    const useCase = mk(service, paymentRepo, orderRepo);
 
     const result = await useCase.confirmPayment('user-1', order.id);
 
@@ -89,17 +113,42 @@ describe('PaymentUseCase.confirmPayment', () => {
     const service = makePaymentService({
       retrievePaymentIntent: jest.fn(async (id: string) => ({ id, status: 'processing' })),
     });
-    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+    const useCase = mk(service, paymentRepo, orderRepo);
 
     const result = await useCase.confirmPayment('user-1', order.id);
     expect(result.paid).toBe(false);
     expect((await orderRepo.findById(order.id))?.status).toBe(OrderStatus.PENDING);
   });
 
+  it('sends an order confirmation email when the order is confirmed', async () => {
+    const orderRepo = makeOrderRepo();
+    const order = await seedOrder(orderRepo);
+    const paymentRepo = makePaymentRepo([
+      buildPayment({
+        orderId: order.id,
+        status: PaymentStatus.PROCESSING,
+        stripePaymentIntentId: 'pi_mail',
+      }),
+    ]);
+    const email = makeEmailService();
+    const useCase = new PaymentUseCase(
+      makePaymentService(),
+      paymentRepo,
+      orderRepo,
+      makeUserRepo(buildUser()),
+      email,
+      { clientUrl: 'http://localhost:3000' },
+    );
+
+    await useCase.confirmPayment('user-1', order.id);
+
+    expect(email.sendOrderConfirmation).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects confirming an order the user does not own', async () => {
     const orderRepo = makeOrderRepo();
     const order = await seedOrder(orderRepo);
-    const useCase = new PaymentUseCase(makePaymentService(), makePaymentRepo(), orderRepo);
+    const useCase = mk(makePaymentService(), makePaymentRepo(), orderRepo);
     await expect(useCase.confirmPayment('intruder', order.id)).rejects.toMatchObject({
       statusCode: 403,
     });
@@ -123,7 +172,7 @@ describe('PaymentUseCase.handleWebhook', () => {
         data: { object: { id: 'pi_123' } },
       })),
     });
-    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+    const useCase = mk(service, paymentRepo, orderRepo);
 
     await useCase.handleWebhook(Buffer.from('{}'), 'sig');
     let updated = await orderRepo.findById(order.id);
@@ -145,7 +194,7 @@ describe('PaymentUseCase.handleWebhook', () => {
         throw new Error('bad signature');
       }),
     });
-    const useCase = new PaymentUseCase(service, makePaymentRepo(), makeOrderRepo());
+    const useCase = mk(service, makePaymentRepo(), makeOrderRepo());
     await expect(useCase.handleWebhook(Buffer.from('{}'), 'sig')).rejects.toMatchObject({
       statusCode: 400,
     });
@@ -154,7 +203,7 @@ describe('PaymentUseCase.handleWebhook', () => {
 
 describe('PaymentUseCase.refund', () => {
   it('forbids non-admins', async () => {
-    const useCase = new PaymentUseCase(makePaymentService(), makePaymentRepo(), makeOrderRepo());
+    const useCase = mk(makePaymentService(), makePaymentRepo(), makeOrderRepo());
     await expect(useCase.refund(UserRole.USER, { paymentId: 'pay-1' })).rejects.toMatchObject({
       statusCode: 403,
     });
@@ -167,7 +216,7 @@ describe('PaymentUseCase.refund', () => {
       buildPayment({ id: 'pay-1', orderId: order.id, amount: 50, status: PaymentStatus.SUCCEEDED }),
     ]);
     const service = makePaymentService();
-    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+    const useCase = mk(service, paymentRepo, orderRepo);
 
     const result = await useCase.refund(UserRole.ADMIN, { paymentId: 'pay-1' });
     expect(result.refundedAmount).toBe(50);
