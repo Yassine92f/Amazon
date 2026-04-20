@@ -1,5 +1,8 @@
 'use client';
 
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { t } from '../../lib/i18n';
+
 interface Props {
   page: number;
   totalPages: number;
@@ -18,9 +21,9 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
         disabled={page <= 1}
         onClick={() => onChange(page - 1)}
         className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-white text-text hover:bg-gray-50 disabled:opacity-40"
-        aria-label="Previous"
+        aria-label={t.common.previous}
       >
-        ‹
+        <ChevronLeft className="h-4 w-4" aria-hidden />
       </button>
       {pages.map((p, i) =>
         p === '…' ? (
@@ -47,9 +50,9 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
         disabled={page >= totalPages}
         onClick={() => onChange(page + 1)}
         className="flex h-9 w-9 items-center justify-center rounded-md border border-border bg-white text-text hover:bg-gray-50 disabled:opacity-40"
-        aria-label="Next"
+        aria-label={t.common.next}
       >
-        ›
+        <ChevronRight className="h-4 w-4" aria-hidden />
       </button>
     </div>
   );

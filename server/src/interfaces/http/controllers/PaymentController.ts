@@ -16,6 +16,16 @@ export class PaymentController {
     }
   };
 
+  confirm = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req as AuthRequest;
+      const result = await this.paymentUseCase.confirmPayment(userId, req.body.orderId);
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
   // Stripe webhook — receives the raw request body (configured in app.ts) and the
   // stripe-signature header. No auth: authenticity is proven by the signature.
   webhook = async (req: Request, res: Response, next: NextFunction) => {

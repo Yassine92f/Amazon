@@ -65,7 +65,7 @@ export default function CartDrawer() {
               <button
                 type="button"
                 onClick={closeDrawer}
-                aria-label="Fermer"
+                aria-label={t.cart.close}
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-50 hover:text-brand-600"
               >
                 <X className="h-5 w-5" />
@@ -156,7 +156,7 @@ export default function CartDrawer() {
                                   onClick={() =>
                                     setQuantity(it.productId, it.variantId, it.quantity - 1)
                                   }
-                                  aria-label="−"
+                                  aria-label={t.cart.decrease}
                                   className="flex h-7 w-7 items-center justify-center text-text disabled:opacity-30"
                                 >
                                   <Minus className="h-3.5 w-3.5" />
@@ -170,7 +170,7 @@ export default function CartDrawer() {
                                   onClick={() =>
                                     setQuantity(it.productId, it.variantId, it.quantity + 1)
                                   }
-                                  aria-label="+"
+                                  aria-label={t.cart.increase}
                                   className="flex h-7 w-7 items-center justify-center text-text disabled:opacity-30"
                                 >
                                   <Plus className="h-3.5 w-3.5" />

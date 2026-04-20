@@ -309,6 +309,7 @@ export function makePaymentRepo(payments: PaymentEntity[] = []): IPaymentReposit
 export function makePaymentService(overrides: Partial<IPaymentService> = {}): IPaymentService {
   return {
     createPaymentIntent: jest.fn(async () => ({ id: 'pi_123', clientSecret: 'secret_123' })),
+    retrievePaymentIntent: jest.fn(async (id: string) => ({ id, status: 'succeeded' })),
     refund: jest.fn(async (_pi: string, amount?: number) => ({
       id: 're_1',
       status: 'succeeded',

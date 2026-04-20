@@ -13,8 +13,9 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Abracadabra — Your Marketplace',
-  description: 'Discover deals on electronics, fashion, home and more. Free shipping over €29.',
+  title: 'Abracadabra — Votre marketplace',
+  description:
+    'Des millions de produits high-tech, mode, maison et plus, proposés par des vendeurs vérifiés. Livraison offerte dès 29 €.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

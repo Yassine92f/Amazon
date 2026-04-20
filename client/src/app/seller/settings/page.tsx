@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import { ExternalLink } from 'lucide-react';
 import { getMyShop, updateMyShop, type SellerDto } from '../../../lib/catalog';
 import { t } from '../../../lib/i18n';
 
@@ -74,9 +75,10 @@ export default function SellerSettingsPage() {
         {shop && (
           <Link
             href={`/sellers/${shop.shopSlug}`}
-            className="text-sm font-semibold text-brand-600 hover:text-brand-700"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600 hover:text-brand-700"
           >
             {t.seller.shopSettings.viewPublic}
+            <ExternalLink className="h-4 w-4" aria-hidden />
           </Link>
         )}
       </div>
