@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { api } from '../../lib/api';
 import { GuestRoute } from '../../components/GuestRoute';
+import { t } from '../../lib/i18n';
 
 function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ function ForgotPasswordForm() {
       await api.post('/auth/forgot-password', { email });
       setSent(true);
     } catch {
-      setError('Une erreur est survenue. Veuillez reessayer.');
+      setError(t.auth.forgot.genericError);
     }
     setLoading(false);
   };
@@ -79,27 +80,27 @@ function ForgotPasswordForm() {
                 </svg>
               </div>
               <h1 className="mb-2 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                Email envoye
+                {t.auth.forgot.sentTitle}
               </h1>
               <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Si un compte existe avec l&apos;email <strong>{email}</strong>, vous recevrez un
-                lien de reinitialisation.
+                {t.auth.forgot.sentDescPrefix} <strong>{email}</strong>
+                {t.auth.forgot.sentDescSuffix}
               </p>
               <Link
                 href="/login"
                 className="inline-block rounded-lg px-6 py-2.5 text-sm font-semibold text-white"
                 style={{ backgroundColor: 'var(--color-brand-500)' }}
               >
-                Retour a la connexion
+                {t.auth.forgot.backToLogin}
               </Link>
             </div>
           ) : (
             <>
               <h1 className="mb-2 text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-                Mot de passe oublie
+                {t.auth.forgot.title}
               </h1>
               <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                Saisissez votre email et nous vous enverrons un lien de reinitialisation
+                {t.auth.forgot.subtitle}
               </p>
 
               {error && (
@@ -121,14 +122,14 @@ function ForgotPasswordForm() {
                     className="mb-1 block text-sm font-medium"
                     style={{ color: 'var(--color-text)' }}
                   >
-                    Email
+                    {t.auth.emailLabel}
                   </label>
                   <input
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vous@exemple.com"
+                    placeholder={t.auth.emailPlaceholder}
                     className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
                     style={{
                       border: '1px solid var(--color-border)',
@@ -148,7 +149,7 @@ function ForgotPasswordForm() {
                   className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
                   style={{ backgroundColor: 'var(--color-brand-500)' }}
                 >
-                  {loading ? 'Envoi...' : 'Envoyer le lien'}
+                  {loading ? t.auth.forgot.submitting : t.auth.forgot.submit}
                 </motion.button>
               </form>
 
@@ -158,7 +159,7 @@ function ForgotPasswordForm() {
                   className="font-semibold transition-colors hover:underline"
                   style={{ color: 'var(--color-brand-500)' }}
                 >
-                  Retour a la connexion
+                  {t.auth.forgot.backToLogin}
                 </Link>
               </p>
             </>

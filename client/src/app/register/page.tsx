@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { useAuthStore } from '../../store';
 import { GuestRoute } from '../../components/GuestRoute';
+import { t } from '../../lib/i18n';
 
 function RegisterForm() {
   const router = useRouter();
@@ -22,11 +23,11 @@ function RegisterForm() {
     setLocalError('');
 
     if (password !== confirmPassword) {
-      setLocalError('Les mots de passe ne correspondent pas');
+      setLocalError(t.auth.passwordMismatch);
       return;
     }
     if (password.length < 8) {
-      setLocalError('Le mot de passe doit contenir au moins 8 caractères');
+      setLocalError(t.auth.minChars(8));
       return;
     }
 
@@ -79,10 +80,10 @@ function RegisterForm() {
           }}
         >
           <h1 className="mb-2 text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-            Créer un compte
+            {t.auth.register.title}
           </h1>
           <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Rejoignez Abracadabra et commencez à acheter
+            {t.auth.register.subtitle}
           </p>
 
           {displayError && (
@@ -105,7 +106,7 @@ function RegisterForm() {
                   className="mb-1 block text-sm font-medium"
                   style={{ color: 'var(--color-text)' }}
                 >
-                  Prénom
+                  {t.auth.register.firstName}
                 </label>
                 <input
                   type="text"
@@ -115,7 +116,7 @@ function RegisterForm() {
                     setFirstName(e.target.value);
                     clearAll();
                   }}
-                  placeholder="Yassine"
+                  placeholder={t.auth.register.firstNamePlaceholder}
                   className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
                   style={{
                     border: '1px solid var(--color-border)',
@@ -131,7 +132,7 @@ function RegisterForm() {
                   className="mb-1 block text-sm font-medium"
                   style={{ color: 'var(--color-text)' }}
                 >
-                  Nom
+                  {t.auth.register.lastName}
                 </label>
                 <input
                   type="text"
@@ -141,7 +142,7 @@ function RegisterForm() {
                     setLastName(e.target.value);
                     clearAll();
                   }}
-                  placeholder="Fathi"
+                  placeholder={t.auth.register.lastNamePlaceholder}
                   className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
                   style={{
                     border: '1px solid var(--color-border)',
@@ -159,7 +160,7 @@ function RegisterForm() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text)' }}
               >
-                Email
+                {t.auth.emailLabel}
               </label>
               <input
                 type="email"
@@ -169,7 +170,7 @@ function RegisterForm() {
                   setEmail(e.target.value);
                   clearAll();
                 }}
-                placeholder="vous@exemple.com"
+                placeholder={t.auth.emailPlaceholder}
                 className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
                 style={{
                   border: '1px solid var(--color-border)',
@@ -186,7 +187,7 @@ function RegisterForm() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text)' }}
               >
-                Mot de passe
+                {t.auth.passwordLabel}
               </label>
               <input
                 type="password"
@@ -196,7 +197,7 @@ function RegisterForm() {
                   setPassword(e.target.value);
                   clearAll();
                 }}
-                placeholder="Minimum 8 caractères"
+                placeholder={t.auth.register.passwordPlaceholder}
                 className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
                 style={{
                   border: '1px solid var(--color-border)',
@@ -213,7 +214,7 @@ function RegisterForm() {
                 className="mb-1 block text-sm font-medium"
                 style={{ color: 'var(--color-text)' }}
               >
-                Confirmer le mot de passe
+                {t.auth.register.confirmPassword}
               </label>
               <input
                 type="password"
@@ -223,7 +224,7 @@ function RegisterForm() {
                   setConfirmPassword(e.target.value);
                   clearAll();
                 }}
-                placeholder="Retapez votre mot de passe"
+                placeholder={t.auth.register.confirmPlaceholder}
                 className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
                 style={{
                   border: '1px solid var(--color-border)',
@@ -243,18 +244,18 @@ function RegisterForm() {
               className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
               style={{ backgroundColor: 'var(--color-brand-500)' }}
             >
-              {isLoading ? 'Création...' : 'Créer mon compte'}
+              {isLoading ? t.auth.register.submitting : t.auth.register.submit}
             </motion.button>
           </form>
 
           <p className="mt-6 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Deja un compte ?{' '}
+            {t.auth.register.hasAccount}{' '}
             <Link
               href="/login"
               className="font-semibold transition-colors hover:underline"
               style={{ color: 'var(--color-brand-500)' }}
             >
-              Se connecter
+              {t.auth.register.signIn}
             </Link>
           </p>
         </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'motion/react';
 import { useAuthStore } from '../../store';
 import { GuestRoute } from '../../components/GuestRoute';
+import { t } from '../../lib/i18n';
 
 function LoginForm() {
   const router = useRouter();
@@ -35,10 +36,10 @@ function LoginForm() {
       }}
     >
       <h1 className="mb-2 text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-        Connexion
+        {t.auth.login.title}
       </h1>
       <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-        Connectez-vous à votre compte Abracadabra
+        {t.auth.login.subtitle}
       </p>
 
       {error && (
@@ -57,7 +58,7 @@ function LoginForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-            Email
+            {t.auth.emailLabel}
           </label>
           <input
             type="email"
@@ -67,7 +68,7 @@ function LoginForm() {
               setEmail(e.target.value);
               clearError();
             }}
-            placeholder="vous@exemple.com"
+            placeholder={t.auth.emailPlaceholder}
             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
             style={{
               border: '1px solid var(--color-border)',
@@ -82,14 +83,14 @@ function LoginForm() {
         <div>
           <div className="mb-1 flex items-center justify-between">
             <label className="block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-              Mot de passe
+              {t.auth.passwordLabel}
             </label>
             <Link
               href="/forgot-password"
               className="text-xs font-medium transition-colors hover:underline"
               style={{ color: 'var(--color-brand-500)' }}
             >
-              Mot de passe oublie ?
+              {t.auth.login.forgotPassword}
             </Link>
           </div>
           <input
@@ -100,7 +101,7 @@ function LoginForm() {
               setPassword(e.target.value);
               clearError();
             }}
-            placeholder="Votre mot de passe"
+            placeholder={t.auth.login.passwordPlaceholder}
             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
             style={{
               border: '1px solid var(--color-border)',
@@ -120,18 +121,18 @@ function LoginForm() {
           className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
           style={{ backgroundColor: 'var(--color-brand-500)' }}
         >
-          {isLoading ? 'Connexion...' : 'Se connecter'}
+          {isLoading ? t.auth.login.submitting : t.auth.login.submit}
         </motion.button>
       </form>
 
       <p className="mt-6 text-center text-sm" style={{ color: 'var(--color-text-muted)' }}>
-        Pas encore de compte ?{' '}
+        {t.auth.login.noAccount}{' '}
         <Link
           href="/register"
           className="font-semibold transition-colors hover:underline"
           style={{ color: 'var(--color-brand-500)' }}
         >
-          Creer un compte
+          {t.auth.login.createAccount}
         </Link>
       </p>
     </div>
