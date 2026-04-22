@@ -161,6 +161,7 @@ function makeSellerRepo(initial?: SellerEntity): ISellerRepository {
     updateByUserId: jest.fn(),
     setVerified: jest.fn(),
     findMany: jest.fn(async () => ({ sellers: initial ? [initial] : [], total: initial ? 1 : 0 })),
+    incrementSales: jest.fn(async () => undefined),
   };
 }
 

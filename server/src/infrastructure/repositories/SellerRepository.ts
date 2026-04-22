@@ -51,6 +51,13 @@ export class SellerRepository implements ISellerRepository {
     return doc ? this.toEntity(doc) : null;
   }
 
+  async incrementSales(sellerId: string, salesDelta: number, revenueDelta: number): Promise<void> {
+    await SellerModel.updateOne(
+      { _id: sellerId },
+      { $inc: { totalSales: salesDelta, totalRevenue: revenueDelta } },
+    );
+  }
+
   async findMany(params: FindSellersParams): Promise<{ sellers: SellerEntity[]; total: number }> {
     const filter: Record<string, unknown> = {};
     if (params.isVerified !== undefined) filter.isVerified = params.isVerified;

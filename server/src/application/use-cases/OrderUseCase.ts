@@ -63,6 +63,8 @@ export class OrderUseCase {
 
     // Validate every line against live product data and snapshot name/price.
     const orderItems: OrderItemEntity[] = [];
+    // Per-seller sales/revenue accumulated across the order's lines.
+    const sellerTotals = new Map<string, { sales: number; revenue: number }>();
     for (const line of input.items) {
       if (line.quantity < 1) throw new OrderError(400, 'Quantity must be at least 1');
       const product = await this.productRepo.findById(line.productId);
@@ -75,6 +77,11 @@ export class OrderUseCase {
         throw new OrderError(409, `Insufficient stock for ${product.name} — ${variant.name}`);
       }
       const unitPrice = variant.price;
+      const lineTotal = Math.round(unitPrice * line.quantity * 100) / 100;
+      const agg = sellerTotals.get(product.sellerId) ?? { sales: 0, revenue: 0 };
+      agg.sales += line.quantity;
+      agg.revenue += lineTotal;
+      sellerTotals.set(product.sellerId, agg);
       orderItems.push({
         productId: product.id,
         variantId: variant.id,
@@ -82,7 +89,7 @@ export class OrderUseCase {
         variantName: variant.name,
         quantity: line.quantity,
         unitPrice,
-        totalPrice: Math.round(unitPrice * line.quantity * 100) / 100,
+        totalPrice: lineTotal,
       });
     }
 
@@ -155,6 +162,13 @@ export class OrderUseCase {
     // Best-effort post-creation side effects.
     for (const it of orderItems) {
       await this.productRepo.incrementTotalSold(it.productId, it.quantity);
+    }
+    for (const [sellerId, agg] of sellerTotals) {
+      await this.sellerRepo.incrementSales(
+        sellerId,
+        agg.sales,
+        Math.round(agg.revenue * 100) / 100,
+      );
     }
     if (couponId) await this.couponUseCase.markUsed(couponId, userId, order.id);
     await this.cartRepo.clear({ type: 'user', id: userId });
