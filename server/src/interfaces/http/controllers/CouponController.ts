@@ -1,13 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { CouponUseCase, CouponError } from '../../../application/use-cases/CouponUseCase';
 import { AppError } from '../middlewares/errorHandler';
+import { AuthRequest } from '../middlewares/auth';
 
 export class CouponController {
   constructor(private couponUseCase: CouponUseCase) {}
 
   validate = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await this.couponUseCase.validate(req.body.code, req.body.subtotal);
+      const { userId } = req as AuthRequest;
+      const result = await this.couponUseCase.validate(req.body.code, req.body.subtotal, userId);
       res.json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));

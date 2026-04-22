@@ -11,12 +11,12 @@ export interface CouponEvaluation {
 export class CouponUseCase {
   constructor(private couponRepo: ICouponRepository) {}
 
-  async validate(code: string, subtotal: number): Promise<CouponValidation> {
-    const { validation } = await this.evaluate(code, subtotal);
+  async validate(code: string, subtotal: number, userId?: string): Promise<CouponValidation> {
+    const { validation } = await this.evaluate(code, subtotal, userId);
     return validation;
   }
 
-  async evaluate(code: string, subtotal: number): Promise<CouponEvaluation> {
+  async evaluate(code: string, subtotal: number, userId?: string): Promise<CouponEvaluation> {
     const normalized = code.toUpperCase().trim();
     const invalid = (message: string): CouponEvaluation => ({
       coupon: null,
@@ -42,6 +42,12 @@ export class CouponUseCase {
     if (coupon.minOrderAmount !== undefined && subtotal < coupon.minOrderAmount) {
       return invalid(`Montant minimum de ${coupon.minOrderAmount}€ requis`);
     }
+    if (coupon.perUserLimit !== undefined && userId) {
+      const redemptions = await this.couponRepo.countUserRedemptions(coupon.id, userId);
+      if (redemptions >= coupon.perUserLimit) {
+        return invalid('Vous avez déjà utilisé ce code promo');
+      }
+    }
 
     const discount = this.computeDiscount(coupon, subtotal);
     return {
@@ -57,8 +63,11 @@ export class CouponUseCase {
     };
   }
 
-  async markUsed(couponId: string): Promise<void> {
+  async markUsed(couponId: string, userId?: string, orderId?: string): Promise<void> {
     await this.couponRepo.incrementUsage(couponId);
+    if (userId && orderId) {
+      await this.couponRepo.recordRedemption(couponId, userId, orderId);
+    }
   }
 
   private computeDiscount(coupon: CouponEntity, subtotal: number): number {

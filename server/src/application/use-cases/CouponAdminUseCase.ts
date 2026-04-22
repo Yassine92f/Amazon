@@ -11,6 +11,7 @@ export interface CouponDto {
   maxDiscount?: number;
   expiresAt?: string;
   usageLimit?: number;
+  perUserLimit?: number;
   usedCount: number;
   isActive: boolean;
   createdAt: string;
@@ -25,6 +26,7 @@ export interface CreateCouponInput {
   maxDiscount?: number;
   expiresAt?: string;
   usageLimit?: number;
+  perUserLimit?: number;
   isActive?: boolean;
 }
 
@@ -61,6 +63,7 @@ export class CouponAdminUseCase {
       maxDiscount: input.maxDiscount,
       expiresAt: this.parseDate(input.expiresAt),
       usageLimit: input.usageLimit,
+      perUserLimit: input.perUserLimit,
       isActive: input.isActive ?? true,
     });
     return this.toDto(coupon);
@@ -82,6 +85,7 @@ export class CouponAdminUseCase {
       maxDiscount: input.maxDiscount,
       expiresAt: input.expiresAt === undefined ? undefined : this.parseDate(input.expiresAt),
       usageLimit: input.usageLimit,
+      perUserLimit: input.perUserLimit,
       isActive: input.isActive,
     });
     if (!updated) throw new CouponAdminError(404, 'Coupon introuvable');
@@ -118,6 +122,7 @@ export class CouponAdminUseCase {
       maxDiscount: c.maxDiscount,
       expiresAt: c.expiresAt?.toISOString(),
       usageLimit: c.usageLimit,
+      perUserLimit: c.perUserLimit,
       usedCount: c.usedCount,
       isActive: c.isActive,
       createdAt: c.createdAt.toISOString(),

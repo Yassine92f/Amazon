@@ -187,6 +187,8 @@ export function makeCouponRepo(coupons: CouponEntity[]): ICouponRepository {
   return {
     findByCode: jest.fn(async (code: string) => map.get(code.toUpperCase().trim()) ?? null),
     incrementUsage: jest.fn(async () => undefined),
+    countUserRedemptions: jest.fn(async () => 0),
+    recordRedemption: jest.fn(async () => undefined),
     create: jest.fn(),
     findById: jest.fn(),
     findMany: jest.fn(async () => ({ coupons: [...map.values()], total: map.size })),
