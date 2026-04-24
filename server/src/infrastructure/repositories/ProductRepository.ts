@@ -96,6 +96,11 @@ export class ProductRepository implements IProductRepository {
     await ProductModel.updateOne({ _id: productId }, { $inc: { totalSold: quantity } });
   }
 
+  async updateRating(productId: string, rating: number, reviewCount: number): Promise<void> {
+    if (!mongoose.isValidObjectId(productId)) return;
+    await ProductModel.updateOne({ _id: productId }, { $set: { rating, reviewCount } });
+  }
+
   // Keep the denormalized `inStock` flag in sync after a stock mutation (the
   // pre('save') hook does not run on updateOne, so recompute via a pipeline update).
   private async recomputeInStock(productId: string): Promise<void> {

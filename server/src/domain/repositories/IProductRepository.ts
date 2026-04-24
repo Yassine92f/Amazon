@@ -84,4 +84,6 @@ export interface IProductRepository {
   incrementVariantStock(productId: string, variantId: string, quantity: number): Promise<void>;
   // Increment the denormalized totalSold counter when an order is placed.
   incrementTotalSold(productId: string, quantity: number): Promise<void>;
+  // Sync the denormalized rating + reviewCount after a review is added.
+  updateRating(productId: string, rating: number, reviewCount: number): Promise<void>;
 }
