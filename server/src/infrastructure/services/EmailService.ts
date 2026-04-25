@@ -68,7 +68,11 @@ export class EmailService implements IEmailService {
   private async getTransporter(): Promise<Transporter> {
     if (this.initialized && this.transporter) return this.transporter;
 
-    if (config.env === 'production' || config.email.user) {
+    if (config.env === 'test') {
+      // Serialize messages to JSON instead of opening a network connection so
+      // tests stay deterministic and offline.
+      this.transporter = nodemailer.createTransport({ jsonTransport: true });
+    } else if (config.env === 'production' || config.email.user) {
       this.transporter = nodemailer.createTransport({
         host: config.email.host,
         port: config.email.port,
