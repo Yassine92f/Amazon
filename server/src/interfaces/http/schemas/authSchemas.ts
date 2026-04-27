@@ -31,7 +31,10 @@ export const loginSchema = z.object({
 });
 
 export const refreshSchema = z.object({
-  refreshToken: z.string().min(1, 'Refresh token is required'),
+  // Optional in the body: the refresh token is normally carried by the httpOnly
+  // cookie. The body remains accepted for backward compatibility / non-browser
+  // clients.
+  refreshToken: z.string().min(1).optional(),
 });
 
 export const logoutSchema = z.object({

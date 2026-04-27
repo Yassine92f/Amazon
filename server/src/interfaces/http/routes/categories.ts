@@ -5,6 +5,7 @@ import { CategoryUseCase } from '../../../application/use-cases/CategoryUseCase'
 import { CategoryRepository } from '../../../infrastructure/repositories/CategoryRepository';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
+import { cacheResponse } from '../middlewares/cache';
 import { createCategorySchema, updateCategorySchema } from '../schemas/categorySchemas';
 
 const categoryRepository = new CategoryRepository();
@@ -13,10 +14,13 @@ const categoryController = new CategoryController(categoryUseCase);
 
 const router: IRouter = Router();
 
-// Public
-router.get('/', categoryController.list);
-router.get('/tree', categoryController.tree);
-router.get('/:slug', categoryController.getBySlug);
+// Categories are near-static; cache them for longer than products.
+const CATEGORY_CACHE_TTL = 300; // seconds
+
+// Public (cached in Redis)
+router.get('/', cacheResponse('categories', CATEGORY_CACHE_TTL), categoryController.list);
+router.get('/tree', cacheResponse('categories', CATEGORY_CACHE_TTL), categoryController.tree);
+router.get('/:slug', cacheResponse('categories', CATEGORY_CACHE_TTL), categoryController.getBySlug);
 
 // Admin
 router.post(
