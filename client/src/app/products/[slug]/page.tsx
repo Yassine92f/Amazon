@@ -12,6 +12,7 @@ import { useWishlistStore } from '../../../store/wishlist';
 import { useAuthStore } from '../../../store';
 import StarRating from '../../../components/StarRating';
 import ReviewsList from '../../../components/catalog/ReviewsList';
+import PriceHistoryChart from '../../../components/catalog/PriceHistoryChart';
 import CatalogProductCard from '../../../components/catalog/CatalogProductCard';
 import { t, formatPrice, formatNumber } from '../../../lib/i18n';
 import {
@@ -677,6 +678,15 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               ))}
             </dl>
           </section>
+        </div>
+
+        {/* ── Price transparency chart ── */}
+        <div className="mt-14">
+          <PriceHistoryChart
+            productId={product._id}
+            variantId={variant._id}
+            fallbackPrice={variant.price}
+          />
         </div>
 
         {/* ── Related products ── */}
