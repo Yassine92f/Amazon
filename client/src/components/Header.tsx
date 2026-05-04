@@ -75,12 +75,12 @@ export default function Header() {
           <Zap className="h-4 w-4 shrink-0 text-gold-300" aria-hidden />
           <span>{t.header.announcement}</span>
           <span className="text-brand-200">·</span>
-          <a
-            href="#"
+          <Link
+            href="/search"
             className="text-gold-300 underline underline-offset-2 hover:text-white transition-colors"
           >
             {t.header.announcementCta}
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -88,13 +88,8 @@ export default function Header() {
       <div className="border-b border-border bg-white">
         <div className="container-main flex items-center gap-4 py-3 md:gap-6">
           {/* Logo */}
-          <Link href="/" className="flex shrink-0 items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-lg font-extrabold text-white">
-              A
-            </span>
-            <span className="hidden sm:flex items-center">
-              <span className="text-xl font-extrabold text-brand-900">Abracadabra</span>
-            </span>
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Abracadabra">
+            <img src="/logo.svg" alt="Abracadabra" className="h-10 w-auto" />
           </Link>
 
           {/* Search Bar */}
