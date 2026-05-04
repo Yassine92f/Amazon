@@ -272,6 +272,32 @@ export const t = {
     outOfStock: 'Épuisé',
   },
 
+  recommendations: {
+    forYou: 'Recommandé pour vous',
+    forYouSubtitle: "D'après vos achats et les produits que vous avez consultés",
+    youMayAlsoLike: 'Vous aimerez aussi',
+    trendingTitle: 'Tendances du moment',
+    empty: 'Pas encore de recommandation — explorez le catalogue pour en débloquer.',
+    // Builds the explainable "why" chip shown on each recommended product.
+    reason: (code: string, label?: string): string => {
+      switch (code) {
+        case 'bought_together':
+          return label ? `Souvent acheté avec ${label}` : 'Souvent acheté ensemble';
+        case 'category_affinity':
+          return label ? `Parce que vous aimez ${label}` : 'Dans vos catégories favorites';
+        case 'brand_affinity':
+          return label ? `Vous appréciez ${label}` : 'Une marque que vous aimez';
+        case 'viewed_related':
+          return label ? `Inspiré de ${label}` : 'Inspiré de vos consultations';
+        case 'similar':
+          return label ? `Similaire à ${label}` : 'Produit similaire';
+        case 'trending':
+        default:
+          return 'Tendance du moment';
+      }
+    },
+  },
+
   reviews: {
     loading: 'Chargement des avis…',
     empty: 'Aucun avis pour le moment — soyez le premier à partager votre expérience.',
