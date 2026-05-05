@@ -29,7 +29,7 @@ export default function SellerDashboardPage() {
   const router = useRouter();
   const [shop, setShop] = useState<SellerDto | null>(null);
   const [products, setProducts] = useState<ProductSummaryDto[]>([]);
-  const [stats, setStats] = useState({ total: 0, active: 0, drafts: 0, outOfStock: 0 });
+  const [stats, setStats] = useState({ total: 0, outOfStock: 0 });
   const [orderStats, setOrderStats] = useState({ count: 0, revenue: 0, monthRevenue: 0 });
   const [loading, setLoading] = useState(true);
 
@@ -38,7 +38,7 @@ export default function SellerDashboardPage() {
     Promise.all([
       getMyShop().catch(() => null),
       listMyProducts({ page: 1, limit: 5 }).catch(() => null),
-      listMyProducts({ page: 1, limit: 1, isFeatured: undefined }).catch(() => null),
+      listMyProducts({ page: 1, limit: 100 }).catch(() => null),
       listSellerOrders({ limit: 100 }).catch(() => null),
     ]).then(([s, recent, full, orders]) => {
       if (cancelled) return;
@@ -51,8 +51,6 @@ export default function SellerDashboardPage() {
       const items = full?.items ?? recent?.items ?? [];
       setStats({
         total: full?.total ?? recent?.total ?? 0,
-        active: items.filter((p) => p.inStock).length,
-        drafts: 0,
         outOfStock: items.filter((p) => !p.inStock).length,
       });
       if (orders) {

@@ -12,11 +12,8 @@ export default function SellerTopBar() {
   return (
     <header className="border-b border-border bg-white">
       <div className="container-main flex items-center gap-4 py-3 md:gap-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-lg font-extrabold text-white">
-            A
-          </span>
-          <span className="hidden text-xl font-extrabold text-brand-900 sm:flex">Abracadabra</span>
+        <Link href="/" className="flex shrink-0 items-center" aria-label="Abracadabra">
+          <img src="/logo.svg" alt="Abracadabra" className="h-9 w-auto" />
         </Link>
         <span className="flex items-center gap-1.5 rounded-full bg-brand-100 px-3 py-1 text-xs font-bold text-brand-700">
           <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
