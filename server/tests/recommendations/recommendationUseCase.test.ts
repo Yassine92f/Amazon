@@ -244,4 +244,34 @@ describe('RecommendationUseCase', () => {
 
     expect(await useCase.getSimilarToProduct('missing', 8)).toEqual([]);
   });
+
+  it('backfills with trending so a thin profile still fills the rail', async () => {
+    // The buyer only ever touched p1 (audio); without backfill the personalized
+    // pool is nearly empty. Trending products should top the list up to `limit`.
+    const catalog = [
+      product({ id: 'p1', categoryId: 'cat-audio', totalSold: 5 }), // purchased (owned)
+      product({ id: 'p2', categoryId: 'cat-audio', totalSold: 10 }), // personalized candidate
+      product({ id: 't1', categoryId: 'cat-home', brand: 'X', tags: ['home'], totalSold: 900 }),
+      product({ id: 't2', categoryId: 'cat-home', brand: 'Y', tags: ['home'], totalSold: 800 }),
+    ];
+    const repos = makeRepos({
+      catalog,
+      userOrders: [order([{ productId: 'p1', productName: 'Casque' }])],
+    });
+    const useCase = new RecommendationUseCase(
+      repos.productRepo,
+      repos.orderRepo,
+      repos.viewRepo,
+      repos.sellerRepo,
+      repos.categoryRepo,
+    );
+
+    const recs = await useCase.getForUser('user-1', 3);
+    const ids = recs.map((r) => r._id);
+
+    expect(recs.length).toBe(3);
+    expect(ids).not.toContain('p1'); // owned product never recommended
+    expect(ids).toContain('t1'); // trending filler
+    expect(recs.some((r) => r.reasonCode === 'trending')).toBe(true);
+  });
 });

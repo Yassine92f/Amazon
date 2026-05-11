@@ -171,9 +171,22 @@ export class RecommendationUseCase {
     const ranked = this.blendAndRank(scored, limit);
 
     // 5. Attach an explainable reason and map to the output DTO.
-    return this.toDtos(ranked, (c) =>
+    const dtos = await this.toDtos(ranked, (c) =>
       this.reasonForUser(c, { categoryScore, brandScore, coCount, coWith }),
     );
+
+    // 6. Backfill with trending products so the rail is always worth showing,
+    //    even when a narrow taste profile yields few personalized candidates.
+    if (dtos.length < limit) {
+      const exclude = new Set<string>([...signals.keys(), ...dtos.map((d) => d._id)]);
+      const fillers = await this.trending(limit + exclude.size);
+      for (const item of fillers) {
+        if (dtos.length >= limit) break;
+        if (!exclude.has(item._id)) dtos.push(item);
+      }
+    }
+
+    return dtos;
   }
 
   /**
