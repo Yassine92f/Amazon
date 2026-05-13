@@ -67,6 +67,9 @@ export interface ProductSearchResult {
 
 export interface IProductRepository {
   findById(id: string): Promise<ProductEntity | null>;
+  // Fetch several products at once (order not guaranteed). Used by features that
+  // resolve a set of ids, e.g. the recommendation engine.
+  findByIds(ids: string[]): Promise<ProductEntity[]>;
   findBySlug(slug: string): Promise<ProductEntity | null>;
   slugExists(slug: string): Promise<boolean>;
   create(data: CreateProductData): Promise<ProductEntity>;

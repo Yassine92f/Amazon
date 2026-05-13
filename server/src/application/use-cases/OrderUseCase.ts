@@ -14,6 +14,7 @@ import { IProductRepository } from '../../domain/repositories/IProductRepository
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
 import { ISellerRepository } from '../../domain/repositories/ISellerRepository';
 import { ICartRepository } from '../../domain/repositories/ICartRepository';
+import { IOrderNotifier } from '../../domain/services/IOrderNotifier';
 import { OrderEntity, OrderItemEntity } from '../../domain/entities/Order';
 import { CouponUseCase } from './CouponUseCase';
 
@@ -50,6 +51,8 @@ export class OrderUseCase {
     private cartRepo: ICartRepository,
     private couponUseCase: CouponUseCase,
     private sellerRepo: ISellerRepository,
+    // Optional so unit tests can omit it; the HTTP route wires NotificationUseCase.
+    private notifier?: IOrderNotifier,
   ) {}
 
   async createOrder(userId: string, input: CreateOrderRequest): Promise<Order> {
@@ -276,6 +279,16 @@ export class OrderUseCase {
 
     const updated = await this.orderRepo.updateById(orderId, update);
     if (!updated) throw new OrderError(500, 'Failed to update order');
+
+    // Notify the buyer in real time (persisted notification + live event).
+    await this.notifier?.orderStatusChanged({
+      userId: updated.userId,
+      orderId: updated.id,
+      orderNumber: updated.orderNumber,
+      previousStatus: order.status,
+      newStatus: status,
+    });
+
     return this.toDto(updated);
   }
 

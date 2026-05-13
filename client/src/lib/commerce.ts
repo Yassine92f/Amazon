@@ -18,7 +18,7 @@ import {
   SellerOrderDto,
 } from '@ecommerce/shared';
 import { api } from './api';
-import type { PaginatedResponse } from './catalog';
+import type { PaginatedResponse, ProductSummaryDto } from './catalog';
 
 /* ── Cart ─────────────────────────────────────────────────────────────── */
 
@@ -203,4 +203,45 @@ export async function createReview(input: CreateReviewInput): Promise<void> {
 export async function getReviewedProductIds(orderId: string): Promise<string[]> {
   const { data } = await api.get('/reviews/mine', { params: { orderId } });
   return data.data.productIds;
+}
+
+/* ── Recommendations ──────────────────────────────────────────────────── */
+
+export type RecommendationReason =
+  | 'bought_together'
+  | 'category_affinity'
+  | 'brand_affinity'
+  | 'viewed_related'
+  | 'similar'
+  | 'trending';
+
+/** A recommended product: a catalog summary plus an explainable reason. */
+export interface RecommendationItem extends ProductSummaryDto {
+  reasonCode: RecommendationReason;
+  reasonLabel?: string;
+  score: number;
+}
+
+/** Personalized recommendations for the logged-in user. */
+export async function getRecommendations(limit = 10): Promise<RecommendationItem[]> {
+  const { data } = await api.get('/recommendations', { params: { limit } });
+  return data.data;
+}
+
+/** "You may also like" for a product page (works for guests too). */
+export async function getSimilarProducts(
+  productId: string,
+  limit = 8,
+): Promise<RecommendationItem[]> {
+  const { data } = await api.get(`/recommendations/similar/${productId}`, { params: { limit } });
+  return data.data;
+}
+
+/** Record that the current user viewed a product (no-op when logged out). */
+export async function recordProductView(productId: string): Promise<void> {
+  try {
+    await api.post(`/recommendations/views/${productId}`);
+  } catch {
+    // A failed view-tracking call must never disrupt the page.
+  }
 }

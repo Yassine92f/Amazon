@@ -48,6 +48,24 @@ export function formatLongDate(iso: string): string {
   });
 }
 
+/** Formats an ISO date as a short time (e.g. `14:05`). */
+export function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' });
+}
+
+/** Compact relative time in French (e.g. `à l'instant`, `5 min`, `3 h`, `2 j`). */
+export function formatRelativeTime(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "à l'instant";
+  if (min < 60) return `${min} min`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `${hours} h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} j`;
+  return formatLongDate(iso);
+}
+
 /* ── Translation dictionary ──────────────────────────────────────── */
 
 export const t = {
@@ -55,7 +73,6 @@ export const t = {
     loading: 'Chargement…',
     backHome: "Retour à l'accueil",
     viewAll: 'Tout voir',
-    soon: 'Bientôt',
     currency: '€ EUR',
     language: 'Français',
     previous: 'Précédent',
@@ -74,6 +91,8 @@ export const t = {
     myProfile: 'Mon profil',
     myOrders: 'Mes commandes',
     myWishlist: 'Mes favoris',
+    notifications: 'Notifications',
+    messages: 'Messages',
     sellerHub: 'Espace vendeur',
     becomeSeller: 'Devenir vendeur',
     logout: 'Se déconnecter',
@@ -291,6 +310,32 @@ export const t = {
     outOfStock: 'Épuisé',
   },
 
+  recommendations: {
+    forYou: 'Recommandé pour vous',
+    forYouSubtitle: "D'après vos achats et les produits que vous avez consultés",
+    youMayAlsoLike: 'Vous aimerez aussi',
+    trendingTitle: 'Tendances du moment',
+    empty: 'Pas encore de recommandation — explorez le catalogue pour en débloquer.',
+    // Builds the explainable "why" chip shown on each recommended product.
+    reason: (code: string, label?: string): string => {
+      switch (code) {
+        case 'bought_together':
+          return label ? `Souvent acheté avec ${label}` : 'Souvent acheté ensemble';
+        case 'category_affinity':
+          return label ? `Parce que vous aimez ${label}` : 'Dans vos catégories favorites';
+        case 'brand_affinity':
+          return label ? `Vous appréciez ${label}` : 'Une marque que vous aimez';
+        case 'viewed_related':
+          return label ? `Inspiré de ${label}` : 'Inspiré de vos consultations';
+        case 'similar':
+          return label ? `Similaire à ${label}` : 'Produit similaire';
+        case 'trending':
+        default:
+          return 'Tendance du moment';
+      }
+    },
+  },
+
   reviews: {
     loading: 'Chargement des avis…',
     empty: 'Aucun avis pour le moment — soyez le premier à partager votre expérience.',
@@ -468,7 +513,6 @@ export const t = {
       statMonth: 'Ce mois-ci',
       statOrders: 'Commandes',
       statProducts: 'Produits',
-      soon: 'Bientôt disponible',
       outOfStockHint: (n: string) => `${n} en rupture`,
       recent: 'Produits récents',
       viewAll: 'Tout voir',
@@ -811,6 +855,8 @@ export const t = {
     count: (n: number) => `${n} produit${n > 1 ? 's' : ''}`,
     addToCart: 'Ajouter au panier',
     remove: 'Retirer',
+    add: 'Ajouter aux favoris',
+    added: 'Dans vos favoris',
     loginRequired: 'Connectez-vous pour utiliser vos favoris',
     outOfStock: 'Indisponible',
     fromPrice: (price: string) => `À partir de ${price}`,
@@ -1106,6 +1152,37 @@ export const t = {
     success: 'Merci pour votre avis !',
     error: "Impossible de publier l'avis",
     reviewableHint: 'Vous pouvez noter les articles de cette commande livrée.',
+  },
+
+  // Notifications (header dropdown + `/notifications`)
+  notifications: {
+    title: 'Notifications',
+    empty: 'Aucune notification',
+    emptyDesc: 'Vous serez prévenu ici du suivi de vos commandes et de vos messages.',
+    markAll: 'Tout marquer comme lu',
+    viewAll: 'Voir toutes les notifications',
+    loading: 'Chargement…',
+  },
+
+  // Messaging (`/messages`)
+  messages: {
+    title: 'Messages',
+    subtitle: 'Vos échanges avec les vendeurs.',
+    empty: 'Aucune conversation',
+    emptyDesc: 'Contactez un vendeur depuis sa boutique pour démarrer une conversation.',
+    browseSellers: 'Parcourir les boutiques',
+    selectConversation: 'Sélectionnez une conversation',
+    selectConversationDesc: 'Choisissez une conversation à gauche pour lire et répondre.',
+    placeholder: 'Écrivez votre message…',
+    send: 'Envoyer',
+    threadEmpty: 'Démarrez la conversation en envoyant un message.',
+    loading: 'Chargement…',
+    you: 'Vous',
+    typing: 'écrit…',
+    contactSeller: 'Contacter le vendeur',
+    loginToContact: 'Connectez-vous pour contacter le vendeur',
+    sendError: "Le message n'a pas pu être envoyé",
+    back: 'Conversations',
   },
 } as const;
 
