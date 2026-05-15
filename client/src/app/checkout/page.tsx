@@ -5,17 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Elements } from '@stripe/react-stripe-js';
-import {
-  MapPin,
-  Home,
-  Store,
-  Tag,
-  Check,
-  ShoppingBag,
-  Pencil,
-  Plus,
-  ArrowLeft,
-} from 'lucide-react';
+import { MapPin, Tag, Check, ShoppingBag, Pencil, Plus, ArrowLeft } from 'lucide-react';
 import Header from '../../components/Header';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import PaymentForm from '../../components/checkout/PaymentForm';
@@ -33,6 +23,15 @@ import {
 } from '../../lib/commerce';
 import { t, formatPrice } from '../../lib/i18n';
 import { DeliveryType, type Order, type CartItem, type CouponValidation } from '@ecommerce/shared';
+import EcoDeliverySelector from '../../components/checkout/EcoDeliverySelector';
+import {
+  EcoDeliveryOptionId,
+  recordEcoDeliveryChoice,
+  ecoOptionToDeliveryType,
+} from '../../lib/ecoDelivery';
+
+// €1 pledge → translated to euros once in the UI layer.
+const TREE_PLEDGE_EUR = 1;
 
 const stripePromise = getStripe();
 const hasStripeKey = !!process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY;
@@ -54,7 +53,14 @@ function CheckoutInner() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [addrLoading, setAddrLoading] = useState(true);
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
-  const [delivery, setDelivery] = useState<DeliveryType>(DeliveryType.HOME);
+  // The eco selector is now the single source of truth for the delivery
+  // mode. `delivery` is derived (and mirrored into a memo below for the
+  // shipping cost calculation).
+  const [ecoOption, setEcoOption] = useState<EcoDeliveryOptionId>(
+    EcoDeliveryOptionId.PICKUP_GROUPED,
+  );
+  const [donateTree, setDonateTree] = useState(false);
+  const delivery: DeliveryType = useMemo(() => ecoOptionToDeliveryType(ecoOption), [ecoOption]);
 
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<CouponValidation | null>(null);
@@ -91,7 +97,8 @@ function CheckoutInner() {
   );
   const discount = coupon?.valid ? coupon.discountedAmount : 0;
   const shipping = shippingFor(subtotal, delivery);
-  const total = Math.max(0, Math.round((subtotal + shipping - discount) * 100) / 100);
+  const treePledge = donateTree ? TREE_PLEDGE_EUR : 0;
+  const total = Math.max(0, Math.round((subtotal + shipping - discount + treePledge) * 100) / 100);
 
   const fetchAddresses = useCallback(async () => {
     setAddrLoading(true);
@@ -179,6 +186,11 @@ function CheckoutInner() {
         deliveryType: delivery,
         shippingAddressId: selectedAddressId,
         couponCode: coupon?.valid ? coupon.code : undefined,
+      });
+      // Lock in the eco-delivery choice. Best-effort: a failure here MUST NOT
+      // block the order — the metric is informational, not a payment input.
+      recordEcoDeliveryChoice(created._id, ecoOption, donateTree).catch(() => {
+        /* eco metric is non-blocking; failure is silently ignored */
       });
       const intent = await createPaymentIntent(created._id);
       setOrder(created);
@@ -410,58 +422,15 @@ function CheckoutInner() {
                 )}
               </section>
 
-              {/* Delivery */}
-              <section className="rounded-2xl border border-border bg-white p-5">
-                <h2 className="mb-4 text-base font-extrabold text-brand-900">
-                  {t.checkout.deliveryMethod}
-                </h2>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {[
-                    {
-                      type: DeliveryType.HOME,
-                      Icon: Home,
-                      label: t.checkout.deliveryHome,
-                      desc: t.checkout.deliveryHomeDesc,
-                    },
-                    {
-                      type: DeliveryType.PICKUP_POINT,
-                      Icon: Store,
-                      label: t.checkout.deliveryPickup,
-                      desc: t.checkout.deliveryPickupDesc,
-                    },
-                  ].map(({ type, Icon, label, desc }) => {
-                    const price = shippingFor(subtotal, type);
-                    return (
-                      <label
-                        key={type}
-                        className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-colors ${
-                          delivery === type
-                            ? 'border-brand-500 bg-brand-50'
-                            : 'border-border bg-white hover:border-brand-300'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="delivery"
-                          checked={delivery === type}
-                          onChange={() => setDelivery(type)}
-                          className="mt-1 accent-brand-500"
-                        />
-                        <div>
-                          <p className="flex items-center gap-1.5 text-sm font-semibold text-brand-900">
-                            <Icon className="h-4 w-4 text-brand-500" aria-hidden />
-                            {label}
-                          </p>
-                          <p className="text-xs text-muted">{desc}</p>
-                          <p className="mt-1 text-xs font-bold text-brand-600">
-                            {price === 0 ? t.cart.freeShipping : formatPrice(price)}
-                          </p>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </section>
+              {/* Delivery — unified eco-delivery selector. Each option carries
+                  its physical mode (home / pickup point) AND its CO2 budget. */}
+              <EcoDeliverySelector
+                value={ecoOption}
+                onChange={setEcoOption}
+                subtotal={subtotal}
+                donateTree={donateTree}
+                onDonateTreeChange={setDonateTree}
+              />
 
               {/* Coupon */}
               <section className="rounded-2xl border border-border bg-white p-5">
@@ -647,11 +616,20 @@ function CheckoutInner() {
                 <dd className="font-semibold">−{formatPrice(discount)}</dd>
               </div>
             )}
+            {donateTree && (
+              <div className="flex items-center justify-between text-green-700">
+                <dt className="flex items-center gap-1.5">🌳 {t.checkout.treePledge}</dt>
+                <dd className="font-semibold">+{formatPrice(treePledge)}</dd>
+              </div>
+            )}
             <div className="my-1 h-px w-full bg-border" />
             <div className="flex items-center justify-between">
               <dt className="font-bold text-brand-900">{t.checkout.total}</dt>
               <dd className="text-xl font-extrabold text-brand-900">{formatPrice(total)}</dd>
             </div>
+            {donateTree && (
+              <p className="mt-1 text-[11px] text-muted">{t.checkout.treePledgeNote}</p>
+            )}
           </dl>
 
           {step === 'details' && (

@@ -12,6 +12,7 @@ import couponsRouter from './coupons';
 import wishlistRouter from './wishlist';
 import paymentsRouter from './payments';
 import reviewsRouter from './reviews';
+import ecoDeliveryRouter from './ecoDelivery';
 import recommendationsRouter from './recommendations';
 import notificationsRouter from './notifications';
 import messagesRouter from './messages';
@@ -37,6 +38,9 @@ router.use('/coupons', couponsRouter);
 router.use('/wishlist', wishlistRouter);
 router.use('/payments', paymentsRouter);
 router.use('/reviews', reviewsRouter);
+
+// Transversal — eco-delivery (CO2 transparency at checkout).
+router.use('/eco-delivery', ecoDeliveryRouter);
 
 // Bonus — Recommendation engine
 router.use('/recommendations', recommendationsRouter);
