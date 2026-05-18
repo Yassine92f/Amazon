@@ -19,6 +19,8 @@ interface Props {
   onChange: (state: FilterState) => void;
   onReset: () => void;
   hideCategorySection?: boolean;
+  // Override the default desktop aside styling (e.g. full-width in a mobile drawer).
+  className?: string;
 }
 
 export default function FiltersSidebar({
@@ -27,9 +29,13 @@ export default function FiltersSidebar({
   onChange,
   onReset,
   hideCategorySection = false,
+  className,
 }: Props) {
   const [minP, setMinP] = useState(state.minPrice?.toString() ?? '');
   const [maxP, setMaxP] = useState(state.maxPrice?.toString() ?? '');
+
+  // Only show category facets that resolved to a real name (never a raw id).
+  const categoryFacets = facets.categories.filter((c) => Boolean(c.label));
 
   const toggleBrand = (brand: string) => {
     const next = state.brands.includes(brand)
@@ -48,7 +54,9 @@ export default function FiltersSidebar({
   const toggleStock = () => onChange({ ...state, inStock: !state.inStock });
 
   return (
-    <aside className="w-[260px] shrink-0 rounded-lg border border-border bg-white p-5">
+    <aside
+      className={className ?? 'w-[260px] shrink-0 rounded-lg border border-border bg-white p-5'}
+    >
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-base font-bold text-brand-900">{t.filters.title}</h2>
         <button
@@ -60,11 +68,11 @@ export default function FiltersSidebar({
         </button>
       </div>
 
-      {!hideCategorySection && facets.categories.length > 0 && (
+      {!hideCategorySection && categoryFacets.length > 0 && (
         <div className="mb-6">
           <h3 className="mb-2 text-[13px] font-bold text-brand-900">{t.filters.category}</h3>
           <ul className="flex flex-col gap-0.5">
-            {facets.categories.slice(0, 6).map((c) => (
+            {categoryFacets.slice(0, 6).map((c) => (
               <li key={c.value}>
                 <button
                   type="button"
@@ -75,7 +83,7 @@ export default function FiltersSidebar({
                       : 'text-text hover:bg-gray-50'
                   }`}
                 >
-                  <span>{c.label ?? c.value}</span>
+                  <span>{c.label}</span>
                   <span className="text-xs text-muted">{c.count}</span>
                 </button>
               </li>
@@ -107,7 +115,7 @@ export default function FiltersSidebar({
           />
         </div>
         <p className="text-[11px] text-muted">
-          €{facets.priceRange.min} — €{facets.priceRange.max}
+          €{facets.priceRange.min} à €{facets.priceRange.max}
         </p>
       </div>
 
