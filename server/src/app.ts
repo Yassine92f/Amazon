@@ -5,6 +5,7 @@ import { pinoHttp } from 'pino-http';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import routes from './interfaces/http/routes';
+import { UPLOADS_DIR } from './interfaces/http/routes/uploads';
 import { openapiSpec } from './interfaces/http/openapi';
 import { errorHandler } from './interfaces/http/middlewares/errorHandler';
 import { logger } from './infrastructure/logging/logger';
@@ -18,6 +19,15 @@ app.use(
   cors({
     origin: config.clientUrl,
     credentials: true,
+  }),
+);
+
+// Uploaded images, served with a relaxed CORP header so the client (different
+// origin in dev) can load them.
+app.use(
+  '/uploads',
+  express.static(UPLOADS_DIR, {
+    setHeaders: (res) => res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'),
   }),
 );
 
