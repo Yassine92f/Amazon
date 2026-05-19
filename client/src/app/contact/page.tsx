@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import InfoPage from '../../components/InfoPage';
 
-export const metadata: Metadata = { title: 'Contact & support — Abracadabra' };
+export const metadata: Metadata = { title: 'Contact & support · Abracadabra' };
 
 export default function ContactPage() {
   return (

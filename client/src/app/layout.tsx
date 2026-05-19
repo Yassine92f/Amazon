@@ -14,7 +14,7 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Abracadabra — Votre marketplace',
+  title: 'Abracadabra · Votre marketplace',
   description:
     'Des millions de produits high-tech, mode, maison et plus, proposés par des vendeurs vérifiés. Livraison offerte dès 29 €.',
 };
