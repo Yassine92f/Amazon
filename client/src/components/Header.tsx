@@ -472,11 +472,7 @@ export default function Header() {
                       {t.header.messages}
                     </MobileLink>
                     {user.role === UserRole.SELLER && (
-                      <MobileLink
-                        href="/seller"
-                        onClick={() => setMobileNav(false)}
-                        Icon={Store}
-                      >
+                      <MobileLink href="/seller" onClick={() => setMobileNav(false)} Icon={Store}>
                         {t.header.sellerHub}
                       </MobileLink>
                     )}

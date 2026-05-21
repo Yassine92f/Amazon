@@ -44,7 +44,9 @@ router.post('/', authenticate, upload.single('file'), (req, res, next) => {
 router.post('/multiple', authenticate, upload.array('files', 10), (req, res, next) => {
   const files = (req.files as Express.Multer.File[] | undefined) ?? [];
   if (files.length === 0) return next(new AppError(400, 'No files uploaded'));
-  res.status(201).json({ success: true, data: { urls: files.map((f) => fileUrl(req, f.filename)) } });
+  res
+    .status(201)
+    .json({ success: true, data: { urls: files.map((f) => fileUrl(req, f.filename)) } });
 });
 
 export default router;
