@@ -274,7 +274,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       </nav>
 
       <main className="container-main pb-16">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           {/* ── Gallery ── */}
           <div className="lg:sticky lg:top-6 lg:self-start">
             <div className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-white">
@@ -623,7 +623,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         </div>
 
         {/* ── Description + specifications ── */}
-        <div className="mt-14 grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <div className="mt-14 grid grid-cols-1 gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-start">
           <section>
             <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-brand-900">
               <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />

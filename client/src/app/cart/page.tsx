@@ -63,7 +63,7 @@ export default function CartPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
             {/* Items */}
             <div className="overflow-hidden rounded-2xl border border-border bg-white">
               <div className="flex items-center justify-between border-b border-border px-5 py-3">

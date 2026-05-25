@@ -196,7 +196,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
           {/* Basic info */}
           <section className="rounded-2xl border border-border bg-white p-6">
@@ -234,7 +234,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
                 className="w-full resize-y rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
               />
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="mb-1 block text-sm font-semibold text-text">
                   {t.seller.form.brand}
@@ -476,7 +476,7 @@ function VariantRow({
           </button>
         )}
       </div>
-      <div className="mb-3 grid gap-3 sm:grid-cols-2">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
         <input
           type="text"
           required
@@ -494,7 +494,7 @@ function VariantRow({
           className="rounded-md border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </div>
-      <div className="mb-3 grid gap-3 sm:grid-cols-3">
+      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <input
           type="number"
           required
@@ -551,14 +551,14 @@ function VariantRow({
             value={attrKey}
             onChange={(e) => setAttrKey(e.target.value)}
             placeholder={t.seller.form.attrKey}
-            className="w-32 rounded-md border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-brand-500"
+            className="min-w-0 flex-1 rounded-md border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-brand-500"
           />
           <input
             type="text"
             value={attrVal}
             onChange={(e) => setAttrVal(e.target.value)}
             placeholder={t.seller.form.attrValue}
-            className="w-32 rounded-md border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-brand-500"
+            className="min-w-0 flex-1 rounded-md border border-border bg-white px-2 py-1.5 text-xs outline-none focus:border-brand-500"
           />
           <button
             type="button"
