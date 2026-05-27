@@ -35,6 +35,9 @@ export const config = {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
     from: process.env.EMAIL_FROM || 'noreply@ecommerce.local',
+    // 'smtp' to force the real SMTP transport in development; otherwise dev uses
+    // Ethereal (preview links). Production always uses real SMTP.
+    transport: process.env.EMAIL_TRANSPORT || '',
   },
 
   clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',

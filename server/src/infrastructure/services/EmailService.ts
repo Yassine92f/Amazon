@@ -21,7 +21,7 @@ export class EmailService implements IEmailService {
   }
 
   async sendWelcome(to: string, firstName: string, verificationUrl: string): Promise<void> {
-    const subject = 'Bienvenue sur Abracadabra — vérifiez votre email';
+    const subject = 'Bienvenue sur Abracadabra : vérifiez votre email';
     const html = welcomeTemplate(firstName, verificationUrl);
     await this.send(to, subject, html);
   }
@@ -68,11 +68,18 @@ export class EmailService implements IEmailService {
   private async getTransporter(): Promise<Transporter> {
     if (this.initialized && this.transporter) return this.transporter;
 
+    // Use the real SMTP transport in production, or in development only when
+    // explicitly opted in (EMAIL_TRANSPORT=smtp). Otherwise development falls
+    // back to Ethereal, which delivers nowhere but logs a preview URL — ideal
+    // for demoing the email templates without a working mailbox.
+    const useRealSmtp =
+      config.env === 'production' || (config.email.transport === 'smtp' && !!config.email.user);
+
     if (config.env === 'test') {
       // Serialize messages to JSON instead of opening a network connection so
       // tests stay deterministic and offline.
       this.transporter = nodemailer.createTransport({ jsonTransport: true });
-    } else if (config.env === 'production' || config.email.user) {
+    } else if (useRealSmtp) {
       this.transporter = nodemailer.createTransport({
         host: config.email.host,
         port: config.email.port,
@@ -109,7 +116,7 @@ function shell(title: string, body: string): string {
           ${body}
         </td></tr>
         <tr><td style="padding:24px 40px;border-top:1px solid #ebebe6;color:#999;font-size:12px;">
-          Abracadabra — Plateforme e-commerce. Si vous n'êtes pas à l'origine de cet email, ignorez-le.
+          Abracadabra · Plateforme e-commerce. Si vous n'êtes pas à l'origine de cet email, ignorez-le.
         </td></tr>
       </table>
     </td></tr>
