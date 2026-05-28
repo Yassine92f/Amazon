@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_ProdUpd001
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_ProdFold
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "isActive": false,
+      "isFeatured": true
+    }
+bodyType: application/json
+description: Seller can only update their own products. 403 otherwise.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: prudhdr
+method: PUT
+name: Update Product (Seller)
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/products/${[ productId ]}
+urlParameters: []

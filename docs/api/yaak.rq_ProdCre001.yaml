@@ -1,0 +1,51 @@
+type: http_request
+model: http_request
+id: rq_ProdCre001
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_ProdFold
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "Sony WH-1000XM5 Wireless Headphones",
+      "description": "Industry-leading noise cancellation with dual processors. Up to 30h battery life. Multipoint connection.",
+      "categoryId": "${[ categoryId ]}",
+      "brand": "Sony",
+      "tags": ["audio", "wireless", "noise-cancelling"],
+      "images": [
+        "https://cdn.example.com/p/sony-wh-1000xm5/main.jpg",
+        "https://cdn.example.com/p/sony-wh-1000xm5/side.jpg"
+      ],
+      "variants": [
+        {
+          "name": "Black",
+          "sku": "SONY-1000XM5-BLK",
+          "price": 289.99,
+          "compareAtPrice": 389,
+          "stock": 42,
+          "attributes": { "color": "black" }
+        },
+        {
+          "name": "Silver",
+          "sku": "SONY-1000XM5-SLV",
+          "price": 289.99,
+          "stock": 3,
+          "attributes": { "color": "silver" }
+        }
+      ]
+    }
+bodyType: application/json
+description: Seller-only. categoryId must reference an existing Category. Slug is auto-generated.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: prcrhdr
+method: POST
+name: Create Product (Seller)
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/products
+urlParameters: []
