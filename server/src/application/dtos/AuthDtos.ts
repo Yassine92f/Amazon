@@ -22,6 +22,7 @@ export interface AuthResultDto {
     status: UserStatus;
     avatar?: string;
     phone?: string;
+    emailVerified: boolean;
     lastLoginAt?: string;
     createdAt: string;
     updatedAt: string;
