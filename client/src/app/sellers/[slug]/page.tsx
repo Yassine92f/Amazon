@@ -2,9 +2,12 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'motion/react';
 import Header from '../../../components/Header';
 import StarRating from '../../../components/StarRating';
 import CatalogProductCard from '../../../components/catalog/CatalogProductCard';
+import { t, formatNumber, formatMonthYear } from '../../../lib/i18n';
 import {
   getPublicShop,
   searchProducts,
@@ -12,10 +15,22 @@ import {
   type ProductSummaryDto,
 } from '../../../lib/catalog';
 
+const spring = { type: 'spring' as const, stiffness: 300, damping: 30 };
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-lg font-extrabold leading-none text-brand-900">{value}</span>
+      <span className="mt-1 text-xs font-medium text-muted">{label}</span>
+    </div>
+  );
+}
+
 export default function PublicShopPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const [shop, setShop] = useState<SellerDto | null>(null);
   const [products, setProducts] = useState<ProductSummaryDto[]>([]);
+  const [productTotal, setProductTotal] = useState(0);
   const [notFound, setNotFound] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -30,6 +45,7 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
       .then((res) => {
         if (cancelled || !res) return;
         setProducts(res.items);
+        setProductTotal(res.total);
         setLoading(false);
       })
       .catch(() => {
@@ -48,12 +64,12 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
       <>
         <Header />
         <div className="container-main py-20 text-center">
-          <h1 className="mb-2 text-2xl font-bold text-brand-900">Shop not found</h1>
+          <h1 className="mb-2 text-2xl font-bold text-brand-900">{t.shop.notFound}</h1>
           <Link
             href="/"
             className="mt-4 inline-block rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white"
           >
-            Back home
+            {t.common.backHome}
           </Link>
         </div>
       </>
@@ -64,73 +80,160 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
     return (
       <>
         <Header />
-        <div className="container-main py-20 text-center text-sm text-muted">Loading…</div>
+        <div className="container-main py-20 text-center text-sm text-muted">
+          {t.common.loading}
+        </div>
       </>
     );
   }
 
+  const initial = shop.shopName.charAt(0).toUpperCase();
+
   return (
     <>
       <Header />
-      <div
-        className="relative h-40 bg-gradient-to-r from-brand-600 to-brand-800"
-        style={
-          shop.banner
-            ? {
-                backgroundImage: `url(${shop.banner})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : undefined
-        }
-      />
+
+      {/* ── Storefront banner ── */}
+      <div className="relative h-44 overflow-hidden sm:h-56">
+        {shop.banner ? (
+          <>
+            <Image src={shop.banner} alt="" fill priority sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/15 to-transparent" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-700 via-brand-500 to-brand-400" />
+            <div className="absolute inset-0 [background:radial-gradient(120%_120%_at_15%_-20%,rgba(255,255,255,0.35),transparent_55%)]" />
+            <span className="pointer-events-none absolute -right-2 -top-8 select-none text-[180px] font-black leading-none text-white/10">
+              {initial}
+            </span>
+          </>
+        )}
+        {/* Soft fade into the page background so the banner never reads as a hard bar. */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[var(--color-bg)] to-transparent" />
+      </div>
+
       <div className="container-main">
-        <div className="-mt-12 mb-8 flex flex-col gap-4 rounded-2xl border border-border bg-white p-6 shadow sm:flex-row sm:items-center">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-3xl">
-            🏪
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-extrabold text-brand-900">{shop.shopName}</h1>
-              {shop.isVerified && (
-                <span className="flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-xs font-bold text-white">
-                  Verified
-                </span>
+        {/* ── Shop identity card ── */}
+        <motion.section
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={spring}
+          className="relative -mt-16 overflow-hidden rounded-2xl border border-border bg-white shadow-lg"
+        >
+          <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:gap-6">
+            {/* Avatar */}
+            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-border bg-brand-50 sm:h-24 sm:w-24">
+              {shop.logo ? (
+                <Image
+                  src={shop.logo}
+                  alt={shop.shopName}
+                  fill
+                  sizes="96px"
+                  className="object-cover"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center text-4xl">🏪</span>
               )}
             </div>
-            <div className="mt-1">
-              <StarRating rating={shop.rating} count={shop.reviewCount} />
+
+            {/* Identity */}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-extrabold text-brand-900 sm:text-3xl">
+                  {shop.shopName}
+                </h1>
+                {shop.isVerified && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-700">
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                      <path
+                        fillRule="evenodd"
+                        d="M16.7 5.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-4-4a1 1 0 011.4-1.4L8 12.6l7.3-7.3a1 1 0 011.4 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {t.shop.verified}
+                  </span>
+                )}
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                <StarRating rating={shop.rating} count={shop.reviewCount} size="md" />
+                <span className="text-xs text-muted">
+                  {t.shop.memberSince(formatMonthYear(shop.joinedAt))}
+                </span>
+              </div>
             </div>
-            <p className="mt-1 text-xs text-muted">
-              {shop.totalSales} sales · Joined{' '}
-              {new Date(shop.joinedAt).toLocaleDateString('fr-FR', {
-                month: 'short',
-                year: 'numeric',
-              })}
-            </p>
           </div>
-        </div>
 
+          {/* Stat strip */}
+          <div className="flex items-center gap-6 border-t border-border bg-[var(--color-bg)] px-6 py-4 sm:gap-10">
+            <Stat value={formatNumber(shop.totalSales)} label={t.shop.statSales} />
+            <span className="h-8 w-px bg-border" aria-hidden />
+            <Stat value={shop.rating.toFixed(1)} label={t.shop.statRating} />
+            <span className="h-8 w-px bg-border" aria-hidden />
+            <Stat value={formatNumber(shop.reviewCount)} label={t.shop.statReviews} />
+            <span className="h-8 w-px bg-border" aria-hidden />
+            <Stat value={formatNumber(productTotal)} label={t.shop.statProducts} />
+          </div>
+        </motion.section>
+
+        {/* ── About ── */}
         {shop.description && (
-          <p className="mb-8 max-w-3xl rounded-lg border border-border bg-white p-5 text-sm leading-relaxed text-text">
-            {shop.description}
-          </p>
+          <section className="mt-8">
+            <h2 className="mb-3 flex items-center gap-2 text-lg font-bold text-brand-900">
+              <span className="inline-block h-5 w-1 rounded-full bg-brand-500" />
+              {t.shop.about}
+            </h2>
+            <p className="max-w-3xl rounded-xl border border-border bg-white p-5 text-sm leading-relaxed text-text">
+              {shop.description}
+            </p>
+          </section>
         )}
 
-        <h2 className="mb-4 text-xl font-bold text-brand-900">Products</h2>
-        {loading ? (
-          <p className="text-sm text-muted">Loading products…</p>
-        ) : products.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border-strong bg-white p-8 text-center text-sm text-muted">
-            This shop has no published products yet.
-          </p>
-        ) : (
-          <div className="mb-12 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {products.map((p) => (
-              <CatalogProductCard key={p._id} product={p} />
-            ))}
-          </div>
-        )}
+        {/* ── Products ── */}
+        <section className="mb-16 mt-10">
+          <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-brand-900">
+            <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />
+            {t.shop.products}
+            {productTotal > 0 && (
+              <span className="text-sm font-medium text-muted">({formatNumber(productTotal)})</span>
+            )}
+          </h2>
+
+          {loading ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="aspect-[3/4] animate-pulse rounded-lg border border-border bg-white"
+                />
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border-strong bg-white p-10 text-center text-sm text-muted">
+              {t.shop.noProducts}
+            </p>
+          ) : (
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
+              className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4"
+            >
+              {products.map((p) => (
+                <motion.div
+                  key={p._id}
+                  variants={{
+                    hidden: { opacity: 0, y: 16 },
+                    visible: { opacity: 1, y: 0, transition: spring },
+                  }}
+                >
+                  <CatalogProductCard product={p} />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </section>
       </div>
     </>
   );

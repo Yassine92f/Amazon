@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { t } from '../../lib/i18n';
 import type { ProductFacets } from '../../lib/catalog';
 
 export interface FilterState {
@@ -49,19 +50,19 @@ export default function FiltersSidebar({
   return (
     <aside className="w-[260px] shrink-0 rounded-lg border border-border bg-white p-5">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-base font-bold text-brand-900">Filters</h2>
+        <h2 className="text-base font-bold text-brand-900">{t.filters.title}</h2>
         <button
           type="button"
           onClick={onReset}
           className="text-xs font-semibold text-brand-600 hover:text-brand-700"
         >
-          Reset
+          {t.filters.reset}
         </button>
       </div>
 
       {!hideCategorySection && facets.categories.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-2 text-[13px] font-bold text-brand-900">Category</h3>
+          <h3 className="mb-2 text-[13px] font-bold text-brand-900">{t.filters.category}</h3>
           <ul className="flex flex-col gap-0.5">
             {facets.categories.slice(0, 6).map((c) => (
               <li key={c.value}>
@@ -84,12 +85,12 @@ export default function FiltersSidebar({
       )}
 
       <div className="mb-6">
-        <h3 className="mb-2 text-[13px] font-bold text-brand-900">Price</h3>
+        <h3 className="mb-2 text-[13px] font-bold text-brand-900">{t.filters.price}</h3>
         <div className="mb-2 flex gap-2">
           <input
             type="number"
             min={0}
-            placeholder="Min"
+            placeholder={t.filters.min}
             value={minP}
             onChange={(e) => setMinP(e.target.value)}
             onBlur={applyPrice}
@@ -98,7 +99,7 @@ export default function FiltersSidebar({
           <input
             type="number"
             min={0}
-            placeholder="Max"
+            placeholder={t.filters.max}
             value={maxP}
             onChange={(e) => setMaxP(e.target.value)}
             onBlur={applyPrice}
@@ -112,7 +113,7 @@ export default function FiltersSidebar({
 
       {facets.brands.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-2 text-[13px] font-bold text-brand-900">Brand</h3>
+          <h3 className="mb-2 text-[13px] font-bold text-brand-900">{t.filters.brand}</h3>
           <ul className="flex flex-col gap-1">
             {facets.brands.slice(0, 8).map((b) => {
               const checked = state.brands.includes(b.value);
@@ -146,7 +147,7 @@ export default function FiltersSidebar({
       )}
 
       <div className="mb-6">
-        <h3 className="mb-2 text-[13px] font-bold text-brand-900">Customer rating</h3>
+        <h3 className="mb-2 text-[13px] font-bold text-brand-900">{t.filters.customerRating}</h3>
         <ul className="flex flex-col gap-1">
           {[5, 4, 3, 2].map((stars) => (
             <li key={stars}>
@@ -169,7 +170,7 @@ export default function FiltersSidebar({
                     </svg>
                   ))}
                 </span>
-                <span className="text-xs text-muted">& up</span>
+                <span className="text-xs text-muted">{t.filters.andUp}</span>
               </button>
             </li>
           ))}
@@ -177,7 +178,7 @@ export default function FiltersSidebar({
       </div>
 
       <div>
-        <h3 className="mb-2 text-[13px] font-bold text-brand-900">Availability</h3>
+        <h3 className="mb-2 text-[13px] font-bold text-brand-900">{t.filters.availability}</h3>
         <label className="flex cursor-pointer items-center gap-2.5 py-0.5 text-[13px]">
           <span
             onClick={toggleStock}
@@ -195,7 +196,7 @@ export default function FiltersSidebar({
               </svg>
             )}
           </span>
-          <span className="font-semibold">In stock only</span>
+          <span className="font-semibold">{t.filters.inStockOnly}</span>
         </label>
       </div>
     </aside>

@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import FiltersSidebar, { type FilterState } from './FiltersSidebar';
 import CatalogProductCard from './CatalogProductCard';
 import Pagination from './Pagination';
+import { t } from '../../lib/i18n';
 import {
   searchProducts,
   type ProductSearchParams,
@@ -12,11 +13,11 @@ import {
 } from '../../lib/catalog';
 
 const SORT_OPTIONS: { value: NonNullable<ProductSearchParams['sortBy']>; label: string }[] = [
-  { value: 'relevance', label: 'Best match' },
-  { value: 'price', label: 'Price' },
-  { value: 'rating', label: 'Customer rating' },
-  { value: 'totalSold', label: 'Best sellers' },
-  { value: 'createdAt', label: 'Newest' },
+  { value: 'relevance', label: t.catalog.sort.relevance },
+  { value: 'price', label: t.catalog.sort.price },
+  { value: 'rating', label: t.catalog.sort.rating },
+  { value: 'totalSold', label: t.catalog.sort.totalSold },
+  { value: 'createdAt', label: t.catalog.sort.createdAt },
 ];
 
 const EMPTY_FACETS: ProductSearchResult['facets'] = {
@@ -90,7 +91,7 @@ export default function CatalogShell({
         if (cancelled) return;
         const m =
           (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Failed to load products';
+          t.catalog.loadError;
         setError(m);
         setLoading(false);
       });
@@ -116,13 +117,13 @@ export default function CatalogShell({
   }
   if (filters.minRating) {
     activeChips.push({
-      label: `${filters.minRating}★ & up`,
+      label: t.catalog.ratingAndUp(filters.minRating),
       clear: () => setFilters((s) => ({ ...s, minRating: undefined })),
     });
   }
   if (filters.inStock) {
     activeChips.push({
-      label: 'In stock',
+      label: t.catalog.inStock,
       clear: () => setFilters((s) => ({ ...s, inStock: false })),
     });
   }
@@ -135,9 +136,7 @@ export default function CatalogShell({
             <h1 className="text-3xl font-extrabold text-brand-900">{title}</h1>
             {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
             {result && (
-              <p className="mt-1 text-sm text-muted">
-                {result.total.toLocaleString('fr-FR')} products
-              </p>
+              <p className="mt-1 text-sm text-muted">{t.catalog.productCount(result.total)}</p>
             )}
           </div>
           <select
@@ -149,7 +148,7 @@ export default function CatalogShell({
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
-                Sort: {o.label}
+                {t.catalog.sortPrefix} : {o.label}
               </option>
             ))}
           </select>
@@ -157,7 +156,7 @@ export default function CatalogShell({
 
         {activeChips.length > 0 && (
           <div className="mb-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-muted">Active:</span>
+            <span className="text-xs font-semibold text-muted">{t.catalog.activeFilters}</span>
             {activeChips.map((c, i) => (
               <button
                 key={i}
@@ -174,7 +173,7 @@ export default function CatalogShell({
               onClick={reset}
               className="px-2 text-xs font-semibold text-brand-600 hover:text-brand-700"
             >
-              Clear all
+              {t.catalog.clearAll}
             </button>
           </div>
         )}
@@ -255,10 +254,8 @@ function EmptyState() {
   return (
     <div className="rounded-lg border border-dashed border-border-strong bg-white p-12 text-center">
       <div className="mb-3 text-4xl">🔍</div>
-      <h3 className="mb-1 text-base font-bold text-brand-900">No products found</h3>
-      <p className="text-sm text-muted">
-        Try adjusting your filters or browse a different category.
-      </p>
+      <h3 className="mb-1 text-base font-bold text-brand-900">{t.catalog.emptyTitle}</h3>
+      <p className="text-sm text-muted">{t.catalog.emptyDesc}</p>
     </div>
   );
 }

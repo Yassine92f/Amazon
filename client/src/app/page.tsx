@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import Header from '@/components/Header';
 import MobileTabBar from '@/components/MobileTabBar';
 import CatalogProductCard from '@/components/catalog/CatalogProductCard';
+import { t } from '@/lib/i18n';
 import {
   searchProducts,
   listCategories,
@@ -43,31 +44,35 @@ const CATEGORY_GRADIENTS = [
 ];
 
 const trustSignals = [
-  { icon: '🚚', title: 'Free Shipping', desc: 'On orders over €29' },
-  { icon: '🛡️', title: 'Secure Payment', desc: '256-bit SSL encryption' },
-  { icon: '🔄', title: 'Easy Returns', desc: '30-day return policy' },
-  { icon: '💬', title: '24/7 Support', desc: 'Chat, email & phone' },
+  { icon: '🚚', title: t.home.trust.shippingTitle, desc: t.home.trust.shippingDesc },
+  { icon: '🛡️', title: t.home.trust.paymentTitle, desc: t.home.trust.paymentDesc },
+  { icon: '🔄', title: t.home.trust.returnsTitle, desc: t.home.trust.returnsDesc },
+  { icon: '💬', title: t.home.trust.supportTitle, desc: t.home.trust.supportDesc },
 ];
 
 function SectionHeader({
   title,
   href,
   actionLabel,
+  extra,
 }: {
   title: string;
   href?: string;
   actionLabel?: string;
+  // Optional content (e.g. a countdown) shown right after the title.
+  extra?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2">
       <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-brand-900">
         <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />
         {title}
       </h2>
+      {extra}
       {href && actionLabel && (
         <Link
           href={href}
-          className="flex items-center gap-1 text-sm font-semibold text-brand-500 hover:text-brand-600 transition-colors"
+          className="ml-auto flex shrink-0 items-center gap-1 text-sm font-semibold text-brand-500 hover:text-brand-600 transition-colors"
         >
           {actionLabel}
           <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
@@ -99,8 +104,7 @@ function ProductRow({ products, loading }: { products: ProductSummaryDto[]; load
   if (products.length === 0) {
     return (
       <p className="mt-5 rounded-lg border border-dashed border-border-strong bg-white p-6 text-center text-sm text-muted">
-        No products to display yet. Run <code className="font-mono">pnpm seed</code> on the server
-        to populate demo data.
+        {t.home.emptyProducts}
       </p>
     );
   }
@@ -173,13 +177,13 @@ export default function Home() {
             >
               <div className="relative z-10 max-w-md">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white backdrop-blur-sm">
-                  ✨ Spring Collection 2026
+                  {t.home.heroEyebrow}
                 </span>
                 <h1 className="mt-4 text-3xl font-extrabold leading-tight text-white md:text-4xl">
-                  Find Everything You Love
+                  {t.home.heroTitle}
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-white/80 max-w-sm">
-                  Millions of products from trusted sellers. Free shipping on orders over €29.
+                  {t.home.heroSubtitle}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   <motion.div
@@ -191,7 +195,7 @@ export default function Home() {
                       href="/search"
                       className="inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 text-[15px] font-bold text-brand-600 shadow-md transition-shadow hover:shadow-lg"
                     >
-                      Shop the Sale
+                      {t.home.heroShopSale}
                       <svg viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
                         <path
                           fillRule="evenodd"
@@ -205,7 +209,7 @@ export default function Home() {
                     href="/c/electronics"
                     className="inline-flex items-center rounded-lg border border-white/30 bg-white/10 px-6 py-3 text-[15px] font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
                   >
-                    New Arrivals
+                    {t.home.heroNewArrivals}
                   </Link>
                 </div>
               </div>
@@ -220,13 +224,15 @@ export default function Home() {
                   href="/c/audio"
                   className="block h-full bg-gradient-to-br from-brand-100 to-brand-200 p-5"
                 >
-                  <p className="text-xs font-semibold text-brand-600">New in Tech</p>
+                  <p className="text-xs font-semibold text-brand-600">{t.home.sideNewInTech}</p>
                   <p className="mt-1 text-xl font-extrabold text-brand-900">
                     AirPods
                     <br />
                     Pro 2
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-500">From €249</p>
+                  <p className="mt-1 text-sm font-semibold text-brand-500">
+                    {t.home.sideFrom('249 €')}
+                  </p>
                   <span className="pointer-events-none absolute right-3 bottom-3 text-5xl opacity-50 select-none">
                     🎧
                   </span>
@@ -237,13 +243,15 @@ export default function Home() {
                   href="/c/fashion"
                   className="block h-full bg-gradient-to-br from-gold-300 to-gold-400 p-5"
                 >
-                  <p className="text-xs font-semibold text-brand-800">Trending</p>
+                  <p className="text-xs font-semibold text-brand-800">{t.home.sideTrending}</p>
                   <p className="mt-1 text-xl font-extrabold text-brand-900">
-                    Spring
+                    Mode
                     <br />
-                    Fashion
+                    Printemps
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-brand-700">From €19</p>
+                  <p className="mt-1 text-sm font-semibold text-brand-700">
+                    {t.home.sideFrom('19 €')}
+                  </p>
                   <span className="pointer-events-none absolute right-3 bottom-3 text-5xl opacity-50 select-none">
                     👟
                   </span>
@@ -256,36 +264,36 @@ export default function Home() {
         {/* ── Flash Deals ── */}
         <div className="bg-white py-8">
           <section className="container-main">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <SectionHeader
-                title="⚡ Flash Deals"
-                href="/search?sale=true"
-                actionLabel="View all"
-              />
-              <div className="flex items-center gap-2 text-sm">
-                <span className="hidden sm:inline text-muted font-medium">Ends in</span>
-                <div className="flex items-center gap-1.5">
-                  <span className="rounded-md bg-brand-900 px-2 py-1 text-sm font-bold text-white">
-                    02
-                  </span>
-                  <span className="font-bold text-brand-900">:</span>
-                  <span className="rounded-md bg-brand-900 px-2 py-1 text-sm font-bold text-white">
-                    14
-                  </span>
-                  <span className="font-bold text-brand-900">:</span>
-                  <span className="rounded-md bg-brand-900 px-2 py-1 text-sm font-bold text-white">
-                    37
-                  </span>
+            <SectionHeader
+              title={t.home.flashDeals}
+              href="/search?sale=true"
+              actionLabel={t.common.viewAll}
+              extra={
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="hidden sm:inline text-muted font-medium">{t.home.endsIn}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="rounded-md bg-brand-900 px-2 py-1 text-sm font-bold text-white">
+                      02
+                    </span>
+                    <span className="font-bold text-brand-900">:</span>
+                    <span className="rounded-md bg-brand-900 px-2 py-1 text-sm font-bold text-white">
+                      14
+                    </span>
+                    <span className="font-bold text-brand-900">:</span>
+                    <span className="rounded-md bg-brand-900 px-2 py-1 text-sm font-bold text-white">
+                      37
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </div>
+              }
+            />
             <ProductRow products={flashDeals} loading={loading} />
           </section>
         </div>
 
         {/* ── Shop by Category ── */}
         <section className="container-main py-10">
-          <SectionHeader title="Shop by Category" />
+          <SectionHeader title={t.home.shopByCategory} />
           {loading ? (
             <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -294,7 +302,7 @@ export default function Home() {
             </div>
           ) : categories.length === 0 ? (
             <p className="mt-5 rounded-lg border border-dashed border-border-strong bg-white p-6 text-center text-sm text-muted">
-              No categories yet. Run <code className="font-mono">pnpm seed</code> to populate.
+              {t.home.emptyCategories}
             </p>
           ) : (
             <motion.div
@@ -314,7 +322,7 @@ export default function Home() {
                   >
                     <span className="text-3xl">{cat.icon ?? '📦'}</span>
                     <p className="mt-1.5 text-[15px] font-bold text-brand-900">{cat.name}</p>
-                    <p className="text-xs text-muted">Browse all</p>
+                    <p className="text-xs text-muted">{t.home.browseAll}</p>
                   </Link>
                 </motion.div>
               ))}
@@ -326,9 +334,9 @@ export default function Home() {
         <div className="bg-white py-8">
           <section className="container-main">
             <SectionHeader
-              title="🔥 Trending Now"
+              title={t.home.trendingNow}
               href="/search?sortBy=totalSold"
-              actionLabel="View all"
+              actionLabel={t.common.viewAll}
             />
             <ProductRow products={trending} loading={loading} />
           </section>
@@ -337,9 +345,9 @@ export default function Home() {
         {/* ── New Arrivals ── */}
         <section className="container-main py-10">
           <SectionHeader
-            title="✨ New Arrivals"
+            title={t.home.newArrivals}
             href="/search?sortBy=createdAt"
-            actionLabel="See all"
+            actionLabel={t.common.viewAll}
           />
           <ProductRow products={newArrivals} loading={loading} />
         </section>
@@ -358,12 +366,8 @@ export default function Home() {
                 🎁
               </span>
               <div>
-                <p className="text-lg sm:text-xl font-bold text-white">
-                  Download our app — Get €10 off your first order!
-                </p>
-                <p className="mt-1 text-sm text-white/60">
-                  Use code HELLO10 at checkout. Valid for new customers only.
-                </p>
+                <p className="text-lg sm:text-xl font-bold text-white">{t.home.promoTitle}</p>
+                <p className="mt-1 text-sm text-white/60">{t.home.promoSubtitle}</p>
               </div>
             </div>
             <motion.button
@@ -372,7 +376,7 @@ export default function Home() {
               transition={springs.bouncy}
               className="flex shrink-0 items-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-bold text-brand-600 shadow-md"
             >
-              Get the App
+              {t.home.promoCta}
             </motion.button>
           </div>
         </motion.section>
@@ -416,68 +420,68 @@ export default function Home() {
                 <span className="text-lg font-extrabold">Abracadabra</span>
               </div>
               <p className="mt-3 text-sm leading-relaxed text-white/50 max-w-[260px]">
-                Your trusted marketplace for millions of products from verified sellers worldwide.
+                {t.footer.tagline}
               </p>
             </div>
             <div>
-              <h4 className="text-sm font-bold mb-3">Shop</h4>
+              <h4 className="text-sm font-bold mb-3">{t.footer.shop}</h4>
               <nav className="flex flex-col gap-2">
                 <Link href="/search" className="text-sm text-white/50 hover:text-white">
-                  All products
+                  {t.footer.allProducts}
                 </Link>
                 <Link href="/c/electronics" className="text-sm text-white/50 hover:text-white">
-                  Electronics
+                  {t.categories.electronics}
                 </Link>
                 <Link href="/c/fashion" className="text-sm text-white/50 hover:text-white">
-                  Fashion
+                  {t.categories.fashion}
                 </Link>
                 <Link href="/c/gaming" className="text-sm text-white/50 hover:text-white">
-                  Gaming
+                  {t.categories.gaming}
                 </Link>
               </nav>
             </div>
             <div>
-              <h4 className="text-sm font-bold mb-3">Sellers</h4>
+              <h4 className="text-sm font-bold mb-3">{t.footer.sellers}</h4>
               <nav className="flex flex-col gap-2">
                 <Link href="/become-seller" className="text-sm text-white/50 hover:text-white">
-                  Become a seller
+                  {t.footer.becomeSeller}
                 </Link>
                 <Link href="/seller" className="text-sm text-white/50 hover:text-white">
-                  Seller Hub
+                  {t.footer.sellerHub}
                 </Link>
               </nav>
             </div>
             <div>
-              <h4 className="text-sm font-bold mb-3">Company</h4>
+              <h4 className="text-sm font-bold mb-3">{t.footer.company}</h4>
               <nav className="flex flex-col gap-2">
                 <a href="#" className="text-sm text-white/50 hover:text-white">
-                  About Us
+                  {t.footer.about}
                 </a>
                 <a href="#" className="text-sm text-white/50 hover:text-white">
-                  Careers
+                  {t.footer.careers}
                 </a>
                 <a href="#" className="text-sm text-white/50 hover:text-white">
-                  Press
+                  {t.footer.press}
                 </a>
               </nav>
             </div>
             <div>
-              <h4 className="text-sm font-bold mb-3">Legal</h4>
+              <h4 className="text-sm font-bold mb-3">{t.footer.legal}</h4>
               <nav className="flex flex-col gap-2">
                 <a href="#" className="text-sm text-white/50 hover:text-white">
-                  Privacy Policy
+                  {t.footer.privacy}
                 </a>
                 <a href="#" className="text-sm text-white/50 hover:text-white">
-                  Terms of Service
+                  {t.footer.terms}
                 </a>
               </nav>
             </div>
           </div>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/40">
-            <span>© 2026 Abracadabra — All rights reserved.</span>
+            <span>{t.footer.rights}</span>
             <div className="flex items-center gap-4">
-              <span>€ EUR</span>
-              <span>🇫🇷 Français</span>
+              <span>{t.common.currency}</span>
+              <span>{t.common.language}</span>
             </div>
           </div>
         </div>

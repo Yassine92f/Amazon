@@ -1,10 +1,11 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { t } from '../lib/i18n';
 
 const tabs = [
   {
-    label: 'Home',
+    label: t.mobileTab.home,
     active: true,
     icon: (
       <svg
@@ -19,7 +20,7 @@ const tabs = [
     ),
   },
   {
-    label: 'Browse',
+    label: t.mobileTab.browse,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -36,7 +37,7 @@ const tabs = [
     ),
   },
   {
-    label: 'Deals',
+    label: t.mobileTab.deals,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +54,7 @@ const tabs = [
     ),
   },
   {
-    label: 'Wishlist',
+    label: t.mobileTab.wishlist,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +67,7 @@ const tabs = [
     ),
   },
   {
-    label: 'Profile',
+    label: t.mobileTab.profile,
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
