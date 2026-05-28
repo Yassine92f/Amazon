@@ -7,11 +7,8 @@ import { motion } from 'motion/react';
 import Header from '../../../components/Header';
 import StarRating from '../../../components/StarRating';
 import ReviewsList from '../../../components/catalog/ReviewsList';
+import { t, formatPrice } from '../../../lib/i18n';
 import { getProductBySlug, type ProductDto, type ProductVariantDto } from '../../../lib/catalog';
-
-function formatPrice(value: number): string {
-  return `€${value.toFixed(2).replace('.', ',')}`;
-}
 
 export default function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -42,12 +39,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       <>
         <Header />
         <div className="container-main py-20 text-center">
-          <h1 className="mb-2 text-2xl font-bold text-brand-900">Product not found</h1>
+          <h1 className="mb-2 text-2xl font-bold text-brand-900">{t.product.notFound}</h1>
           <Link
             href="/"
             className="mt-4 inline-block rounded-md bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white"
           >
-            Back home
+            {t.common.backHome}
           </Link>
         </div>
       </>
@@ -58,7 +55,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     return (
       <>
         <Header />
-        <div className="container-main py-20 text-center text-sm text-muted">Loading…</div>
+        <div className="container-main py-20 text-center text-sm text-muted">
+          {t.common.loading}
+        </div>
       </>
     );
   }
@@ -73,7 +72,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       <Header />
       <nav className="container-main py-3 text-xs text-muted">
         <Link href="/" className="hover:text-text">
-          Home
+          {t.product.breadcrumbHome}
         </Link>
         <span className="mx-2">/</span>
         {product.categorySlug && (
@@ -90,14 +89,14 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
       <main className="container-main pb-16">
         <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
           <div>
-            <div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-white">
+            <div className="relative aspect-square overflow-hidden rounded-xl border border-border bg-[var(--color-bg)]">
               {product.images[activeImage] ? (
                 <Image
                   src={product.images[activeImage]}
                   alt={product.name}
                   fill
                   sizes="(max-width: 1024px) 100vw, 720px"
-                  className="object-contain p-8"
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-6xl">📦</div>
@@ -115,11 +114,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     key={img}
                     type="button"
                     onClick={() => setActiveImage(i)}
-                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-2 bg-white ${
+                    className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-md border-2 bg-[var(--color-bg)] ${
                       i === activeImage ? 'border-brand-500' : 'border-border'
                     }`}
                   >
-                    <Image src={img} alt="" fill sizes="80px" className="object-contain p-1.5" />
+                    <Image src={img} alt="" fill sizes="80px" className="object-cover" />
                   </button>
                 ))}
               </div>
@@ -148,7 +147,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               )}
               {discount !== null && (
                 <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
-                  Save €{(variant.compareAtPrice! - variant.price).toFixed(2)}
+                  {t.product.save(formatPrice(variant.compareAtPrice! - variant.price))}
                 </span>
               )}
             </div>
@@ -156,7 +155,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             {product.variants.length > 1 && (
               <div className="mt-6">
                 <h3 className="mb-2 text-sm font-bold text-brand-900">
-                  Variant: <span className="font-normal text-text">{variant.name}</span>
+                  {t.product.variant} :{' '}
+                  <span className="font-normal text-text">{variant.name}</span>
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {product.variants.map((v) => (
@@ -172,7 +172,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                       disabled={v.stock === 0}
                     >
                       {v.name}
-                      {v.stock === 0 && <span className="ml-2 text-xs">— out</span>}
+                      {v.stock === 0 && <span className="ml-2 text-xs">{t.product.outShort}</span>}
                     </button>
                   ))}
                 </div>
@@ -183,11 +183,11 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               <p className="text-sm text-text">
                 {variant.stock > 0 ? (
                   <>
-                    <span className="font-bold text-green-700">In stock</span>
-                    <span className="ml-2 text-muted">— ready to ship</span>
+                    <span className="font-bold text-green-700">{t.product.inStock}</span>
+                    <span className="ml-2 text-muted">{t.product.readyToShip}</span>
                   </>
                 ) : (
-                  <span className="font-bold text-red-600">Out of stock</span>
+                  <span className="font-bold text-red-600">{t.product.outOfStock}</span>
                 )}
               </p>
             </div>
@@ -198,11 +198,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               disabled={variant.stock === 0}
               className="mt-4 flex items-center justify-center gap-2 rounded-md bg-brand-500 py-3.5 text-sm font-bold text-white shadow hover:bg-brand-600 disabled:opacity-50"
             >
-              Add to cart — {formatPrice(variant.price)}
+              {t.product.addToCart} — {formatPrice(variant.price)}
             </motion.button>
-            <p className="mt-2 text-center text-xs text-muted">
-              Cart functionality ships in the next branch (feature/cart-orders).
-            </p>
+            <p className="mt-2 text-center text-xs text-muted">{t.product.cartComingSoon}</p>
 
             {product.shopName && product.shopSlug && (
               <Link
@@ -210,17 +208,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 className="mt-6 flex items-center justify-between rounded-lg border border-border bg-white p-4 transition-colors hover:border-brand-300"
               >
                 <div>
-                  <p className="text-xs text-muted">Sold by</p>
+                  <p className="text-xs text-muted">{t.product.soldBy}</p>
                   <p className="font-bold text-brand-900">{product.shopName}</p>
                 </div>
-                <span className="text-sm font-semibold text-brand-600">Visit shop →</span>
+                <span className="text-sm font-semibold text-brand-600">{t.product.visitShop}</span>
               </Link>
             )}
           </div>
         </div>
 
         <section className="mt-12">
-          <h2 className="mb-4 text-xl font-bold text-brand-900">Description</h2>
+          <h2 className="mb-4 text-xl font-bold text-brand-900">{t.product.description}</h2>
           <div className="rounded-lg border border-border bg-white p-6">
             <p className="whitespace-pre-wrap text-sm leading-relaxed text-text">
               {product.description}
@@ -241,7 +239,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         </section>
 
         <section className="mt-12">
-          <h2 className="mb-4 text-xl font-bold text-brand-900">Customer reviews</h2>
+          <h2 className="mb-4 text-xl font-bold text-brand-900">{t.product.customerReviews}</h2>
           <ReviewsList productId={product._id} />
         </section>
       </main>

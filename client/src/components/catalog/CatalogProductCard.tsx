@@ -5,11 +5,8 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import StarRating from '../StarRating';
 import Badge from '../Badge';
+import { t, formatPrice } from '../../lib/i18n';
 import type { ProductSummaryDto } from '../../lib/catalog';
-
-function formatPrice(value: number): string {
-  return `€${value.toFixed(2).replace('.', ',')}`;
-}
 
 function discountPercent(price: number, compareAt?: number): number | null {
   if (!compareAt || compareAt <= price) return null;
@@ -26,14 +23,14 @@ export default function CatalogProductCard({ product }: { product: ProductSummar
       className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm"
     >
       <Link href={`/products/${product.slug}`} className="contents">
-        <div className="relative aspect-square overflow-hidden bg-gray-50">
+        <div className="relative aspect-square overflow-hidden bg-[var(--color-bg)]">
           {product.image ? (
             <Image
               src={product.image}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-              className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-5xl">📦</div>
@@ -45,8 +42,8 @@ export default function CatalogProductCard({ product }: { product: ProductSummar
             </span>
           )}
           {!product.inStock && (
-            <span className="absolute top-2.5 right-2.5 z-10 rounded-full bg-gray-900/80 px-2 py-1 text-[10px] font-bold text-white">
-              OUT OF STOCK
+            <span className="absolute top-2.5 right-2.5 z-10 rounded-full bg-gray-900/80 px-2 py-1 text-[10px] font-bold uppercase text-white">
+              {t.card.outOfStock}
             </span>
           )}
         </div>

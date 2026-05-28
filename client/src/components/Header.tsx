@@ -5,19 +5,20 @@ import { motion } from 'motion/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../store';
+import { t } from '../lib/i18n';
 import { UserRole } from '@ecommerce/shared';
 
 const categories = [
-  { emoji: '🔥', label: 'Deals', active: true },
-  { emoji: '📱', label: 'Electronics' },
-  { emoji: '👗', label: 'Fashion' },
-  { emoji: '🏠', label: 'Home & Garden' },
-  { emoji: '⚽', label: 'Sports' },
-  { emoji: '📚', label: 'Books' },
-  { emoji: '🍎', label: 'Grocery' },
-  { emoji: '💎', label: 'Beauty' },
-  { emoji: '🎮', label: 'Gaming' },
-  { emoji: '🐾', label: 'Pets' },
+  { emoji: '🔥', label: t.categories.deals, active: true },
+  { emoji: '📱', label: t.categories.electronics },
+  { emoji: '👗', label: t.categories.fashion },
+  { emoji: '🏠', label: t.categories.homeGarden },
+  { emoji: '⚽', label: t.categories.sports },
+  { emoji: '📚', label: t.categories.books },
+  { emoji: '🍎', label: t.categories.grocery },
+  { emoji: '💎', label: t.categories.beauty },
+  { emoji: '🎮', label: t.categories.gaming },
+  { emoji: '🐾', label: t.categories.pets },
 ];
 
 export default function Header() {
@@ -46,13 +47,13 @@ export default function Header() {
       <div className="bg-gradient-to-r from-brand-500 to-brand-600 py-2">
         <div className="container-main flex items-center justify-center gap-2 text-sm font-semibold text-white">
           <span className="text-gold-300">⚡</span>
-          <span>SPRING SALE — Up to 50% off on 10,000+ items</span>
+          <span>{t.header.announcement}</span>
           <span className="text-brand-200">·</span>
           <a
             href="#"
             className="text-gold-300 underline underline-offset-2 hover:text-white transition-colors"
           >
-            Shop Now
+            {t.header.announcementCta}
           </a>
         </div>
       </div>
@@ -89,12 +90,12 @@ export default function Header() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for products, brands and more..."
+                placeholder={t.header.searchPlaceholder}
                 className="w-full bg-transparent py-2.5 pl-3 pr-4 text-sm text-brand-900 placeholder:text-muted focus:outline-none"
               />
               <button
                 type="submit"
-                aria-label="Search"
+                aria-label={t.header.search}
                 className="mr-1 flex shrink-0 items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
               >
                 <svg
@@ -109,7 +110,7 @@ export default function Header() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="hidden md:inline">Search</span>
+                <span className="hidden md:inline">{t.header.search}</span>
               </button>
             </div>
           </form>
@@ -138,7 +139,9 @@ export default function Header() {
                         d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
                       />
                     </svg>
-                    <span className="text-[13px] font-medium hidden lg:inline">Admin</span>
+                    <span className="text-[13px] font-medium hidden lg:inline">
+                      {t.header.admin}
+                    </span>
                   </Link>
                 )}
 
@@ -161,7 +164,9 @@ export default function Header() {
                       d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
                     />
                   </svg>
-                  <span className="text-[13px] font-medium hidden lg:inline">Wishlist</span>
+                  <span className="text-[13px] font-medium hidden lg:inline">
+                    {t.header.wishlist}
+                  </span>
                 </button>
 
                 {/* Cart */}
@@ -221,7 +226,7 @@ export default function Header() {
                         className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Mon profil
+                        {t.header.myProfile}
                       </Link>
                       {user.role === UserRole.SELLER && (
                         <Link
@@ -230,7 +235,7 @@ export default function Header() {
                           className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Seller Hub
+                          {t.header.sellerHub}
                         </Link>
                       )}
                       {user.role === UserRole.USER && (
@@ -240,7 +245,7 @@ export default function Header() {
                           className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                           style={{ color: 'var(--color-brand-600)' }}
                         >
-                          Devenir vendeur
+                          {t.header.becomeSeller}
                         </Link>
                       )}
                       {user.role === UserRole.ADMIN && (
@@ -250,7 +255,7 @@ export default function Header() {
                           className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Administration
+                          {t.header.admin}
                         </Link>
                       )}
                       <button
@@ -259,7 +264,7 @@ export default function Header() {
                         className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                         style={{ color: 'var(--color-error)' }}
                       >
-                        Se deconnecter
+                        {t.header.logout}
                       </button>
                     </div>
                   )}
@@ -285,14 +290,14 @@ export default function Header() {
                       d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                     />
                   </svg>
-                  <span className="text-[13px] font-medium hidden lg:inline">Connexion</span>
+                  <span className="text-[13px] font-medium hidden lg:inline">{t.header.login}</span>
                 </Link>
 
                 <Link
                   href="/register"
                   className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
                 >
-                  S&apos;inscrire
+                  {t.header.register}
                 </Link>
               </>
             )}

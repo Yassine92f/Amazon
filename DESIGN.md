@@ -129,6 +129,10 @@ Base unit: 4px. Border-radius: 12px default for cards, 8px for buttons, 999px fo
 - **2026-03-27**: No dark mode for v1 — ship light mode, revisit later if needed.
 - **2026-03-27**: Brand name "Marché.io" with M logo box. Footer uses dark brand-900 bg for contrast.
 - **2026-05-28**: Brand renamed to "Abracadabra" (logo "A"). Single-word wordmark, no `.io` suffix.
+- **2026-05-28**: Single-locale **French** UI via a lightweight typed dictionary (`client/src/lib/i18n.ts`) — no English/French mixing. Prices follow French convention (`279,00 €`) through `Intl.NumberFormat`.
+- **2026-05-28**: Product imagery uses `object-cover` on the warm `--color-bg` surface (catalog cards + product detail) instead of padded `object-contain`, to fill the frame and kill empty white borders.
+- **2026-05-28**: Storefront (public shop) banner pattern — layered brand gradient with a radial highlight + oversized monogram motif and a bottom fade into the page background (or a scrimmed banner image), with an overlapping identity card and a stat strip. Avoids the flat "hard bar" look.
+- **2026-05-28**: `SectionHeader` renders full-width; the action link is pinned right with `ml-auto` and an optional `extra` slot holds inline content (e.g. the Flash Deals countdown) between title and action.
 - **2026-03-27**: Motion library (v12+) for all animations. Spring physics: snappy (buttons), smooth (cards), gentle (sections), bouncy (playful). Staggered fade-up for product grids via whileInView. Mobile tab bar slides up with delay.
 - **2026-03-27**: Hero section uses bento layout — main gradient banner + 2 side promotional cards (lg only). Category section uses gradient tiles instead of plain bordered cards.
 

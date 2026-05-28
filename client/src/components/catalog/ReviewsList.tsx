@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import StarRating from '../StarRating';
 import Pagination from './Pagination';
+import { t, formatLongDate } from '../../lib/i18n';
 import { listProductReviews, type ReviewListResult } from '../../lib/catalog';
 
 export default function ReviewsList({ productId }: { productId: string }) {
@@ -28,11 +29,11 @@ export default function ReviewsList({ productId }: { productId: string }) {
     };
   }, [productId, page]);
 
-  if (loading && !data) return <div className="py-6 text-sm text-muted">Loading reviews…</div>;
+  if (loading && !data) return <div className="py-6 text-sm text-muted">{t.reviews.loading}</div>;
   if (!data || data.stats.total === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border-strong bg-white p-8 text-center text-sm text-muted">
-        No reviews yet — be the first to share your experience after your purchase.
+        {t.reviews.empty}
       </div>
     );
   }
@@ -46,7 +47,7 @@ export default function ReviewsList({ productId }: { productId: string }) {
           <span className="text-4xl font-extrabold text-brand-900">
             {data.stats.averageRating.toFixed(1)}
           </span>
-          <span className="pb-1 text-xs text-muted">out of 5</span>
+          <span className="pb-1 text-xs text-muted">{t.reviews.outOf5}</span>
         </div>
         <StarRating rating={data.stats.averageRating} count={data.stats.total} />
         <ul className="mt-4 flex flex-col gap-2">
@@ -80,13 +81,7 @@ export default function ReviewsList({ productId }: { productId: string }) {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold text-text">{r.authorName}</p>
-                  <p className="text-xs text-muted">
-                    {new Date(r.createdAt).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </p>
+                  <p className="text-xs text-muted">{formatLongDate(r.createdAt)}</p>
                 </div>
                 <div className="flex gap-0.5">
                   {Array.from({ length: 5 }).map((_, i) => (
@@ -105,7 +100,9 @@ export default function ReviewsList({ productId }: { productId: string }) {
               <p className="text-sm leading-relaxed text-text whitespace-pre-wrap">{r.comment}</p>
               {r.sellerResponse && (
                 <div className="mt-3 rounded-md border-l-2 border-brand-500 bg-brand-50 p-3">
-                  <p className="mb-1 text-xs font-bold text-brand-700">Response from the seller</p>
+                  <p className="mb-1 text-xs font-bold text-brand-700">
+                    {t.reviews.sellerResponse}
+                  </p>
                   <p className="text-sm text-text">{r.sellerResponse.comment}</p>
                 </div>
               )}

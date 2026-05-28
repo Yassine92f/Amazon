@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useAuthStore } from '../../store';
+import { t } from '../../lib/i18n';
 
 export default function SellerTopBar() {
   const user = useAuthStore((s) => s.user);
@@ -20,14 +21,14 @@ export default function SellerTopBar() {
           <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
             <path d="M3 6h14l-1 8H4L3 6zM5 4a2 2 0 014 0v2H5V4zm6 0a2 2 0 014 0v2h-4V4z" />
           </svg>
-          Seller Hub
+          {t.seller.hub}
         </span>
         <div className="flex-1" />
         <Link
           href="/"
           className="hidden text-xs font-semibold text-muted hover:text-brand-700 md:block"
         >
-          ← Back to marketplace
+          {t.seller.backToMarketplace}
         </Link>
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
           {initial}
