@@ -57,11 +57,10 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-lg font-extrabold text-white">
-              M
+              A
             </span>
             <span className="hidden sm:flex items-center">
-              <span className="text-xl font-extrabold text-brand-900">Marché</span>
-              <span className="text-xl font-extrabold text-brand-500">.io</span>
+              <span className="text-xl font-extrabold text-brand-900">Abracadabra</span>
             </span>
           </Link>
 

@@ -10,7 +10,7 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Marché.io — Your Marketplace',
+  title: 'Abracadabra — Your Marketplace',
   description: 'Discover deals on electronics, fashion, home and more. Free shipping over €29.',
 };
 

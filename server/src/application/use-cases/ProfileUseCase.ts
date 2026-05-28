@@ -38,7 +38,7 @@ export class ProfileUseCase {
   async getProfile(userId: string): Promise<ProfileDto> {
     const user = await this.userRepo.findById(userId);
     if (!user) {
-      throw new ProfileError(404, 'Utilisateur introuvable');
+      throw new ProfileError(404, 'User not found');
     }
     return this.toProfileDto(user);
   }
@@ -46,12 +46,12 @@ export class ProfileUseCase {
   async updateProfile(userId: string, data: UpdateProfileDto): Promise<ProfileDto> {
     const user = await this.userRepo.findById(userId);
     if (!user) {
-      throw new ProfileError(404, 'Utilisateur introuvable');
+      throw new ProfileError(404, 'User not found');
     }
 
     const valid = await this.hashService.compare(data.currentPassword, user.password);
     if (!valid) {
-      throw new ProfileError(403, 'Mot de passe incorrect');
+      throw new ProfileError(403, 'Incorrect password');
     }
 
     const updateData: Record<string, string> = {};
@@ -62,7 +62,7 @@ export class ProfileUseCase {
 
     const updated = await this.userRepo.updateById(userId, updateData);
     if (!updated) {
-      throw new ProfileError(500, 'Erreur lors de la mise à jour du profil');
+      throw new ProfileError(500, 'Failed to update profile');
     }
 
     return this.toProfileDto(updated);
@@ -70,16 +70,16 @@ export class ProfileUseCase {
 
   async getAddresses(userId: string): Promise<AddressEntity[]> {
     const user = await this.userRepo.findById(userId);
-    if (!user) throw new ProfileError(404, 'Utilisateur introuvable');
+    if (!user) throw new ProfileError(404, 'User not found');
     return user.addresses;
   }
 
   async addAddress(userId: string, data: AddAddressData): Promise<AddressEntity[]> {
     if (!data.label || !data.street || !data.city || !data.postalCode || !data.country) {
-      throw new ProfileError(400, 'Tous les champs sont requis');
+      throw new ProfileError(400, 'All fields are required');
     }
     const user = await this.userRepo.addAddress(userId, data);
-    if (!user) throw new ProfileError(500, "Erreur lors de l'ajout de l'adresse");
+    if (!user) throw new ProfileError(500, 'Failed to add address');
     return user.addresses;
   }
 
@@ -89,19 +89,19 @@ export class ProfileUseCase {
     data: Partial<AddAddressData>,
   ): Promise<AddressEntity[]> {
     const user = await this.userRepo.updateAddress(userId, addressId, data);
-    if (!user) throw new ProfileError(404, 'Adresse introuvable');
+    if (!user) throw new ProfileError(404, 'Address not found');
     return user.addresses;
   }
 
   async deleteAddress(userId: string, addressId: string): Promise<AddressEntity[]> {
     const user = await this.userRepo.deleteAddress(userId, addressId);
-    if (!user) throw new ProfileError(404, 'Adresse introuvable');
+    if (!user) throw new ProfileError(404, 'Address not found');
     return user.addresses;
   }
 
   async getPreferences(userId: string): Promise<UserPreferencesEntity> {
     const user = await this.userRepo.findById(userId);
-    if (!user) throw new ProfileError(404, 'Utilisateur introuvable');
+    if (!user) throw new ProfileError(404, 'User not found');
     return user.preferences;
   }
 
@@ -110,7 +110,7 @@ export class ProfileUseCase {
     data: Partial<PreferencesData>,
   ): Promise<UserPreferencesEntity> {
     const user = await this.userRepo.updatePreferences(userId, data);
-    if (!user) throw new ProfileError(500, 'Erreur lors de la mise a jour des preferences');
+    if (!user) throw new ProfileError(500, 'Failed to update preferences');
     return user.preferences;
   }
 

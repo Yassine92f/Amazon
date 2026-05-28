@@ -22,7 +22,7 @@ export class UserController {
       const { firstName, lastName, phone, avatar, currentPassword } = req.body;
 
       if (!currentPassword) {
-        throw new AppError(400, 'Le mot de passe actuel est requis pour modifier le profil');
+        throw new AppError(400, 'Current password is required to update the profile');
       }
 
       const profile = await this.profileUseCase.updateProfile(userId, {
@@ -57,7 +57,7 @@ export class UserController {
       const { label, street, city, postalCode, country, isDefault } = req.body;
 
       if (!label || !street || !city || !postalCode || !country) {
-        throw new AppError(400, 'Tous les champs sont requis');
+        throw new AppError(400, 'All fields are required');
       }
 
       const addresses = await this.profileUseCase.addAddress(userId, {
@@ -80,7 +80,7 @@ export class UserController {
       const { userId } = req as AuthRequest;
       const id = req.params.id as string;
 
-      if (!id) throw new AppError(400, "ID d'adresse requis");
+      if (!id) throw new AppError(400, 'Address ID is required');
 
       const addresses = await this.profileUseCase.updateAddress(userId, id, req.body);
       res.json({ success: true, data: addresses });
@@ -94,7 +94,7 @@ export class UserController {
       const { userId } = req as AuthRequest;
       const id = req.params.id as string;
 
-      if (!id) throw new AppError(400, "ID d'adresse requis");
+      if (!id) throw new AppError(400, 'Address ID is required');
 
       const addresses = await this.profileUseCase.deleteAddress(userId, id);
       res.json({ success: true, data: addresses });
