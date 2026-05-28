@@ -1,0 +1,23 @@
+type: http_request
+model: http_request
+id: rq_Dg8ejbEq5x
+createdAt: 2026-05-28T08:40:22.750781
+updatedAt: 2026-05-28T08:40:55.891406
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: '{ "email": "teddynsoki@gmail.com" }'
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: z2pNTQr5sm
+method: POST
+name: Resend Verification
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/auth/resend-verification
+urlParameters: []

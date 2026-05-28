@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_PrefPut001
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_3zR8V5N6Pi
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "language": "fr",
+      "currency": "EUR",
+      "notifications": {
+        "email": true,
+        "push": false,
+        "orderUpdates": true,
+        "promotions": false,
+        "priceDrops": false
+      }
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: prefput0hdr
+method: PUT
+name: Update Preferences
+sortPriority: 7000.0
+url: ${[ baseUrl ]}/users/preferences
+urlParameters: []
