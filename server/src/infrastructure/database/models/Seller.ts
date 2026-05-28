@@ -36,7 +36,7 @@ const sellerSchema = new Schema<SellerDocument>(
       lowercase: true,
       index: true,
     },
-    description: { type: String, required: true, trim: true, default: '' },
+    description: { type: String, trim: true, default: '' },
     logo: String,
     banner: String,
     rating: { type: Number, default: 0, min: 0, max: 5 },
