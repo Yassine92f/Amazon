@@ -115,6 +115,65 @@ server/src/
 - `.env.example` contains all required variables — copy to `.env` and fill in values
 - **Never commit `.env` files**
 
+## Project Journaling — MANDATORY
+
+Every meaningful change (new feature, architectural decision, refactor, bug fix with non-obvious cause, library/tool choice) MUST be documented in a journal entry inside the `.project-log/` folder at the repo root.
+
+### Why
+
+These logs are the source of material for project reports, retrospectives, and academic deliverables. They capture the **reasoning** that the code itself cannot — the why, the trade-offs considered, the alternatives rejected.
+
+### Format
+
+- One Markdown file per entry, named: `.project-log/YYYY-MM-DD-short-slug.md` (e.g. `.project-log/2026-05-28-jwt-refresh-rotation.md`)
+- Multiple entries per day are allowed — use distinct slugs
+- Written in English (per project language conventions)
+
+### Required sections per entry
+
+```markdown
+# <Title of the change>
+
+**Date:** YYYY-MM-DD
+**Author:** <name or branch>
+**Type:** feature | decision | refactor | fix | tooling | architecture
+
+## Context
+
+What problem are we solving? What triggered this change?
+
+## Decision
+
+What did we actually do / choose?
+
+## Why
+
+Reasoning behind the decision. Constraints, requirements, trade-offs.
+
+## Alternatives considered
+
+What other options were evaluated and why they were rejected.
+
+## Impact
+
+Files, modules, or behaviors affected. Migration notes if relevant.
+
+## Follow-ups
+
+Open questions, future work, things to revisit.
+```
+
+### When to log
+
+- Adding a new feature or module
+- Choosing a library, framework, or pattern
+- Making an architectural decision (e.g. clean architecture boundaries, auth flow)
+- Non-trivial refactor
+- Bug fix where the root cause is worth remembering
+- Any deviation from prior conventions
+
+Trivial changes (typo fixes, formatting, dependency patch bumps) do not require a log entry.
+
 ## Critical Files (Modify with Care)
 
 | File                                                     | Purpose                                     |

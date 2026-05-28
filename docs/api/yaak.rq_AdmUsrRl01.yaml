@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_AdmUsrRl01
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_AdminFold01
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "role": "seller"
+    }
+bodyType: application/json
+description: 'Allowed roles: user, seller, admin. Cannot demote another admin. Action is audited.'
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: admrole0hdr
+method: PUT
+name: Update User Role
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/admin/users/${[ userId ]}/role
+urlParameters: []

@@ -1,0 +1,38 @@
+type: http_request
+model: http_request
+id: rq_AdmAudit01
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_AdminFold01
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Paginated audit trail of admin actions. Filter by action (user.status_changed | user.role_changed | user.deleted), actorId or targetId.
+headers: []
+method: GET
+name: Audit Log
+sortPriority: 6000.0
+url: ${[ baseUrl ]}/admin/audit-log
+urlParameters:
+- enabled: true
+  name: page
+  value: '1'
+  id: audlogpg
+- enabled: true
+  name: limit
+  value: '20'
+  id: audloglm
+- enabled: false
+  name: action
+  value: user.role_changed
+  id: audlogac
+- enabled: false
+  name: actorId
+  value: ''
+  id: audlogai
+- enabled: false
+  name: targetId
+  value: ''
+  id: audlogti
