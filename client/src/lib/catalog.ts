@@ -1,0 +1,291 @@
+import { api } from './api';
+
+// ── Types (mirror server DTOs) ─────────────────────────────────────────
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+// Sellers
+export interface SellerDto {
+  _id: string;
+  userId: string;
+  shopName: string;
+  shopSlug: string;
+  description: string;
+  logo?: string;
+  banner?: string;
+  rating: number;
+  reviewCount: number;
+  totalSales: number;
+  isVerified: boolean;
+  joinedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Categories
+export interface CategoryDto {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  parentId?: string;
+  image?: string;
+  icon?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface CategoryNode extends CategoryDto {
+  children: CategoryNode[];
+}
+
+// Products
+export interface ProductVariantDto {
+  _id: string;
+  name: string;
+  sku: string;
+  price: number;
+  compareAtPrice?: number;
+  stock: number;
+  attributes: Record<string, string>;
+  images: string[];
+}
+export interface ProductDto {
+  _id: string;
+  sellerId: string;
+  shopName?: string;
+  shopSlug?: string;
+  name: string;
+  slug: string;
+  description: string;
+  categoryId: string;
+  categoryName?: string;
+  categorySlug?: string;
+  brand?: string;
+  tags: string[];
+  variants: ProductVariantDto[];
+  images: string[];
+  rating: number;
+  reviewCount: number;
+  totalSold: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  minPrice: number;
+  maxPrice: number;
+  inStock: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ProductSummaryDto {
+  _id: string;
+  slug: string;
+  name: string;
+  brand?: string;
+  image: string;
+  price: number;
+  compareAtPrice?: number;
+  rating: number;
+  reviewCount: number;
+  inStock: boolean;
+  sellerId: string;
+  shopName?: string;
+  isFeatured: boolean;
+}
+
+export interface ProductFacets {
+  categories: { value: string; count: number; label?: string }[];
+  brands: { value: string; count: number }[];
+  priceRange: { min: number; max: number };
+  ratingDistribution: { stars: number; count: number }[];
+}
+
+export interface ProductSearchResult extends PaginatedResponse<ProductSummaryDto> {
+  facets: ProductFacets;
+}
+
+export interface ProductSearchParams {
+  page?: number;
+  limit?: number;
+  query?: string;
+  categoryId?: string;
+  brand?: string | string[];
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  inStock?: boolean;
+  sellerId?: string;
+  sortBy?: 'relevance' | 'price' | 'rating' | 'totalSold' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+  isFeatured?: boolean;
+}
+
+// Reviews
+export interface ReviewDto {
+  _id: string;
+  userId: string;
+  authorName: string;
+  authorAvatar?: string;
+  productId: string;
+  rating: number;
+  title: string;
+  comment: string;
+  images: string[];
+  sellerResponse?: { comment: string; respondedAt: string };
+  createdAt: string;
+  updatedAt: string;
+}
+export interface ReviewListResult extends PaginatedResponse<ReviewDto> {
+  stats: {
+    averageRating: number;
+    total: number;
+    distribution: { stars: number; count: number }[];
+  };
+}
+
+// ── Categories API ─────────────────────────────────────────────────────
+
+export async function listCategories(): Promise<CategoryDto[]> {
+  const { data } = await api.get('/categories');
+  return data.data;
+}
+
+export async function getCategoryTree(): Promise<CategoryNode[]> {
+  const { data } = await api.get('/categories/tree');
+  return data.data;
+}
+
+export async function getCategoryBySlug(slug: string): Promise<CategoryDto> {
+  const { data } = await api.get(`/categories/${slug}`);
+  return data.data;
+}
+
+// ── Sellers API ────────────────────────────────────────────────────────
+
+export async function getMyShop(): Promise<SellerDto> {
+  const { data } = await api.get('/sellers/me/shop');
+  return data.data;
+}
+
+export async function registerSeller(input: {
+  shopName: string;
+  description: string;
+}): Promise<SellerDto> {
+  const { data } = await api.post('/sellers/register', input);
+  return data.data;
+}
+
+export async function updateMyShop(input: {
+  shopName?: string;
+  description?: string;
+  logo?: string;
+  banner?: string;
+}): Promise<SellerDto> {
+  const { data } = await api.put('/sellers/me/shop', input);
+  return data.data;
+}
+
+export async function getPublicShop(slug: string): Promise<SellerDto> {
+  const { data } = await api.get(`/sellers/${slug}`);
+  return data.data;
+}
+
+// ── Products API ───────────────────────────────────────────────────────
+
+function serializeSearchParams(params: ProductSearchParams): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null || value === '') continue;
+    if (Array.isArray(value)) {
+      if (value.length > 0) out[key] = value.join(',');
+    } else {
+      out[key] = String(value);
+    }
+  }
+  return out;
+}
+
+export async function searchProducts(params: ProductSearchParams): Promise<ProductSearchResult> {
+  const { data } = await api.get('/products', { params: serializeSearchParams(params) });
+  return data.data;
+}
+
+export async function getProductBySlug(slug: string): Promise<ProductDto> {
+  const { data } = await api.get(`/products/${slug}`);
+  return data.data;
+}
+
+export async function getProductById(id: string): Promise<ProductDto> {
+  const { data } = await api.get(`/products/by-id/${id}`);
+  return data.data;
+}
+
+export async function listMyProducts(
+  params: Omit<ProductSearchParams, 'sellerId'>,
+): Promise<ProductSearchResult> {
+  const { data } = await api.get('/products/me/list', { params: serializeSearchParams(params) });
+  return data.data;
+}
+
+export async function getMyProduct(id: string): Promise<ProductDto> {
+  const { data } = await api.get(`/products/me/${id}`);
+  return data.data;
+}
+
+export interface ProductInput {
+  name: string;
+  description: string;
+  categoryId: string;
+  brand?: string;
+  tags?: string[];
+  variants: {
+    name: string;
+    sku: string;
+    price: number;
+    compareAtPrice?: number;
+    stock: number;
+    attributes?: Record<string, string>;
+    images?: string[];
+  }[];
+  images: string[];
+}
+
+export async function createProduct(input: ProductInput): Promise<ProductDto> {
+  const { data } = await api.post('/products', input);
+  return data.data;
+}
+
+export async function updateProduct(
+  id: string,
+  input: Partial<ProductInput> & { isActive?: boolean; isFeatured?: boolean },
+): Promise<ProductDto> {
+  const { data } = await api.put(`/products/${id}`, input);
+  return data.data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await api.delete(`/products/${id}`);
+}
+
+// ── Reviews API ────────────────────────────────────────────────────────
+
+export async function listProductReviews(
+  productId: string,
+  params: {
+    page?: number;
+    limit?: number;
+    sortBy?: 'createdAt' | 'rating';
+    sortOrder?: 'asc' | 'desc';
+    minRating?: number;
+  },
+): Promise<ReviewListResult> {
+  const { data } = await api.get(`/products/${productId}/reviews`, { params });
+  return data.data;
+}
