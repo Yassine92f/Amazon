@@ -1,6 +1,11 @@
 import { UserRole, UserStatus } from '@ecommerce/shared';
 import { IUserRepository, FindUsersParams } from '../../domain/repositories/IUserRepository';
+import {
+  IAuditLogRepository,
+  FindAuditLogsParams,
+} from '../../domain/repositories/IAuditLogRepository';
 import { UserEntity } from '../../domain/entities/User';
+import { AuditAction, AuditLogEntity } from '../../domain/entities/AuditLog';
 import { UserModel } from '../../infrastructure/database/models/User';
 
 export interface UserDto {
@@ -36,8 +41,41 @@ export interface DashboardStatsDto {
   totalRevenue: number;
 }
 
+export interface AdminActor {
+  id: string;
+  email: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+export interface AuditLogDto {
+  _id: string;
+  actorId: string;
+  actorEmail: string;
+  action: AuditAction;
+  targetType: string;
+  targetId: string;
+  metadata: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+export interface PaginatedAuditLogsDto {
+  items: AuditLogDto[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export class AdminUseCase {
-  constructor(private userRepo: IUserRepository) {}
+  constructor(
+    private userRepo: IUserRepository,
+    private auditLogRepo: IAuditLogRepository,
+  ) {}
 
   async getUsers(params: FindUsersParams): Promise<PaginatedUsersDto> {
     const { users, total } = await this.userRepo.findMany(params);
@@ -57,58 +95,132 @@ export class AdminUseCase {
   async getUserById(id: string): Promise<UserDto> {
     const user = await this.userRepo.findById(id);
     if (!user) {
-      throw new AdminError(404, 'Utilisateur introuvable');
+      throw new AdminError(404, 'User not found');
     }
     return this.toUserDto(user);
   }
 
-  async updateUserStatus(id: string, status: UserStatus, _reason?: string): Promise<UserDto> {
+  async updateUserStatus(
+    id: string,
+    status: UserStatus,
+    actor: AdminActor,
+    reason?: string,
+  ): Promise<UserDto> {
     const user = await this.userRepo.findById(id);
     if (!user) {
-      throw new AdminError(404, 'Utilisateur introuvable');
+      throw new AdminError(404, 'User not found');
     }
 
     if (user.role === UserRole.ADMIN) {
-      throw new AdminError(403, "Impossible de modifier le statut d'un administrateur");
+      throw new AdminError(403, "Cannot modify an administrator's status");
     }
 
+    const previousStatus = user.status;
     const updated = await this.userRepo.updateById(id, { status });
     if (!updated) {
-      throw new AdminError(500, 'Erreur lors de la mise à jour');
+      throw new AdminError(500, 'Failed to update user');
     }
+
+    await this.logAction(actor, AuditAction.USER_STATUS_CHANGED, id, {
+      from: previousStatus,
+      to: status,
+      reason,
+    });
 
     return this.toUserDto(updated);
   }
 
-  async updateUserRole(id: string, role: UserRole): Promise<UserDto> {
+  async updateUserRole(id: string, role: UserRole, actor: AdminActor): Promise<UserDto> {
     const user = await this.userRepo.findById(id);
     if (!user) {
-      throw new AdminError(404, 'Utilisateur introuvable');
+      throw new AdminError(404, 'User not found');
     }
 
     if (user.role === UserRole.ADMIN) {
-      throw new AdminError(403, "Impossible de modifier le role d'un administrateur");
+      throw new AdminError(403, "Cannot modify an administrator's role");
     }
 
+    const previousRole = user.role;
     const updated = await this.userRepo.updateById(id, { role });
     if (!updated) {
-      throw new AdminError(500, 'Erreur lors de la mise a jour');
+      throw new AdminError(500, 'Failed to update user role');
     }
+
+    await this.logAction(actor, AuditAction.USER_ROLE_CHANGED, id, {
+      from: previousRole,
+      to: role,
+    });
 
     return this.toUserDto(updated);
   }
 
-  async deleteUser(id: string): Promise<void> {
+  async deleteUser(id: string, actor: AdminActor): Promise<void> {
     const user = await this.userRepo.findById(id);
     if (!user) {
-      throw new AdminError(404, 'Utilisateur introuvable');
+      throw new AdminError(404, 'User not found');
     }
 
     if (user.role === UserRole.ADMIN) {
-      throw new AdminError(403, 'Impossible de supprimer un administrateur');
+      throw new AdminError(403, 'Cannot delete an administrator');
     }
 
     await this.userRepo.deleteById(id);
+
+    await this.logAction(actor, AuditAction.USER_DELETED, id, {
+      email: user.email,
+      role: user.role,
+    });
+  }
+
+  async getAuditLogs(params: FindAuditLogsParams): Promise<PaginatedAuditLogsDto> {
+    const { logs, total } = await this.auditLogRepo.findMany(params);
+    const totalPages = Math.ceil(total / params.limit);
+    return {
+      items: logs.map((log) => this.toAuditLogDto(log)),
+      total,
+      page: params.page,
+      limit: params.limit,
+      totalPages,
+      hasNext: params.page < totalPages,
+      hasPrev: params.page > 1,
+    };
+  }
+
+  private async logAction(
+    actor: AdminActor,
+    action: AuditAction,
+    targetId: string,
+    metadata: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      await this.auditLogRepo.create({
+        actorId: actor.id,
+        actorEmail: actor.email,
+        action,
+        targetType: 'User',
+        targetId,
+        metadata,
+        ipAddress: actor.ipAddress,
+        userAgent: actor.userAgent,
+      });
+    } catch (err) {
+      console.error('[AdminUseCase] Failed to write audit log:', err);
+    }
+  }
+
+  private toAuditLogDto(log: AuditLogEntity): AuditLogDto {
+    return {
+      _id: log.id,
+      actorId: log.actorId,
+      actorEmail: log.actorEmail,
+      action: log.action,
+      targetType: log.targetType,
+      targetId: log.targetId,
+      metadata: log.metadata,
+      ipAddress: log.ipAddress,
+      userAgent: log.userAgent,
+      createdAt: log.createdAt.toISOString(),
+    };
   }
 
   async getDashboardStats(): Promise<DashboardStatsDto> {
