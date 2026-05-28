@@ -1,0 +1,89 @@
+import mongoose from 'mongoose';
+import {
+  IReviewRepository,
+  FindReviewsParams,
+  ReviewStats,
+} from '../../domain/repositories/IReviewRepository';
+import { ReviewEntity } from '../../domain/entities/Review';
+import { ReviewModel, ReviewDocument } from '../database/models/Review';
+
+export class ReviewRepository implements IReviewRepository {
+  async findByProduct(
+    params: FindReviewsParams,
+  ): Promise<{ reviews: ReviewEntity[]; total: number }> {
+    const filter: Record<string, unknown> = { productId: params.productId };
+    if (params.minRating !== undefined) filter.rating = { $gte: params.minRating };
+
+    const sortField = params.sortBy === 'rating' ? 'rating' : 'createdAt';
+    const sortOrder = params.sortOrder === 'asc' ? 1 : -1;
+
+    const [docs, total] = await Promise.all([
+      ReviewModel.find(filter)
+        .sort({ [sortField]: sortOrder })
+        .skip((params.page - 1) * params.limit)
+        .limit(params.limit),
+      ReviewModel.countDocuments(filter),
+    ]);
+
+    return { reviews: docs.map((d) => this.toEntity(d)), total };
+  }
+
+  async getStats(productId: string): Promise<ReviewStats> {
+    if (!mongoose.isValidObjectId(productId)) {
+      return { averageRating: 0, total: 0, distribution: this.emptyDistribution() };
+    }
+
+    const result = await ReviewModel.aggregate<{
+      total: { count: number; avg: number }[];
+      buckets: { _id: number; count: number }[];
+    }>([
+      { $match: { productId: new mongoose.Types.ObjectId(productId) } },
+      {
+        $facet: {
+          total: [
+            {
+              $group: { _id: null, count: { $sum: 1 }, avg: { $avg: '$rating' } },
+            },
+          ],
+          buckets: [{ $group: { _id: '$rating', count: { $sum: 1 } } }],
+        },
+      },
+    ]);
+
+    const aggregate = result[0];
+    const total = aggregate?.total?.[0]?.count ?? 0;
+    const avg = aggregate?.total?.[0]?.avg ?? 0;
+    const distribution = this.emptyDistribution();
+    for (const bucket of aggregate?.buckets ?? []) {
+      const target = distribution.find((d) => d.stars === bucket._id);
+      if (target) target.count = bucket.count;
+    }
+
+    return { averageRating: Math.round(avg * 10) / 10, total, distribution };
+  }
+
+  private emptyDistribution() {
+    return [1, 2, 3, 4, 5].map((stars) => ({ stars, count: 0 }));
+  }
+
+  private toEntity(doc: ReviewDocument): ReviewEntity {
+    return {
+      id: (doc._id as { toString: () => string }).toString(),
+      userId: doc.userId.toString(),
+      productId: doc.productId.toString(),
+      orderId: doc.orderId.toString(),
+      rating: doc.rating,
+      title: doc.title,
+      comment: doc.comment,
+      images: doc.images,
+      sellerResponse: doc.sellerResponse
+        ? {
+            comment: doc.sellerResponse.comment,
+            respondedAt: doc.sellerResponse.respondedAt,
+          }
+        : undefined,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    };
+  }
+}
