@@ -1,0 +1,22 @@
+type: http_request
+model: http_request
+id: rq_CatList001
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_CatFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Flat list of categories. Public.
+headers: []
+method: GET
+name: List Categories
+sortPriority: 0.0
+url: ${[ baseUrl ]}/categories
+urlParameters:
+- enabled: false
+  name: includeInactive
+  value: 'true'
+  id: ctlsii
