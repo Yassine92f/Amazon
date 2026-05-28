@@ -44,10 +44,10 @@ function ForgotPasswordForm() {
               className="flex h-10 w-10 items-center justify-center rounded-xl text-lg font-extrabold text-white"
               style={{ backgroundColor: 'var(--color-brand-500)' }}
             >
-              M
+              A
             </div>
             <span className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-              Marche.io
+              Abracadabra
             </span>
           </Link>
         </div>

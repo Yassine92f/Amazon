@@ -298,10 +298,10 @@ export default function ProfilePage() {
         >
           <Link href="/" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-extrabold text-white">
-              M
+              A
             </span>
             <span className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
-              Marche.io
+              Abracadabra
             </span>
           </Link>
           <div className="flex items-center gap-4">

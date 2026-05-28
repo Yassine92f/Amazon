@@ -110,7 +110,7 @@ Base unit: 4px. Border-radius: 12px default for cards, 8px for buttons, 999px fo
 | Component     | Pattern                                 | Notes                                                                                |
 | ------------- | --------------------------------------- | ------------------------------------------------------------------------------------ |
 | ProductCard   | Image + info stack + hover add-to-cart  | 12px radius, shadow-sm, Motion whileHover lift, badge top-left, emoji scale on hover |
-| Header        | Announcement bar + nav + search + pills | Pill search bar, "M" logo box + "Marché.io" wordmark, cart with count badge          |
+| Header        | Announcement bar + nav + search + pills | Pill search bar, "A" logo box + "Abracadabra" wordmark, cart with count badge        |
 | CategoryBar   | Horizontal scroll pills                 | Icon + label, brand-500 filled active state, border pills inactive                   |
 | HeroBanner    | Gradient card + 2 side cards (bento)    | Warm brand gradient, side cards on lg only, staggered fade-up entrance               |
 | PriceDisplay  | Current + strikethrough                 | Brand-600 for sale price, text-muted strikethrough                                   |
@@ -128,6 +128,7 @@ Base unit: 4px. Border-radius: 12px default for cards, 8px for buttons, 999px fo
 - **2026-03-27**: Emoji as placeholder product images — playful, zero-dependency, avoids stock photo uncanny valley. Replace with real images when available.
 - **2026-03-27**: No dark mode for v1 — ship light mode, revisit later if needed.
 - **2026-03-27**: Brand name "Marché.io" with M logo box. Footer uses dark brand-900 bg for contrast.
+- **2026-05-28**: Brand renamed to "Abracadabra" (logo "A"). Single-word wordmark, no `.io` suffix.
 - **2026-03-27**: Motion library (v12+) for all animations. Spring physics: snappy (buttons), smooth (cards), gentle (sections), bouncy (playful). Staggered fade-up for product grids via whileInView. Mobile tab bar slides up with delay.
 - **2026-03-27**: Hero section uses bento layout — main gradient banner + 2 side promotional cards (lg only). Category section uses gradient tiles instead of plain bordered cards.
 
