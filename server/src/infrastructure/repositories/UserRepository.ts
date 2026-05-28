@@ -91,6 +91,47 @@ export class UserRepository implements IUserRepository {
     });
   }
 
+  async setEmailVerificationToken(id: string, token: string, expires: Date): Promise<void> {
+    await UserModel.findByIdAndUpdate(id, {
+      $set: { emailVerificationToken: token, emailVerificationExpires: expires },
+    });
+  }
+
+  async findByEmailVerificationToken(token: string): Promise<UserEntity | null> {
+    const doc = await UserModel.findOne({
+      emailVerificationToken: token,
+      emailVerificationExpires: { $gt: new Date() },
+    }).select('+emailVerificationToken +emailVerificationExpires');
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async markEmailVerified(id: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(id, {
+      $set: { emailVerified: true },
+      $unset: { emailVerificationToken: 1, emailVerificationExpires: 1 },
+    });
+  }
+
+  async incrementFailedLoginAttempts(id: string): Promise<number> {
+    const doc = await UserModel.findByIdAndUpdate(
+      id,
+      { $inc: { failedLoginAttempts: 1 } },
+      { new: true },
+    );
+    return doc?.failedLoginAttempts ?? 0;
+  }
+
+  async lockAccount(id: string, until: Date): Promise<void> {
+    await UserModel.findByIdAndUpdate(id, { $set: { accountLockedUntil: until } });
+  }
+
+  async resetFailedLoginAttempts(id: string): Promise<void> {
+    await UserModel.findByIdAndUpdate(id, {
+      $set: { failedLoginAttempts: 0 },
+      $unset: { accountLockedUntil: 1 },
+    });
+  }
+
   async addAddress(userId: string, address: AddAddressData): Promise<UserEntity | null> {
     if (address.isDefault) {
       await UserModel.findByIdAndUpdate(userId, {
@@ -174,6 +215,11 @@ export class UserRepository implements IUserRepository {
       })),
       preferences: doc.preferences,
       lastLoginAt: doc.lastLoginAt,
+      emailVerified: doc.emailVerified ?? false,
+      emailVerificationToken: doc.emailVerificationToken,
+      emailVerificationExpires: doc.emailVerificationExpires,
+      failedLoginAttempts: doc.failedLoginAttempts ?? 0,
+      accountLockedUntil: doc.accountLockedUntil,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
     };

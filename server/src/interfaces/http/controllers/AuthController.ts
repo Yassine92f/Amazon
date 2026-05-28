@@ -8,17 +8,7 @@ export class AuthController {
 
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password, firstName, lastName } = req.body;
-
-      if (!email || !password || !firstName || !lastName) {
-        throw new AppError(400, 'Tous les champs sont requis');
-      }
-      if (password.length < 8) {
-        throw new AppError(400, 'Le mot de passe doit contenir au moins 8 caractères');
-      }
-
-      const result = await this.authUseCase.register({ email, password, firstName, lastName });
-
+      const result = await this.authUseCase.register(req.body);
       res.status(201).json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));
@@ -27,14 +17,7 @@ export class AuthController {
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email, password } = req.body;
-
-      if (!email || !password) {
-        throw new AppError(400, 'Email et mot de passe requis');
-      }
-
-      const result = await this.authUseCase.login({ email, password });
-
+      const result = await this.authUseCase.login(req.body);
       res.json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));
@@ -43,13 +26,7 @@ export class AuthController {
 
   refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { refreshToken } = req.body;
-      if (!refreshToken) {
-        throw new AppError(400, 'Refresh token requis');
-      }
-
-      const result = await this.authUseCase.refresh(refreshToken);
-
+      const result = await this.authUseCase.refresh(req.body.refreshToken);
       res.json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));
@@ -58,11 +35,10 @@ export class AuthController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { refreshToken } = req.body;
-      if (refreshToken) {
-        await this.authUseCase.logout(refreshToken);
+      if (req.body.refreshToken) {
+        await this.authUseCase.logout(req.body.refreshToken);
       }
-      res.json({ success: true, message: 'Déconnexion réussie' });
+      res.json({ success: true, message: 'Logged out successfully' });
     } catch (err) {
       next(this.mapError(err));
     }
@@ -80,16 +56,10 @@ export class AuthController {
 
   forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { email } = req.body;
-      if (!email) {
-        throw new AppError(400, 'Email requis');
-      }
-
-      await this.authUseCase.forgotPassword(email);
-
+      await this.authUseCase.forgotPassword(req.body.email);
       res.json({
         success: true,
-        message: 'Si un compte existe avec cet email, un lien de reinitialisation a ete envoye',
+        message: 'If an account exists with this email, a password reset link has been sent',
       });
     } catch (err) {
       next(this.mapError(err));
@@ -98,17 +68,8 @@ export class AuthController {
 
   resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { token, newPassword } = req.body;
-      if (!token || !newPassword) {
-        throw new AppError(400, 'Token et nouveau mot de passe requis');
-      }
-      if (newPassword.length < 8) {
-        throw new AppError(400, 'Le mot de passe doit contenir au moins 8 caracteres');
-      }
-
-      await this.authUseCase.resetPassword({ token, newPassword });
-
-      res.json({ success: true, message: 'Mot de passe reinitialise avec succes' });
+      await this.authUseCase.resetPassword(req.body);
+      res.json({ success: true, message: 'Password reset successfully' });
     } catch (err) {
       next(this.mapError(err));
     }
@@ -118,17 +79,29 @@ export class AuthController {
     try {
       const { userId } = req as AuthRequest;
       const { currentPassword, newPassword } = req.body;
-
-      if (!currentPassword || !newPassword) {
-        throw new AppError(400, 'Les deux mots de passe sont requis');
-      }
-      if (newPassword.length < 8) {
-        throw new AppError(400, 'Le nouveau mot de passe doit contenir au moins 8 caractères');
-      }
-
       await this.authUseCase.changePassword({ userId, currentPassword, newPassword });
+      res.json({ success: true, message: 'Password updated' });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
 
-      res.json({ success: true, message: 'Mot de passe modifié' });
+  verifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.authUseCase.verifyEmail(req.body.token);
+      res.json({ success: true, message: 'Email verified' });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
+  resendVerification = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await this.authUseCase.resendVerificationEmail(req.body.email);
+      res.json({
+        success: true,
+        message: 'If a matching unverified account exists, a verification email has been sent',
+      });
     } catch (err) {
       next(this.mapError(err));
     }

@@ -15,6 +15,11 @@ export interface UserEntity {
   lastLoginAt?: Date;
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
+  emailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  failedLoginAttempts: number;
+  accountLockedUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
