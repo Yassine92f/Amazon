@@ -645,6 +645,8 @@ export const t = {
       vPrice: 'Prix (€)',
       vCompare: 'Prix barré (€)',
       vStock: 'Stock',
+      vImages: 'Images de la variante',
+      vImagesHint: 'Optionnel — sinon les images du produit sont utilisées.',
       attributes: 'Attributs',
       attrKey: 'clé (couleur)',
       attrValue: 'valeur (noir)',
