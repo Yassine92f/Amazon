@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import {
   IReviewRepository,
   FindReviewsParams,
+  FindSellerReviewsParams,
   ReviewStats,
 } from '../../domain/repositories/IReviewRepository';
 import { ReviewEntity } from '../../domain/entities/Review';
@@ -62,6 +63,44 @@ export class ReviewRepository implements IReviewRepository {
     return { averageRating: Math.round(avg * 10) / 10, total, distribution };
   }
 
+  async findById(id: string): Promise<ReviewEntity | null> {
+    if (!mongoose.isValidObjectId(id)) return null;
+    const doc = await ReviewModel.findById(id);
+    return doc ? this.toEntity(doc) : null;
+  }
+
+  async findForSellerProducts(
+    params: FindSellerReviewsParams,
+  ): Promise<{ reviews: ReviewEntity[]; total: number }> {
+    const ids = params.productIds.filter((id) => mongoose.isValidObjectId(id));
+    if (ids.length === 0) return { reviews: [], total: 0 };
+
+    const filter: Record<string, unknown> = {
+      productId: { $in: ids.map((id) => new mongoose.Types.ObjectId(id)) },
+    };
+    if (params.onlyUnanswered) filter.sellerResponse = { $exists: false };
+
+    const [docs, total] = await Promise.all([
+      ReviewModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((params.page - 1) * params.limit)
+        .limit(params.limit),
+      ReviewModel.countDocuments(filter),
+    ]);
+
+    return { reviews: docs.map((d) => this.toEntity(d)), total };
+  }
+
+  async setSellerResponse(reviewId: string, comment: string): Promise<ReviewEntity | null> {
+    if (!mongoose.isValidObjectId(reviewId)) return null;
+    const doc = await ReviewModel.findByIdAndUpdate(
+      reviewId,
+      { sellerResponse: { comment, respondedAt: new Date() } },
+      { new: true },
+    );
+    return doc ? this.toEntity(doc) : null;
+  }
+
   private emptyDistribution() {
     return [1, 2, 3, 4, 5].map((stars) => ({ stars, count: 0 }));
   }
@@ -76,7 +115,9 @@ export class ReviewRepository implements IReviewRepository {
       title: doc.title,
       comment: doc.comment,
       images: doc.images,
-      sellerResponse: doc.sellerResponse
+      // Mongoose materializes the nested path as an empty object even when no
+      // response was set, so gate on the actual comment, not the parent object.
+      sellerResponse: doc.sellerResponse?.comment
         ? {
             comment: doc.sellerResponse.comment,
             respondedAt: doc.sellerResponse.respondedAt,

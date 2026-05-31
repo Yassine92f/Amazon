@@ -41,6 +41,9 @@ export interface ProductListFilters {
   tags?: string[];
   isActive?: boolean;
   isFeatured?: boolean;
+  // Admin moderation: when true, do not constrain by active status (returns
+  // both active and hidden products). Ignored if `isActive` is set explicitly.
+  anyStatus?: boolean;
 }
 
 export interface ProductFacetBucket {

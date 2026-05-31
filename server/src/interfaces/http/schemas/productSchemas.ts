@@ -33,3 +33,7 @@ export const updateProductSchema = z
     isFeatured: z.boolean().optional(),
   })
   .refine((d) => Object.keys(d).length > 0, { message: 'At least one field is required' });
+
+export const replyToReviewSchema = z.object({
+  comment: z.string().min(2, 'Reply must be at least 2 characters').max(2000).trim(),
+});

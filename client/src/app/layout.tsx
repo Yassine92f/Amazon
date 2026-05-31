@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import { AuthProvider } from '../components/AuthProvider';
+import CompareBar from '../components/compare/CompareBar';
 import './globals.css';
 
 const font = Plus_Jakarta_Sans({
@@ -18,7 +19,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <body className={font.className}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <CompareBar />
+        </AuthProvider>
       </body>
     </html>
   );
