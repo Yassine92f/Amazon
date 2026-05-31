@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { Package } from 'lucide-react';
 import StarRating from '../StarRating';
+import CompareButton from '../compare/CompareButton';
 import Badge from '../Badge';
 import { t, formatPrice } from '../../lib/i18n';
 import type { ProductSummaryDto } from '../../lib/catalog';
@@ -49,6 +50,10 @@ export default function CatalogProductCard({ product }: { product: ProductSummar
               {t.card.outOfStock}
             </span>
           )}
+          <CompareButton
+            product={product}
+            className="absolute bottom-2.5 right-2.5 z-10 h-8 w-8 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100 sm:aria-pressed:opacity-100"
+          />
         </div>
 
         <div className="flex flex-1 flex-col gap-1 p-3">

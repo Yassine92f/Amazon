@@ -140,7 +140,7 @@ export class ProductRepository implements IProductRepository {
     const match: Record<string, unknown> = {};
 
     if (filters.isActive !== undefined) match.isActive = filters.isActive;
-    else match.isActive = true;
+    else if (!filters.anyStatus) match.isActive = true;
 
     if (filters.isFeatured !== undefined) match.isFeatured = filters.isFeatured;
     if (filters.sellerId) match.sellerId = new mongoose.Types.ObjectId(filters.sellerId);
