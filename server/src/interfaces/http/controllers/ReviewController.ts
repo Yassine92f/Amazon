@@ -12,7 +12,12 @@ export class ReviewController {
       const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 10));
       const sortBy = req.query.sortBy === 'rating' ? 'rating' : 'createdAt';
       const sortOrder = req.query.sortOrder === 'asc' ? 'asc' : 'desc';
-      const minRating = req.query.minRating ? Number(req.query.minRating) : undefined;
+      const parsedMinRating =
+        req.query.minRating !== undefined ? Number(req.query.minRating) : undefined;
+      const minRating =
+        parsedMinRating !== undefined && Number.isFinite(parsedMinRating)
+          ? parsedMinRating
+          : undefined;
 
       const result = await this.reviewUseCase.listForProduct({
         productId,
