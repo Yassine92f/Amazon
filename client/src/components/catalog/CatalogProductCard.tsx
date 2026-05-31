@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
+import { Package } from 'lucide-react';
 import StarRating from '../StarRating';
 import Badge from '../Badge';
 import { t, formatPrice } from '../../lib/i18n';
@@ -33,7 +34,9 @@ export default function CatalogProductCard({ product }: { product: ProductSummar
               className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-5xl">📦</div>
+            <div className="flex h-full items-center justify-center text-border-strong">
+              <Package className="h-12 w-12" strokeWidth={1.5} aria-hidden />
+            </div>
           )}
 
           {off !== null && (

@@ -4,15 +4,23 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
+  Store,
+  TrendingUp,
+  Calendar,
+  ShoppingBag,
+  Package,
+  Plus,
+  ExternalLink,
+  BadgeCheck,
+  type LucideIcon,
+} from 'lucide-react';
+import {
   getMyShop,
   listMyProducts,
   type SellerDto,
   type ProductSummaryDto,
 } from '../../lib/catalog';
-
-function formatEUR(value: number): string {
-  return `€${value.toFixed(2).replace('.', ',')}`;
-}
+import { t, formatPrice, formatNumber, formatMonthYear } from '../../lib/i18n';
 
 export default function SellerDashboardPage() {
   const router = useRouter();
@@ -50,38 +58,41 @@ export default function SellerDashboardPage() {
   }, [router]);
 
   if (loading || !shop) {
-    return <div className="container-main py-20 text-center text-sm text-muted">Loading…</div>;
+    return (
+      <div className="container-main py-20 text-center text-sm text-muted">
+        {t.seller.dash.loading}
+      </div>
+    );
   }
 
   return (
     <div className="container-main py-6">
       <div className="mb-4 flex flex-col gap-4 rounded-2xl border border-border bg-white p-6 sm:flex-row sm:items-center">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-3xl">
-          🎧
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-600">
+          {shop.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={shop.logo} alt="" className="h-full w-full rounded-lg object-cover" />
+          ) : (
+            <Store className="h-8 w-8" aria-hidden />
+          )}
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-extrabold text-brand-900">{shop.shopName}</h1>
             {shop.isVerified && (
               <span className="flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-xs font-bold text-white">
-                <svg viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                Verified
+                <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+                {t.seller.dash.verified}
               </span>
             )}
           </div>
           <p className="mt-1 text-sm text-muted">
-            ⭐ {shop.rating.toFixed(1)} ({shop.reviewCount} reviews) · {stats.total} products ·
-            Joined{' '}
-            {new Date(shop.joinedAt).toLocaleDateString('fr-FR', {
-              month: 'short',
-              year: 'numeric',
-            })}
+            {t.seller.dash.meta(
+              shop.rating.toFixed(1),
+              formatNumber(shop.reviewCount),
+              formatNumber(stats.total),
+              formatMonthYear(shop.joinedAt),
+            )}
           </p>
         </div>
         <div className="flex gap-2">
@@ -89,45 +100,60 @@ export default function SellerDashboardPage() {
             href={`/sellers/${shop.shopSlug}`}
             className="rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-text hover:border-brand-300"
           >
-            View public page
+            {t.seller.dash.viewPublic}
           </Link>
           <Link
             href="/seller/settings"
             className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold text-white hover:bg-brand-600"
           >
-            Edit shop
+            {t.seller.dash.editShop}
           </Link>
         </div>
       </div>
 
       <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Total Revenue" value="€—" hint="cart-orders branch" icon="📈" />
-        <StatCard label="This Month" value="€—" hint="cart-orders branch" icon="📅" />
-        <StatCard label="Orders" value="—" hint="cart-orders branch" icon="🛍" />
         <StatCard
-          label="Products"
-          value={`${stats.total}`}
-          hint={`${stats.outOfStock} out of stock`}
-          icon="📦"
+          label={t.seller.dash.statRevenue}
+          value="—"
+          hint={t.seller.dash.soon}
+          Icon={TrendingUp}
+        />
+        <StatCard
+          label={t.seller.dash.statMonth}
+          value="—"
+          hint={t.seller.dash.soon}
+          Icon={Calendar}
+        />
+        <StatCard
+          label={t.seller.dash.statOrders}
+          value="—"
+          hint={t.seller.dash.soon}
+          Icon={ShoppingBag}
+        />
+        <StatCard
+          label={t.seller.dash.statProducts}
+          value={formatNumber(stats.total)}
+          hint={t.seller.dash.outOfStockHint(formatNumber(stats.outOfStock))}
+          Icon={Package}
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <section className="rounded-2xl border border-border bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-bold text-brand-900">Recent products</h2>
+            <h2 className="text-base font-bold text-brand-900">{t.seller.dash.recent}</h2>
             <Link href="/seller/products" className="text-xs font-semibold text-brand-600">
-              View all →
+              {t.seller.dash.viewAll}
             </Link>
           </div>
           {products.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border-strong bg-bg p-8 text-center">
-              <p className="mb-3 text-sm text-muted">You haven&apos;t added any product yet.</p>
+              <p className="mb-3 text-sm text-muted">{t.seller.dash.empty}</p>
               <Link
                 href="/seller/products/new"
                 className="inline-block rounded-md bg-brand-500 px-5 py-2 text-sm font-bold text-white"
               >
-                + Add your first product
+                {t.seller.dash.addFirst}
               </Link>
             </div>
           ) : (
@@ -142,7 +168,7 @@ export default function SellerDashboardPage() {
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-text">{p.name}</p>
                       <p className="text-xs text-muted">
-                        {p.brand ?? '—'} · {formatEUR(p.price)}
+                        {p.brand ?? '—'} · {formatPrice(p.price)}
                       </p>
                     </div>
                     <span
@@ -150,7 +176,7 @@ export default function SellerDashboardPage() {
                         p.inStock ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {p.inStock ? 'In stock' : 'Out'}
+                      {p.inStock ? t.seller.dash.inStock : t.seller.dash.out}
                     </span>
                   </Link>
                 </li>
@@ -161,24 +187,27 @@ export default function SellerDashboardPage() {
 
         <aside className="space-y-4">
           <div className="rounded-2xl border border-brand-200 bg-brand-50 p-5">
-            <h3 className="mb-3 text-sm font-bold text-brand-900">Quick actions</h3>
+            <h3 className="mb-3 text-sm font-bold text-brand-900">{t.seller.dash.quickActions}</h3>
             <Link
               href="/seller/products/new"
               className="mb-2 flex items-center gap-2 rounded-md bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
             >
-              + Add new product
+              <Plus className="h-4 w-4" aria-hidden />
+              {t.seller.dash.addNew}
             </Link>
             <Link
               href="/seller/products"
               className="mb-2 flex items-center gap-2 rounded-md border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text"
             >
-              📦 Manage products
+              <Package className="h-4 w-4 text-brand-500" aria-hidden />
+              {t.seller.dash.manageProducts}
             </Link>
             <Link
               href={`/sellers/${shop.shopSlug}`}
               className="flex items-center gap-2 rounded-md border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text"
             >
-              🔗 Visit public shop
+              <ExternalLink className="h-4 w-4 text-brand-500" aria-hidden />
+              {t.seller.dash.visitPublic}
             </Link>
           </div>
         </aside>
@@ -191,19 +220,19 @@ function StatCard({
   label,
   value,
   hint,
-  icon,
+  Icon,
 }: {
   label: string;
   value: string;
   hint?: string;
-  icon: string;
+  Icon: LucideIcon;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-white p-5">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
-        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-50 text-base">
-          {icon}
+        <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-50 text-brand-600">
+          <Icon className="h-4 w-4" aria-hidden />
         </span>
       </div>
       <p className="text-2xl font-extrabold text-brand-900">{value}</p>

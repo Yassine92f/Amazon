@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { getMyShop, updateMyShop, type SellerDto } from '../../../lib/catalog';
+import { t } from '../../../lib/i18n';
 
 export default function SellerSettingsPage() {
   const [shop, setShop] = useState<SellerDto | null>(null);
@@ -26,7 +27,7 @@ export default function SellerSettingsPage() {
         setLogo(s.logo ?? '');
         setBanner(s.banner ?? '');
       })
-      .catch(() => setError('Failed to load shop'));
+      .catch(() => setError(t.seller.shopSettings.loadError));
     return () => {
       cancelled = true;
     };
@@ -45,33 +46,37 @@ export default function SellerSettingsPage() {
         banner: banner.trim() || undefined,
       });
       setShop(updated);
-      setMessage('Shop updated.');
+      setMessage(t.seller.shopSettings.updated);
     } catch (err: unknown) {
       const m =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Failed to update shop';
+        t.seller.shopSettings.updateError;
       setError(m);
     }
     setSaving(false);
   };
 
   if (!shop && !error) {
-    return <div className="container-main py-20 text-center text-sm text-muted">Loading…</div>;
+    return (
+      <div className="container-main py-20 text-center text-sm text-muted">
+        {t.seller.shopSettings.loading}
+      </div>
+    );
   }
 
   return (
     <div className="container-main py-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-brand-900">Shop settings</h1>
-          <p className="mt-1 text-sm text-muted">Update your shop name, description and visuals.</p>
+          <h1 className="text-2xl font-extrabold text-brand-900">{t.seller.shopSettings.title}</h1>
+          <p className="mt-1 text-sm text-muted">{t.seller.shopSettings.subtitle}</p>
         </div>
         {shop && (
           <Link
             href={`/sellers/${shop.shopSlug}`}
             className="text-sm font-semibold text-brand-600 hover:text-brand-700"
           >
-            View public page →
+            {t.seller.shopSettings.viewPublic}
           </Link>
         )}
       </div>
@@ -89,7 +94,9 @@ export default function SellerSettingsPage() {
         )}
 
         <div className="mb-4">
-          <label className="mb-1 block text-sm font-semibold text-text">Shop name</label>
+          <label className="mb-1 block text-sm font-semibold text-text">
+            {t.seller.shopSettings.shopName}
+          </label>
           <input
             type="text"
             required
@@ -102,7 +109,9 @@ export default function SellerSettingsPage() {
         </div>
 
         <div className="mb-4">
-          <label className="mb-1 block text-sm font-semibold text-text">Description</label>
+          <label className="mb-1 block text-sm font-semibold text-text">
+            {t.seller.shopSettings.description}
+          </label>
           <textarea
             rows={4}
             maxLength={500}
@@ -114,26 +123,28 @@ export default function SellerSettingsPage() {
 
         <div className="mb-4">
           <label className="mb-1 block text-sm font-semibold text-text">
-            Logo URL <span className="text-xs font-normal text-muted">(optional)</span>
+            {t.seller.shopSettings.logoUrl}{' '}
+            <span className="text-xs font-normal text-muted">{t.seller.shopSettings.optional}</span>
           </label>
           <input
             type="url"
             value={logo}
             onChange={(e) => setLogo(e.target.value)}
-            placeholder="https://cdn.example.com/shop/logo.png"
+            placeholder={t.seller.shopSettings.logoPlaceholder}
             className="w-full rounded-md border border-border bg-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500"
           />
         </div>
 
         <div className="mb-6">
           <label className="mb-1 block text-sm font-semibold text-text">
-            Banner URL <span className="text-xs font-normal text-muted">(optional)</span>
+            {t.seller.shopSettings.bannerUrl}{' '}
+            <span className="text-xs font-normal text-muted">{t.seller.shopSettings.optional}</span>
           </label>
           <input
             type="url"
             value={banner}
             onChange={(e) => setBanner(e.target.value)}
-            placeholder="https://cdn.example.com/shop/banner.jpg"
+            placeholder={t.seller.shopSettings.bannerPlaceholder}
             className="w-full rounded-md border border-border bg-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500"
           />
         </div>
@@ -145,7 +156,7 @@ export default function SellerSettingsPage() {
           whileTap={{ scale: 0.98 }}
           className="rounded-md bg-brand-500 px-6 py-2.5 text-sm font-bold text-white disabled:opacity-60"
         >
-          {saving ? 'Saving…' : 'Save changes'}
+          {saving ? t.seller.shopSettings.saving : t.seller.shopSettings.save}
         </motion.button>
       </form>
     </div>

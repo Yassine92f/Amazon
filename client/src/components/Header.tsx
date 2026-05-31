@@ -4,21 +4,40 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  Zap,
+  Store,
+  Cpu,
+  Smartphone,
+  Headphones,
+  Laptop,
+  Watch,
+  Gamepad2,
+  Shirt,
+  House,
+  Dumbbell,
+  BookOpen,
+  Sparkles,
+  ToyBrick,
+} from 'lucide-react';
 import { useAuthStore } from '../store';
 import { t } from '../lib/i18n';
 import { UserRole } from '@ecommerce/shared';
 
+// Slugs mirror the seeded catalog categories so each pill is a working link.
 const categories = [
-  { emoji: '🔥', label: t.categories.deals, active: true },
-  { emoji: '📱', label: t.categories.electronics },
-  { emoji: '👗', label: t.categories.fashion },
-  { emoji: '🏠', label: t.categories.homeGarden },
-  { emoji: '⚽', label: t.categories.sports },
-  { emoji: '📚', label: t.categories.books },
-  { emoji: '🍎', label: t.categories.grocery },
-  { emoji: '💎', label: t.categories.beauty },
-  { emoji: '🎮', label: t.categories.gaming },
-  { emoji: '🐾', label: t.categories.pets },
+  { Icon: Cpu, label: t.categories.electronics, slug: 'electronics' },
+  { Icon: Smartphone, label: t.categories.phones, slug: 'phones' },
+  { Icon: Headphones, label: t.categories.audio, slug: 'audio' },
+  { Icon: Laptop, label: t.categories.computers, slug: 'computers' },
+  { Icon: Watch, label: t.categories.wearables, slug: 'wearables' },
+  { Icon: Gamepad2, label: t.categories.gaming, slug: 'gaming' },
+  { Icon: Shirt, label: t.categories.fashion, slug: 'fashion' },
+  { Icon: House, label: t.categories.home, slug: 'home' },
+  { Icon: Dumbbell, label: t.categories.sports, slug: 'sports' },
+  { Icon: BookOpen, label: t.categories.books, slug: 'books' },
+  { Icon: Sparkles, label: t.categories.beauty, slug: 'beauty' },
+  { Icon: ToyBrick, label: t.categories.toys, slug: 'toys' },
 ];
 
 export default function Header() {
@@ -46,7 +65,7 @@ export default function Header() {
       {/* Announcement Bar */}
       <div className="bg-gradient-to-r from-brand-500 to-brand-600 py-2">
         <div className="container-main flex items-center justify-center gap-2 text-sm font-semibold text-white">
-          <span className="text-gold-300">⚡</span>
+          <Zap className="h-4 w-4 shrink-0 text-gold-300" aria-hidden />
           <span>{t.header.announcement}</span>
           <span className="text-brand-200">·</span>
           <a
@@ -309,19 +328,24 @@ export default function Header() {
       <nav className="border-b border-border bg-white">
         <div className="container-main py-2.5">
           <ul className="scrollbar-hide flex items-center gap-2 overflow-x-auto">
+            <li className="shrink-0">
+              <Link
+                href="/sellers"
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-brand-600"
+              >
+                <Store className="h-4 w-4" aria-hidden />
+                <span>{t.header.shops}</span>
+              </Link>
+            </li>
             {categories.map((cat) => (
-              <li key={cat.label} className="shrink-0">
-                <button
-                  type="button"
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium transition-all ${
-                    cat.active
-                      ? 'bg-brand-500 text-white shadow-sm'
-                      : 'border border-border bg-white text-brand-900 hover:border-brand-200 hover:bg-brand-50'
-                  }`}
+              <li key={cat.slug} className="shrink-0">
+                <Link
+                  href={`/c/${cat.slug}`}
+                  className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-white px-4 py-2 text-[13px] font-medium text-brand-900 transition-all hover:border-brand-200 hover:bg-brand-50"
                 >
-                  <span>{cat.emoji}</span>
+                  <cat.Icon className="h-4 w-4 text-brand-500" aria-hidden />
                   <span>{cat.label}</span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>

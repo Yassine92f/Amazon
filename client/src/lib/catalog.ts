@@ -197,6 +197,25 @@ export async function getPublicShop(slug: string): Promise<SellerDto> {
   return data.data;
 }
 
+export interface SellerListParams {
+  page?: number;
+  limit?: number;
+  query?: string;
+  isVerified?: boolean;
+}
+
+export async function listSellers(
+  params: SellerListParams = {},
+): Promise<PaginatedResponse<SellerDto>> {
+  const query: Record<string, string> = {};
+  if (params.page) query.page = String(params.page);
+  if (params.limit) query.limit = String(params.limit);
+  if (params.query) query.query = params.query;
+  if (params.isVerified !== undefined) query.isVerified = String(params.isVerified);
+  const { data } = await api.get('/sellers', { params: query });
+  return data.data;
+}
+
 // ── Products API ───────────────────────────────────────────────────────
 
 function serializeSearchParams(params: ProductSearchParams): Record<string, string> {
