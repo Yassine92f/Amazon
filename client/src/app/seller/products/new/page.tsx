@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import ProductForm from '../../../../components/seller/ProductForm';
 import { createProduct, updateProduct, type ProductInput } from '../../../../lib/catalog';
+import { t } from '../../../../lib/i18n';
 
 export default function NewProductPage() {
   const router = useRouter();
@@ -19,5 +20,5 @@ export default function NewProductPage() {
     router.push('/seller/products');
   };
 
-  return <ProductForm onSubmit={submit} submitLabel="Publish" />;
+  return <ProductForm onSubmit={submit} submitLabel={t.seller.form.publish} />;
 }

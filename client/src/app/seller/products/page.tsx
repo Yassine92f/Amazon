@@ -3,12 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Plus, Package, ExternalLink, SquarePen, Trash2 } from 'lucide-react';
 import Pagination from '../../../components/catalog/Pagination';
 import { listMyProducts, deleteProduct, type ProductSummaryDto } from '../../../lib/catalog';
-
-function formatPrice(n: number): string {
-  return `€${n.toFixed(2).replace('.', ',')}`;
-}
+import { t, formatPrice } from '../../../lib/i18n';
 
 export default function SellerProductsPage() {
   const [items, setItems] = useState<ProductSummaryDto[]>([]);
@@ -32,7 +30,7 @@ export default function SellerProductsPage() {
       .catch((err: unknown) => {
         const m =
           (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Failed to load products';
+          t.seller.list.loadError;
         setError(m);
         setLoading(false);
       });
@@ -52,7 +50,7 @@ export default function SellerProductsPage() {
     } catch (err: unknown) {
       const m =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Failed to delete product';
+        t.seller.list.deleteError;
       setError(m);
     }
   };
@@ -61,14 +59,15 @@ export default function SellerProductsPage() {
     <div className="container-main py-6">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-extrabold text-brand-900">Products</h1>
-          <p className="mt-1 text-sm text-muted">{total} total</p>
+          <h1 className="text-2xl font-extrabold text-brand-900">{t.seller.list.title}</h1>
+          <p className="mt-1 text-sm text-muted">{t.seller.list.total(String(total))}</p>
         </div>
         <Link
           href="/seller/products/new"
-          className="rounded-md bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
+          className="flex items-center gap-2 rounded-md bg-brand-500 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
         >
-          + Add new product
+          <Plus className="h-4 w-4" aria-hidden />
+          {t.seller.list.addNew}
         </Link>
       </div>
 
@@ -83,7 +82,7 @@ export default function SellerProductsPage() {
               fetchList();
             }
           }}
-          placeholder="Search by name, brand, SKU…"
+          placeholder={t.seller.list.searchPlaceholder}
           className="w-full max-w-sm rounded-md border border-border bg-white px-4 py-2.5 text-sm outline-none focus:border-brand-500"
         />
         <button
@@ -94,7 +93,7 @@ export default function SellerProductsPage() {
           }}
           className="rounded-md border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text"
         >
-          Search
+          {t.seller.list.search}
         </button>
       </div>
 
@@ -106,20 +105,23 @@ export default function SellerProductsPage() {
 
       {loading && items.length === 0 ? (
         <div className="rounded-lg border border-border bg-white p-12 text-center text-sm text-muted">
-          Loading…
+          {t.seller.list.loading}
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border-strong bg-white p-12 text-center">
-          <div className="mb-3 text-4xl">📦</div>
-          <h3 className="mb-1 text-base font-bold text-brand-900">No products yet</h3>
-          <p className="mb-4 text-sm text-muted">
-            Start listing items to appear in the marketplace.
-          </p>
+          <Package
+            className="mx-auto mb-3 h-12 w-12 text-brand-300"
+            strokeWidth={1.5}
+            aria-hidden
+          />
+          <h3 className="mb-1 text-base font-bold text-brand-900">{t.seller.list.emptyTitle}</h3>
+          <p className="mb-4 text-sm text-muted">{t.seller.list.emptyDesc}</p>
           <Link
             href="/seller/products/new"
-            className="inline-block rounded-md bg-brand-500 px-5 py-2.5 text-sm font-bold text-white"
+            className="inline-flex items-center gap-2 rounded-md bg-brand-500 px-5 py-2.5 text-sm font-bold text-white"
           >
-            + Add your first product
+            <Plus className="h-4 w-4" aria-hidden />
+            {t.seller.list.addFirst}
           </Link>
         </div>
       ) : (
@@ -127,12 +129,12 @@ export default function SellerProductsPage() {
           <table className="w-full text-sm">
             <thead className="bg-bg text-[11px] font-bold uppercase tracking-wide text-muted">
               <tr>
-                <th className="px-4 py-3 text-left">Product</th>
-                <th className="px-4 py-3 text-left">Brand</th>
-                <th className="px-4 py-3 text-left">Price</th>
-                <th className="px-4 py-3 text-left">Stock</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th className="px-4 py-3 text-left">{t.seller.list.colProduct}</th>
+                <th className="px-4 py-3 text-left">{t.seller.list.colBrand}</th>
+                <th className="px-4 py-3 text-left">{t.seller.list.colPrice}</th>
+                <th className="px-4 py-3 text-left">{t.seller.list.colStock}</th>
+                <th className="px-4 py-3 text-left">{t.seller.list.colStatus}</th>
+                <th className="px-4 py-3 text-right">{t.seller.list.colActions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -170,12 +172,12 @@ export default function SellerProductsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`font-bold ${p.inStock ? 'text-green-700' : 'text-red-600'}`}>
-                      {p.inStock ? 'In stock' : 'Out'}
+                      {p.inStock ? t.seller.list.inStock : t.seller.list.out}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">
-                      Active
+                      {t.seller.list.active}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -184,24 +186,24 @@ export default function SellerProductsPage() {
                         href={`/products/${p.slug}`}
                         target="_blank"
                         className="flex h-8 w-8 items-center justify-center rounded-md bg-bg text-text hover:bg-brand-50"
-                        title="View live"
+                        title={t.seller.list.viewLive}
                       >
-                        ↗
+                        <ExternalLink className="h-4 w-4" aria-hidden />
                       </Link>
                       <Link
                         href={`/seller/products/${p._id}/edit`}
                         className="flex h-8 w-8 items-center justify-center rounded-md bg-bg text-text hover:bg-brand-50"
-                        title="Edit"
+                        title={t.seller.list.edit}
                       >
-                        ✎
+                        <SquarePen className="h-4 w-4" aria-hidden />
                       </Link>
                       <button
                         type="button"
                         onClick={() => setToDelete(p)}
                         className="flex h-8 w-8 items-center justify-center rounded-md bg-bg text-red-600 hover:bg-red-50"
-                        title="Delete"
+                        title={t.seller.list.delete}
                       >
-                        🗑
+                        <Trash2 className="h-4 w-4" aria-hidden />
                       </button>
                     </div>
                   </td>
@@ -241,10 +243,9 @@ function DeleteModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white p-6">
-        <h3 className="mb-2 text-base font-bold text-brand-900">Delete product?</h3>
+        <h3 className="mb-2 text-base font-bold text-brand-900">{t.seller.list.deleteTitle}</h3>
         <p className="mb-5 text-sm text-muted">
-          <span className="font-semibold text-text">{name}</span> will be permanently removed. This
-          cannot be undone.
+          <span className="font-semibold text-text">{name}</span> {t.seller.list.deleteSuffix}
         </p>
         <div className="flex justify-end gap-2">
           <button
@@ -252,14 +253,14 @@ function DeleteModal({
             onClick={onCancel}
             className="rounded-md border border-border bg-white px-4 py-2 text-sm font-semibold text-text"
           >
-            Cancel
+            {t.seller.list.cancel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
             className="rounded-md bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700"
           >
-            Delete
+            {t.seller.list.delete}
           </button>
         </div>
       </div>
