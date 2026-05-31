@@ -195,8 +195,10 @@ export class ProductRepository implements IProductRepository {
   ): { stars: number; count: number }[] {
     const buckets = [1, 2, 3, 4, 5].map((stars) => ({ stars, count: 0 }));
     for (const r of raw) {
+      // `$bucket` keys each group by its lower boundary (0,1,2,3,4); the [0,1)
+      // bucket must still land on the 1★ level instead of being dropped.
       const lower = typeof r._id === 'number' ? r._id : 0;
-      const stars = lower < 1 ? 0 : Math.min(5, Math.floor(lower) + 1);
+      const stars = Math.min(5, Math.floor(lower) + 1);
       const target = buckets.find((b) => b.stars === stars);
       if (target) target.count += r.count;
     }
