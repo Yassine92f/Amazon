@@ -6,6 +6,10 @@ import usersRouter from './users';
 import sellersRouter from './sellers';
 import categoriesRouter from './categories';
 import productsRouter from './products';
+import cartRouter from './cart';
+import ordersRouter from './orders';
+import couponsRouter from './coupons';
+import wishlistRouter from './wishlist';
 
 const router: IRouter = Router();
 
@@ -21,8 +25,12 @@ router.use('/sellers', sellersRouter);
 router.use('/categories', categoriesRouter);
 router.use('/products', productsRouter);
 
-// router.use('/cart', cartRouter);       — Section 3
-// router.use('/orders', ordersRouter);   — Section 3
+// Section 3 — Cart, Orders & Payment
+router.use('/cart', cartRouter);
+router.use('/orders', ordersRouter);
+router.use('/coupons', couponsRouter);
+router.use('/wishlist', wishlistRouter);
+
 // router.use('/notifications', notificationsRouter); — Section 4
 // router.use('/messages', messagesRouter); — Section 4
 

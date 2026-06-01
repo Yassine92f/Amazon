@@ -56,6 +56,56 @@ export class ProductRepository implements IProductRepository {
     return ProductModel.countDocuments({ categoryId, isActive: true });
   }
 
+  async decrementVariantStock(
+    productId: string,
+    variantId: string,
+    quantity: number,
+  ): Promise<boolean> {
+    if (!mongoose.isValidObjectId(productId) || !mongoose.isValidObjectId(variantId)) return false;
+    // Atomic guard: only decrement when the variant holds at least `quantity` in stock.
+    const res = await ProductModel.updateOne(
+      { _id: productId, 'variants._id': variantId, 'variants.stock': { $gte: quantity } },
+      { $inc: { 'variants.$.stock': -quantity } },
+    );
+    if (res.modifiedCount !== 1) return false;
+    await this.recomputeInStock(productId);
+    return true;
+  }
+
+  async incrementVariantStock(
+    productId: string,
+    variantId: string,
+    quantity: number,
+  ): Promise<void> {
+    if (!mongoose.isValidObjectId(productId) || !mongoose.isValidObjectId(variantId)) return;
+    await ProductModel.updateOne(
+      { _id: productId, 'variants._id': variantId },
+      { $inc: { 'variants.$.stock': quantity } },
+    );
+    await this.recomputeInStock(productId);
+  }
+
+  async incrementTotalSold(productId: string, quantity: number): Promise<void> {
+    if (!mongoose.isValidObjectId(productId)) return;
+    await ProductModel.updateOne({ _id: productId }, { $inc: { totalSold: quantity } });
+  }
+
+  // Keep the denormalized `inStock` flag in sync after a stock mutation (the
+  // pre('save') hook does not run on updateOne, so recompute via a pipeline update).
+  private async recomputeInStock(productId: string): Promise<void> {
+    await ProductModel.updateOne({ _id: productId }, [
+      {
+        $set: {
+          inStock: {
+            $anyElementTrue: {
+              $map: { input: '$variants', as: 'v', in: { $gt: ['$$v.stock', 0] } },
+            },
+          },
+        },
+      },
+    ]);
+  }
+
   async search(filters: ProductListFilters): Promise<ProductSearchResult> {
     const match = this.buildMatchStage(filters);
     const useTextScore = Boolean(filters.query) && filters.sortBy === 'relevance';
