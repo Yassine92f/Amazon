@@ -75,4 +75,11 @@ export interface IProductRepository {
   search(filters: ProductListFilters): Promise<ProductSearchResult>;
   countBySeller(sellerId: string, activeOnly?: boolean): Promise<number>;
   countByCategory(categoryId: string): Promise<number>;
+  // Atomically decrement a variant's stock only if enough is available.
+  // Returns true on success, false if the product/variant is missing or stock is insufficient.
+  decrementVariantStock(productId: string, variantId: string, quantity: number): Promise<boolean>;
+  // Restore stock (e.g. on order cancellation or rollback). Best-effort, never fails on missing variant.
+  incrementVariantStock(productId: string, variantId: string, quantity: number): Promise<void>;
+  // Increment the denormalized totalSold counter when an order is placed.
+  incrementTotalSold(productId: string, quantity: number): Promise<void>;
 }

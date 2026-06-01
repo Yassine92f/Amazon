@@ -6,12 +6,21 @@ export interface CartItem {
   variantId: string;
   quantity: number;
   price: number;
+  // Display fields enriched by the API (optional — not persisted on guest carts)
+  productName?: string;
+  productSlug?: string;
+  image?: string;
+  variantName?: string;
+  inStock?: boolean;
+  maxStock?: number;
+  lineTotal?: number;
 }
 
 export interface Cart extends BaseEntity {
   userId: string;
   items: CartItem[];
   totalAmount: number;
+  totalItems?: number;
 }
 
 // Order
@@ -46,6 +55,8 @@ export interface Order extends BaseEntity {
   items: OrderItem[];
   subtotal: number;
   shippingCost: number;
+  discountAmount: number;
+  couponCode?: string;
   totalAmount: number;
   status: OrderStatus;
   deliveryType: DeliveryType;
@@ -59,6 +70,7 @@ export interface Order extends BaseEntity {
   paidAt?: string;
   shippedAt?: string;
   deliveredAt?: string;
+  cancelledAt?: string;
 }
 
 // DTOs
