@@ -126,6 +126,9 @@ function makeProductRepo(initial?: ProductEntity): IProductRepository {
     ),
     countBySeller: jest.fn(async () => products.size),
     countByCategory: jest.fn(async () => products.size),
+    decrementVariantStock: jest.fn(async () => true),
+    incrementVariantStock: jest.fn(async () => undefined),
+    incrementTotalSold: jest.fn(async () => undefined),
   };
 }
 
