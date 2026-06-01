@@ -23,6 +23,7 @@ export const openapiSpec = {
     { name: 'Payments', description: 'Paiement Stripe' },
     { name: 'Coupons', description: 'Codes promo' },
     { name: 'Wishlist', description: 'Favoris' },
+    { name: 'Disputes', description: 'Litiges (ouverture client, traitement admin)' },
     { name: 'Admin', description: 'Administration (RBAC admin)' },
   ],
   components: {
@@ -545,6 +546,71 @@ export const openapiSpec = {
         tags: ['Wishlist'],
         summary: 'Mes favoris',
         responses: { '200': { description: 'OK' } },
+      },
+    },
+    '/disputes': {
+      post: {
+        tags: ['Disputes'],
+        summary: 'Ouvrir un litige sur une commande (client)',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['orderId', 'reason', 'description'],
+                properties: {
+                  orderId: { type: 'string' },
+                  reason: {
+                    type: 'string',
+                    enum: ['not_received', 'damaged', 'wrong_item', 'not_as_described', 'other'],
+                  },
+                  description: { type: 'string', minLength: 10, maxLength: 2000 },
+                },
+              },
+            },
+          },
+        },
+        responses: { '201': { description: 'Litige créé' }, '409': { description: 'Déjà ouvert' } },
+      },
+      get: {
+        tags: ['Disputes'],
+        summary: 'Lister tous les litiges (admin, filtre ?status=)',
+        security: [{ bearerAuth: [] }],
+        responses: { '200': { description: 'OK' }, '403': { description: 'Admin requis' } },
+      },
+    },
+    '/disputes/mine': {
+      get: {
+        tags: ['Disputes'],
+        summary: 'Mes litiges (client)',
+        security: [{ bearerAuth: [] }],
+        responses: { '200': { description: 'OK' } },
+      },
+    },
+    '/disputes/{id}': {
+      patch: {
+        tags: ['Disputes'],
+        summary: 'Traiter un litige : en cours / résolu / rejeté (admin)',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['status'],
+                properties: {
+                  status: { type: 'string', enum: ['under_review', 'resolved', 'rejected'] },
+                  resolution: { type: 'string', maxLength: 2000 },
+                },
+              },
+            },
+          },
+        },
+        responses: { '200': { description: 'Litige mis à jour' } },
       },
     },
     '/wishlist/{productId}/toggle': {
