@@ -44,6 +44,8 @@ export interface OrderItem {
   variantId: string;
   productName: string;
   variantName: string;
+  // Image snapshot taken at purchase time (variant image, else product image).
+  image?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
