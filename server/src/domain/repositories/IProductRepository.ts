@@ -28,7 +28,7 @@ export interface UpdateProductData {
 export interface ProductListFilters {
   page: number;
   limit: number;
-  sortBy?: 'createdAt' | 'price' | 'rating' | 'totalSold' | 'relevance';
+  sortBy?: 'createdAt' | 'price' | 'rating' | 'totalSold' | 'brand' | 'relevance';
   sortOrder?: 'asc' | 'desc';
   query?: string;
   categoryIds?: string[];

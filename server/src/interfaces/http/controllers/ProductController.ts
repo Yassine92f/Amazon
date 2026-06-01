@@ -5,7 +5,7 @@ import { AppError } from '../middlewares/errorHandler';
 import { AuthRequest } from '../middlewares/auth';
 import { invalidateNamespace } from '../middlewares/cache';
 
-const VALID_SORT = new Set(['createdAt', 'price', 'rating', 'totalSold', 'relevance']);
+const VALID_SORT = new Set(['createdAt', 'price', 'rating', 'totalSold', 'brand', 'relevance']);
 
 export class ProductController {
   constructor(private productUseCase: ProductUseCase) {}
