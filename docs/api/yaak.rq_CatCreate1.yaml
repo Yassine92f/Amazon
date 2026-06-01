@@ -1,0 +1,29 @@
+type: http_request
+model: http_request
+id: rq_CatCreate1
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_CatFold
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "name": "Headphones",
+      "description": "Over-ear, on-ear, in-ear, wireless and wired headphones.",
+      "icon": "headphones",
+      "parentId": "${[ parentCategoryId ]}"
+    }
+bodyType: application/json
+description: Admin only. parentId optional. Slug auto-generated from name.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: ctcrhdr
+method: POST
+name: Create Category (Admin)
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/categories
+urlParameters: []

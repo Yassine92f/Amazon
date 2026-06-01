@@ -15,13 +15,21 @@ The server listens on `http://localhost:5001`. All API routes are prefixed with 
 
 Create a Yaak environment (top-right icon) with these vars. You reference them via `${[ varName ]}` in URLs, headers and body.
 
-| Variable       | Initial value                          |
-| -------------- | -------------------------------------- |
-| `baseUrl`      | `http://localhost:5001/api`            |
-| `clientUrl`    | `http://localhost:3000`                |
-| `accessToken`  | _(empty — filled after login)_         |
-| `refreshToken` | _(empty — filled after login)_         |
-| `userId`       | _(empty — useful for admin endpoints)_ |
+| Variable           | Initial value                          |
+| ------------------ | -------------------------------------- |
+| `baseUrl`          | `http://localhost:5001/api`            |
+| `clientUrl`        | `http://localhost:3000`                |
+| `accessToken`      | _(empty — filled after login)_         |
+| `refreshToken`     | _(empty — filled after login)_         |
+| `userId`           | _(empty — useful for admin endpoints)_ |
+| `addressId`        | _(empty — for address PUT/DELETE)_     |
+| `shopSlug`         | _(empty — for public shop lookup)_     |
+| `sellerId`         | _(empty — for admin verify)_           |
+| `categoryId`       | _(empty — for product create / admin)_ |
+| `categorySlug`     | _(empty — for category browse)_        |
+| `parentCategoryId` | _(empty — for nested category create)_ |
+| `productId`        | _(empty — for product PUT/DELETE)_     |
+| `productSlug`      | _(empty — for PDP)_                    |
 
 **Pro tip — auto-extract tokens.** On the `POST /auth/login` and `POST /auth/register` requests, open the request's `<>` (Post-response script) and paste:
 
@@ -212,7 +220,92 @@ Available `action` filter values: `user.status_changed`, `user.role_changed`, `u
 
 ---
 
-## 4. Security guarantees to exercise
+## 4. Catalog & Search (Section 2)
+
+All product browsing endpoints are **public** (no auth). Seller endpoints require `role:SELLER`. Admin endpoints require `role:admin`.
+
+### Sellers
+
+Upgrade your authenticated user to a seller and create a shop:
+
+```
+POST  ${[ baseUrl ]}/sellers/register
+Headers: Authorization: Bearer ${[ accessToken ]}
+Body: { "shopName": "AudioVault Premium", "description": "Premium audio gear..." }
+```
+
+After this call, your User has `role:seller`. **Log in again** to get a token that carries the new role; otherwise all seller endpoints will return 403.
+
+```
+GET   ${[ baseUrl ]}/sellers/me/shop                         (seller)
+PUT   ${[ baseUrl ]}/sellers/me/shop                         (seller)
+        Body: { "description": "Updated bio", "logo": "https://..." }
+GET   ${[ baseUrl ]}/sellers/${[ shopSlug ]}                 (public)
+GET   ${[ baseUrl ]}/sellers?page=1&limit=20&isVerified=true (public)
+PUT   ${[ baseUrl ]}/sellers/${[ sellerId ]}/verify          (admin)
+        Body: { "isVerified": true, "commissionRate": 0.08 }
+```
+
+### Categories
+
+```
+GET   ${[ baseUrl ]}/categories                  (flat list)
+GET   ${[ baseUrl ]}/categories/tree             (hierarchical)
+GET   ${[ baseUrl ]}/categories/${[ categorySlug ]}
+POST  ${[ baseUrl ]}/categories                  (admin)
+        Body: { "name": "Headphones", "parentId": "${[ parentCategoryId ]}", "icon": "headphones" }
+PUT   ${[ baseUrl ]}/categories/${[ categoryId ]}  (admin)
+        Body: { "name": "Headphones & Earbuds", "isActive": true }
+DELETE ${[ baseUrl ]}/categories/${[ categoryId ]} (admin — refuses if it has children)
+```
+
+### Products
+
+**Public search + facets.** Returns `items`, `total`, pagination, and `facets: { categories, brands, priceRange, ratingDistribution }`.
+
+```
+GET   ${[ baseUrl ]}/products
+        ?page=1&limit=20
+        &query=wireless headphones
+        &categoryId=${[ categoryId ]}
+        &brand=Sony,Bose
+        &minPrice=50&maxPrice=500
+        &minRating=4
+        &inStock=true
+        &sortBy=relevance              ← relevance | price | rating | totalSold | createdAt
+        &sortOrder=desc                ← asc | desc
+```
+
+**Lookup:**
+
+```
+GET   ${[ baseUrl ]}/products/${[ productSlug ]}   ← PDP, enriched with shop + category
+GET   ${[ baseUrl ]}/products/by-id/${[ productId ]}
+```
+
+**Seller management** — owner-only, 403 if you try to modify another seller's product:
+
+```
+POST  ${[ baseUrl ]}/products              (seller)
+        Body: { name, description, categoryId, brand?, tags?, images[], variants[] }
+PUT   ${[ baseUrl ]}/products/${[ productId ]} (seller)
+DELETE ${[ baseUrl ]}/products/${[ productId ]} (seller)
+GET   ${[ baseUrl ]}/products/me/list      (seller — includes drafts & inactive)
+GET   ${[ baseUrl ]}/products/me/${[ productId ]} (seller — edit form data)
+```
+
+### Reviews (browse only — POST owned by feature/cart-orders)
+
+```
+GET   ${[ baseUrl ]}/products/${[ productId ]}/reviews
+        ?page=1&limit=10&sortBy=createdAt&sortOrder=desc&minRating=4
+```
+
+Response includes `stats: { averageRating, total, distribution: [{stars, count}] }`.
+
+---
+
+## 5. Security guarantees to exercise
 
 ### Rate limiting
 
@@ -259,7 +352,7 @@ Hit any `/admin/*` endpoint with a `user` (non-admin) token:
 
 ---
 
-## 5. Response envelope
+## 6. Response envelope
 
 All API responses follow:
 
@@ -292,7 +385,7 @@ All API messages are in English. UI text (frontend) remains French. Email conten
 
 ---
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 
 | Symptom                                | Cause / Fix                                                              |
 | -------------------------------------- | ------------------------------------------------------------------------ |

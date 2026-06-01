@@ -127,6 +127,49 @@ export class AdminController {
     }
   };
 
+  listProducts = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = Math.max(1, parseInt(req.query.page as string) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
+      const query = (req.query.query as string) || undefined;
+      const statusParam = req.query.isActive as string | undefined;
+      const isActive = statusParam === 'true' ? true : statusParam === 'false' ? false : undefined;
+
+      const result = await this.adminUseCase.listProducts({ page, limit, query, isActive });
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
+  setProductActive = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id as string;
+      const { isActive } = req.body;
+      if (typeof isActive !== 'boolean') {
+        throw new AppError(400, 'isActive (boolean) is required');
+      }
+      const product = await this.adminUseCase.setProductActive(
+        id,
+        isActive,
+        this.extractActor(req),
+      );
+      res.json({ success: true, data: product });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
+  deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = req.params.id as string;
+      await this.adminUseCase.deleteProduct(id, this.extractActor(req));
+      res.json({ success: true, message: 'Product deleted' });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
   getAuditLogs = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Math.max(1, parseInt(req.query.page as string) || 1);

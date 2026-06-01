@@ -4,20 +4,40 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+  Zap,
+  Store,
+  Cpu,
+  Smartphone,
+  Headphones,
+  Laptop,
+  Watch,
+  Gamepad2,
+  Shirt,
+  House,
+  Dumbbell,
+  BookOpen,
+  Sparkles,
+  ToyBrick,
+} from 'lucide-react';
 import { useAuthStore } from '../store';
+import { t } from '../lib/i18n';
 import { UserRole } from '@ecommerce/shared';
 
+// Slugs mirror the seeded catalog categories so each pill is a working link.
 const categories = [
-  { emoji: '🔥', label: 'Deals', active: true },
-  { emoji: '📱', label: 'Electronics' },
-  { emoji: '👗', label: 'Fashion' },
-  { emoji: '🏠', label: 'Home & Garden' },
-  { emoji: '⚽', label: 'Sports' },
-  { emoji: '📚', label: 'Books' },
-  { emoji: '🍎', label: 'Grocery' },
-  { emoji: '💎', label: 'Beauty' },
-  { emoji: '🎮', label: 'Gaming' },
-  { emoji: '🐾', label: 'Pets' },
+  { Icon: Cpu, label: t.categories.electronics, slug: 'electronics' },
+  { Icon: Smartphone, label: t.categories.phones, slug: 'phones' },
+  { Icon: Headphones, label: t.categories.audio, slug: 'audio' },
+  { Icon: Laptop, label: t.categories.computers, slug: 'computers' },
+  { Icon: Watch, label: t.categories.wearables, slug: 'wearables' },
+  { Icon: Gamepad2, label: t.categories.gaming, slug: 'gaming' },
+  { Icon: Shirt, label: t.categories.fashion, slug: 'fashion' },
+  { Icon: House, label: t.categories.home, slug: 'home' },
+  { Icon: Dumbbell, label: t.categories.sports, slug: 'sports' },
+  { Icon: BookOpen, label: t.categories.books, slug: 'books' },
+  { Icon: Sparkles, label: t.categories.beauty, slug: 'beauty' },
+  { Icon: ToyBrick, label: t.categories.toys, slug: 'toys' },
 ];
 
 export default function Header() {
@@ -34,19 +54,25 @@ export default function Header() {
     router.push('/');
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    router.push(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
+  };
+
   return (
     <header>
       {/* Announcement Bar */}
       <div className="bg-gradient-to-r from-brand-500 to-brand-600 py-2">
         <div className="container-main flex items-center justify-center gap-2 text-sm font-semibold text-white">
-          <span className="text-gold-300">⚡</span>
-          <span>SPRING SALE — Up to 50% off on 10,000+ items</span>
+          <Zap className="h-4 w-4 shrink-0 text-gold-300" aria-hidden />
+          <span>{t.header.announcement}</span>
           <span className="text-brand-200">·</span>
           <a
             href="#"
             className="text-gold-300 underline underline-offset-2 hover:text-white transition-colors"
           >
-            Shop Now
+            {t.header.announcementCta}
           </a>
         </div>
       </div>
@@ -65,7 +91,7 @@ export default function Header() {
           </Link>
 
           {/* Search Bar */}
-          <div className="flex min-w-0 flex-1">
+          <form onSubmit={handleSearch} className="flex min-w-0 flex-1" role="search">
             <div className="relative flex w-full items-center rounded-full border border-border bg-[var(--color-bg)] transition-all focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-200">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -83,12 +109,12 @@ export default function Header() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for products, brands and more..."
+                placeholder={t.header.searchPlaceholder}
                 className="w-full bg-transparent py-2.5 pl-3 pr-4 text-sm text-brand-900 placeholder:text-muted focus:outline-none"
               />
               <button
-                type="button"
-                aria-label="Search"
+                type="submit"
+                aria-label={t.header.search}
                 className="mr-1 flex shrink-0 items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
               >
                 <svg
@@ -103,10 +129,10 @@ export default function Header() {
                     clipRule="evenodd"
                   />
                 </svg>
-                <span className="hidden md:inline">Search</span>
+                <span className="hidden md:inline">{t.header.search}</span>
               </button>
             </div>
-          </div>
+          </form>
 
           {/* Action Icons */}
           <div className="flex shrink-0 items-center gap-4 md:gap-5">
@@ -132,7 +158,9 @@ export default function Header() {
                         d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
                       />
                     </svg>
-                    <span className="text-[13px] font-medium hidden lg:inline">Admin</span>
+                    <span className="text-[13px] font-medium hidden lg:inline">
+                      {t.header.admin}
+                    </span>
                   </Link>
                 )}
 
@@ -155,7 +183,9 @@ export default function Header() {
                       d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
                     />
                   </svg>
-                  <span className="text-[13px] font-medium hidden lg:inline">Wishlist</span>
+                  <span className="text-[13px] font-medium hidden lg:inline">
+                    {t.header.wishlist}
+                  </span>
                 </button>
 
                 {/* Cart */}
@@ -215,8 +245,28 @@ export default function Header() {
                         className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Mon profil
+                        {t.header.myProfile}
                       </Link>
+                      {user.role === UserRole.SELLER && (
+                        <Link
+                          href="/seller"
+                          onClick={() => setShowMenu(false)}
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.header.sellerHub}
+                        </Link>
+                      )}
+                      {user.role === UserRole.USER && (
+                        <Link
+                          href="/become-seller"
+                          onClick={() => setShowMenu(false)}
+                          className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
+                          style={{ color: 'var(--color-brand-600)' }}
+                        >
+                          {t.header.becomeSeller}
+                        </Link>
+                      )}
                       {user.role === UserRole.ADMIN && (
                         <Link
                           href="/admin"
@@ -224,7 +274,7 @@ export default function Header() {
                           className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Administration
+                          {t.header.admin}
                         </Link>
                       )}
                       <button
@@ -233,7 +283,7 @@ export default function Header() {
                         className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
                         style={{ color: 'var(--color-error)' }}
                       >
-                        Se deconnecter
+                        {t.header.logout}
                       </button>
                     </div>
                   )}
@@ -259,14 +309,14 @@ export default function Header() {
                       d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                     />
                   </svg>
-                  <span className="text-[13px] font-medium hidden lg:inline">Connexion</span>
+                  <span className="text-[13px] font-medium hidden lg:inline">{t.header.login}</span>
                 </Link>
 
                 <Link
                   href="/register"
                   className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
                 >
-                  S&apos;inscrire
+                  {t.header.register}
                 </Link>
               </>
             )}
@@ -278,19 +328,24 @@ export default function Header() {
       <nav className="border-b border-border bg-white">
         <div className="container-main py-2.5">
           <ul className="scrollbar-hide flex items-center gap-2 overflow-x-auto">
+            <li className="shrink-0">
+              <Link
+                href="/sellers"
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-full bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-all hover:bg-brand-600"
+              >
+                <Store className="h-4 w-4" aria-hidden />
+                <span>{t.header.shops}</span>
+              </Link>
+            </li>
             {categories.map((cat) => (
-              <li key={cat.label} className="shrink-0">
-                <button
-                  type="button"
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium transition-all ${
-                    cat.active
-                      ? 'bg-brand-500 text-white shadow-sm'
-                      : 'border border-border bg-white text-brand-900 hover:border-brand-200 hover:bg-brand-50'
-                  }`}
+              <li key={cat.slug} className="shrink-0">
+                <Link
+                  href={`/c/${cat.slug}`}
+                  className="flex items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-white px-4 py-2 text-[13px] font-medium text-brand-900 transition-all hover:border-brand-200 hover:bg-brand-50"
                 >
-                  <span>{cat.emoji}</span>
+                  <cat.Icon className="h-4 w-4 text-brand-500" aria-hidden />
                   <span>{cat.label}</span>
-                </button>
+                </Link>
               </li>
             ))}
           </ul>

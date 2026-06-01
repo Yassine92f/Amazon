@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { useAuthStore } from '../../store';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { api } from '../../lib/api';
+import { t } from '../../lib/i18n';
 
 interface DashboardStats {
   totalUsers: number;
@@ -28,11 +29,12 @@ interface UserRow {
 }
 
 const navItems = [
-  { label: 'Dashboard', href: '/admin', active: true },
-  { label: 'Utilisateurs', href: '/admin/users', active: false },
-  { label: 'Vendeurs', href: '/admin', active: false },
-  { label: 'Commandes', href: '/admin', active: false },
-  { label: 'Parametres', href: '/admin', active: false },
+  { key: 'dashboard', label: t.admin.navDashboard, href: '/admin' },
+  { key: 'users', label: t.admin.navUsers, href: '/admin/users' },
+  { key: 'products', label: t.admin.navProducts, href: '/admin/products' },
+  { key: 'sellers', label: t.admin.navSellers, href: '/admin' },
+  { key: 'orders', label: t.admin.navOrders, href: '/admin' },
+  { key: 'settings', label: t.admin.navSettings, href: '/admin' },
 ];
 
 function AdminSidebar({ active }: { active: string }) {
@@ -43,18 +45,18 @@ function AdminSidebar({ active }: { active: string }) {
     >
       <div className="flex items-center gap-2 px-5 pb-6">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-extrabold text-white">
-          M
+          A
         </span>
         <span className="text-base font-bold" style={{ color: 'var(--color-text)' }}>
-          Admin Panel
+          {t.admin.panel}
         </span>
       </div>
       <nav className="flex flex-col gap-0.5 px-2">
         {navItems.map((item) => {
-          const isActive = item.label === active;
+          const isActive = item.key === active;
           return (
             <Link
-              key={item.label}
+              key={item.key}
               href={item.href}
               className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 isActive
@@ -140,10 +142,10 @@ function DashboardContent() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-            Dashboard
+            {t.admin.dashboardTitle}
           </h1>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Vue d&apos;ensemble de votre plateforme
+            {t.admin.overview}
           </p>
         </div>
         <Link href="/profile" className="flex items-center gap-2">
@@ -237,7 +239,7 @@ function DashboardContent() {
                     className="px-5 py-3 font-semibold"
                     style={{ color: 'var(--color-text-muted)' }}
                   >
-                    Role
+                    {t.admin.colRole}
                   </th>
                   <th
                     className="px-5 py-3 font-semibold"
@@ -283,7 +285,7 @@ function DashboardContent() {
                               : 'bg-brand-50 text-brand-600'
                         }`}
                       >
-                        {u.role}
+                        {t.roles[u.role] ?? u.role}
                       </span>
                     </td>
                     <td className="px-5 py-3">
@@ -296,7 +298,7 @@ function DashboardContent() {
                               : 'bg-gray-50 text-gray-500'
                         }`}
                       >
-                        {u.status === 'active' ? 'actif' : u.status}
+                        {t.userStatus[u.status] ?? u.status}
                       </span>
                     </td>
                     <td className="px-5 py-3" style={{ color: 'var(--color-text-muted)' }}>
@@ -332,7 +334,7 @@ export default function AdminDashboardPage() {
   return (
     <ProtectedRoute roles={['admin']}>
       <div className="flex h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
-        <AdminSidebar active="Dashboard" />
+        <AdminSidebar active="dashboard" />
         <DashboardContent />
       </div>
     </ProtectedRoute>

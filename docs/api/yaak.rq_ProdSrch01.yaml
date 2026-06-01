@@ -1,0 +1,62 @@
+type: http_request
+model: http_request
+id: rq_ProdSrch01
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_ProdFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: 'Public search + faceted filters. Returns items, total, pagination + facets (categories, brands, priceRange, ratingDistribution). Sort values: relevance, price, rating, totalSold, createdAt.'
+headers: []
+method: GET
+name: Search Products
+sortPriority: 0.0
+url: ${[ baseUrl ]}/products
+urlParameters:
+- enabled: true
+  name: page
+  value: '1'
+  id: prsrpg
+- enabled: true
+  name: limit
+  value: '20'
+  id: prsrlm
+- enabled: false
+  name: query
+  value: wireless headphones
+  id: prsrqr
+- enabled: false
+  name: categoryId
+  value: ${[ categoryId ]}
+  id: prsrct
+- enabled: false
+  name: brand
+  value: Sony,Bose
+  id: prsrbr
+- enabled: false
+  name: minPrice
+  value: '50'
+  id: prsrmp
+- enabled: false
+  name: maxPrice
+  value: '500'
+  id: prsrMp
+- enabled: false
+  name: minRating
+  value: '4'
+  id: prsrmr
+- enabled: false
+  name: inStock
+  value: 'true'
+  id: prsris
+- enabled: true
+  name: sortBy
+  value: relevance
+  id: prsrsb
+- enabled: true
+  name: sortOrder
+  value: desc
+  id: prsrso
