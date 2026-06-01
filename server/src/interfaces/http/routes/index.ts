@@ -1,13 +1,17 @@
 import { Router, type IRouter } from 'express';
 import healthRouter from './health';
+import authRouter from './auth';
+import adminRouter from './admin';
+import usersRouter from './users';
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 
-// Future route modules will be added here:
-// router.use('/auth', authRouter);       — Section 1
-// router.use('/users', usersRouter);     — Section 1
+// Section 1 — Auth & Admin
+router.use('/auth', authRouter);
+router.use('/admin', adminRouter);
+router.use('/users', usersRouter);
 // router.use('/products', productsRouter); — Section 2
 // router.use('/categories', categoriesRouter); — Section 2
 // router.use('/cart', cartRouter);       — Section 3

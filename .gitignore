@@ -38,3 +38,6 @@ data/
 # Misc
 *.tsbuildinfo
 *.pdf
+
+# Generated / experimental assets (kept local, not versioned)
+images/

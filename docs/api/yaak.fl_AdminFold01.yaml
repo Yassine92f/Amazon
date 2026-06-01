@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_AdminFold01
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: null
+authentication: {}
+authenticationType: null
+description: Admin endpoints — require role:admin. Promote your user in MongoDB before testing.
+headers: []
+name: Admin
+sortPriority: -1779955000000.0

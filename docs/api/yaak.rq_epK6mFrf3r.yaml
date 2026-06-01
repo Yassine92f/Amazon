@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_epK6mFrf3r
+createdAt: 2026-05-28T08:39:38.185082
+updatedAt: 2026-05-28T08:40:19.815425
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: POST
+name: Verify Email
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/auth/verify-email
+urlParameters: []

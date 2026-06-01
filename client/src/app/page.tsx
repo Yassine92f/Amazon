@@ -524,9 +524,9 @@ export default function Home() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-extrabold text-white">
-                  M
+                  A
                 </span>
-                <span className="text-lg font-extrabold">Marché.io</span>
+                <span className="text-lg font-extrabold">Abracadabra</span>
               </div>
               <p className="mt-3 text-sm leading-relaxed text-white/50 max-w-[260px]">
                 Your trusted marketplace for millions of products from verified sellers worldwide.
@@ -600,7 +600,7 @@ export default function Home() {
 
           {/* Bottom bar */}
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/40">
-            <span>© 2026 Marché.io — All rights reserved.</span>
+            <span>© 2026 Abracadabra — All rights reserved.</span>
             <div className="flex items-center gap-4">
               <span>€ EUR</span>
               <span>🇫🇷 Français</span>
