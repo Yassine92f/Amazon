@@ -4,7 +4,13 @@ import {
   IAuditLogRepository,
   FindAuditLogsParams,
 } from '../../domain/repositories/IAuditLogRepository';
+import {
+  IProductRepository,
+  ProductListFilters,
+} from '../../domain/repositories/IProductRepository';
+import { ISellerRepository } from '../../domain/repositories/ISellerRepository';
 import { UserEntity } from '../../domain/entities/User';
+import { ProductEntity } from '../../domain/entities/Product';
 import { AuditAction, AuditLogEntity } from '../../domain/entities/AuditLog';
 import { UserModel } from '../../infrastructure/database/models/User';
 
@@ -71,11 +77,134 @@ export interface PaginatedAuditLogsDto {
   hasPrev: boolean;
 }
 
+export interface AdminProductDto {
+  _id: string;
+  name: string;
+  slug: string;
+  brand?: string;
+  image: string;
+  sellerId: string;
+  shopName: string;
+  minPrice: number;
+  rating: number;
+  reviewCount: number;
+  totalSold: number;
+  inStock: boolean;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface PaginatedAdminProductsDto {
+  items: AdminProductDto[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 export class AdminUseCase {
   constructor(
     private userRepo: IUserRepository,
     private auditLogRepo: IAuditLogRepository,
+    private productRepo: IProductRepository,
+    private sellerRepo: ISellerRepository,
   ) {}
+
+  // ── Product moderation ─────────────────────────────────────
+  async listProducts(params: {
+    page: number;
+    limit: number;
+    query?: string;
+    isActive?: boolean;
+  }): Promise<PaginatedAdminProductsDto> {
+    const filters: ProductListFilters = {
+      page: params.page,
+      limit: params.limit,
+      query: params.query,
+      sortBy: params.query ? 'relevance' : 'createdAt',
+      sortOrder: 'desc',
+      isActive: params.isActive,
+      anyStatus: params.isActive === undefined,
+    };
+    const { products, total } = await this.productRepo.search(filters);
+
+    // Resolve shop names for the distinct sellers in this page.
+    const shopNames = new Map<string, string>();
+    for (const sellerId of new Set(products.map((p) => p.sellerId))) {
+      const seller = await this.sellerRepo.findById(sellerId);
+      shopNames.set(sellerId, seller?.shopName ?? '—');
+    }
+
+    const totalPages = Math.ceil(total / params.limit) || 1;
+    return {
+      items: products.map((p) => this.toProductDto(p, shopNames.get(p.sellerId) ?? '—')),
+      total,
+      page: params.page,
+      limit: params.limit,
+      totalPages,
+      hasNext: params.page < totalPages,
+      hasPrev: params.page > 1,
+    };
+  }
+
+  async setProductActive(
+    productId: string,
+    isActive: boolean,
+    actor: AdminActor,
+  ): Promise<AdminProductDto> {
+    const product = await this.productRepo.findById(productId);
+    if (!product) throw new AdminError(404, 'Product not found');
+
+    const updated = await this.productRepo.updateById(productId, { isActive });
+    if (!updated) throw new AdminError(500, 'Failed to update product');
+
+    await this.logAction(
+      actor,
+      AuditAction.PRODUCT_STATUS_CHANGED,
+      productId,
+      { from: product.isActive, to: isActive, name: product.name },
+      'Product',
+    );
+
+    const seller = await this.sellerRepo.findById(updated.sellerId);
+    return this.toProductDto(updated, seller?.shopName ?? '—');
+  }
+
+  async deleteProduct(productId: string, actor: AdminActor): Promise<void> {
+    const product = await this.productRepo.findById(productId);
+    if (!product) throw new AdminError(404, 'Product not found');
+
+    await this.productRepo.deleteById(productId);
+    await this.logAction(
+      actor,
+      AuditAction.PRODUCT_DELETED,
+      productId,
+      { name: product.name, sellerId: product.sellerId },
+      'Product',
+    );
+  }
+
+  private toProductDto(p: ProductEntity, shopName: string): AdminProductDto {
+    const prices = p.variants.map((v) => v.price);
+    return {
+      _id: p.id,
+      name: p.name,
+      slug: p.slug,
+      brand: p.brand,
+      image: p.images[0] ?? '',
+      sellerId: p.sellerId,
+      shopName,
+      minPrice: prices.length ? Math.min(...prices) : 0,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      totalSold: p.totalSold,
+      inStock: p.variants.some((v) => v.stock > 0),
+      isActive: p.isActive,
+      createdAt: p.createdAt.toISOString(),
+    };
+  }
 
   async getUsers(params: FindUsersParams): Promise<PaginatedUsersDto> {
     const { users, total } = await this.userRepo.findMany(params);
@@ -191,13 +320,14 @@ export class AdminUseCase {
     action: AuditAction,
     targetId: string,
     metadata: Record<string, unknown>,
+    targetType = 'User',
   ): Promise<void> {
     try {
       await this.auditLogRepo.create({
         actorId: actor.id,
         actorEmail: actor.email,
         action,
-        targetType: 'User',
+        targetType,
         targetId,
         metadata,
         ipAddress: actor.ipAddress,

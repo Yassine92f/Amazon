@@ -1,0 +1,38 @@
+type: http_request
+model: http_request
+id: rq_ProdRev001
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_ProdFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: 'Reviews for a product. Includes aggregate stats (avg + per-star distribution). POST owned by feature/cart-orders.'
+headers: []
+method: GET
+name: Product Reviews
+sortPriority: 8000.0
+url: ${[ baseUrl ]}/products/${[ productId ]}/reviews
+urlParameters:
+- enabled: true
+  name: page
+  value: '1'
+  id: prvpg
+- enabled: true
+  name: limit
+  value: '10'
+  id: prvlm
+- enabled: false
+  name: sortBy
+  value: rating
+  id: prvsb
+- enabled: false
+  name: sortOrder
+  value: desc
+  id: prvso
+- enabled: false
+  name: minRating
+  value: '4'
+  id: prvmr

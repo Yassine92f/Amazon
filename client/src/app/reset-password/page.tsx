@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import { Check, Circle } from 'lucide-react';
 import { api } from '../../lib/api';
 import { GuestRoute } from '../../components/GuestRoute';
 
@@ -169,13 +170,20 @@ function ResetPasswordForm() {
         {password && (
           <div className="flex items-center gap-3 text-[12px]">
             <span
+              className="flex items-center gap-1"
               style={{
                 color: password.length >= 8 ? 'var(--color-success)' : 'var(--color-text-muted)',
               }}
             >
-              {password.length >= 8 ? '✓' : '○'} 8+ caracteres
+              {password.length >= 8 ? (
+                <Check className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <Circle className="h-3.5 w-3.5" aria-hidden />
+              )}
+              8+ caracteres
             </span>
             <span
+              className="flex items-center gap-1"
               style={{
                 color:
                   password === confirmPassword && confirmPassword
@@ -183,7 +191,12 @@ function ResetPasswordForm() {
                     : 'var(--color-text-muted)',
               }}
             >
-              {password === confirmPassword && confirmPassword ? '✓' : '○'} Identiques
+              {password === confirmPassword && confirmPassword ? (
+                <Check className="h-3.5 w-3.5" aria-hidden />
+              ) : (
+                <Circle className="h-3.5 w-3.5" aria-hidden />
+              )}
+              Identiques
             </span>
           </div>
         )}
