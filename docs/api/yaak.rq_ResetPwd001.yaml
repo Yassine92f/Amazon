@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_ResetPwd001
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "token": "PASTE_RESET_TOKEN_FROM_EMAIL_HERE",
+      "newPassword": "NewPassword123"
+    }
+bodyType: application/json
+description: Consume a reset token (1h TTL) and set a new password.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: rstpwd0hdr
+method: POST
+name: Reset Password
+sortPriority: 4750.0
+url: ${[ baseUrl ]}/auth/reset-password
+urlParameters: []

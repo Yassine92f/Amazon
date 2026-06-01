@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_d4aM9FiCta
+createdAt: 2026-05-28T08:37:19.468019
+updatedAt: 2026-05-28T08:39:33.194730
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "teddynsoki@gmail.com"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: qnMFtIAHgH
+method: POST
+name: Forgot Password
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/auth/forgot-password
+urlParameters: []

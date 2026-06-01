@@ -1,0 +1,29 @@
+type: http_request
+model: http_request
+id: rq_ProfPut001
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T08:46:41.085013
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_3zR8V5N6Pi
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "firstName": "Teddy",
+      "lastName": "Nsoki",
+      "phone": "+33600000000",
+      "currentPassword": "NewPass456"
+    }
+bodyType: application/json
+description: Current password is required to update profile fields.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: profput0hdr
+method: PUT
+name: Update Profile
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/users/profile
+urlParameters: []

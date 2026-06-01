@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
+import { AuthProvider } from '../components/AuthProvider';
 import './globals.css';
 
 const font = Plus_Jakarta_Sans({
@@ -9,14 +10,16 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Marché.io — Your Marketplace',
+  title: 'Abracadabra — Your Marketplace',
   description: 'Discover deals on electronics, fashion, home and more. Free shipping over €29.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className={font.className}>{children}</body>
+      <body className={font.className}>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

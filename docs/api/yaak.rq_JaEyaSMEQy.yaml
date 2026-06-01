@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_JaEyaSMEQy
+createdAt: 2026-05-28T08:41:03.817394
+updatedAt: 2026-05-28T08:41:34.472537
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "currentPassword": "Password123",
+      "newPassword": "NewPass456"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: uNDvhvhsin
+method: PUT
+name: Change Password
+sortPriority: 4500.0
+url: ${[ baseUrl ]}/auth/change-password
+urlParameters: []
