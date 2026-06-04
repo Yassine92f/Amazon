@@ -6,11 +6,13 @@ import {
   DeliveryType,
   CreateOrderRequest,
   PaginatedResponse,
+  SellerOrderDto,
   UserRole,
 } from '@ecommerce/shared';
 import { IOrderRepository, OrderListFilters } from '../../domain/repositories/IOrderRepository';
 import { IProductRepository } from '../../domain/repositories/IProductRepository';
 import { IUserRepository } from '../../domain/repositories/IUserRepository';
+import { ISellerRepository } from '../../domain/repositories/ISellerRepository';
 import { ICartRepository } from '../../domain/repositories/ICartRepository';
 import { OrderEntity, OrderItemEntity } from '../../domain/entities/Order';
 import { CouponUseCase } from './CouponUseCase';
@@ -47,6 +49,7 @@ export class OrderUseCase {
     private userRepo: IUserRepository,
     private cartRepo: ICartRepository,
     private couponUseCase: CouponUseCase,
+    private sellerRepo: ISellerRepository,
   ) {}
 
   async createOrder(userId: string, input: CreateOrderRequest): Promise<Order> {
@@ -190,11 +193,56 @@ export class OrderUseCase {
     return this.toDto(order);
   }
 
-  async updateStatus(role: string, orderId: string, status: OrderStatus): Promise<Order> {
+  // Orders that include at least one of the seller's products. Each order is
+  // narrowed to the seller's own line items so a vendor never sees another
+  // seller's lines in a shared (multi-vendor) order.
+  async getSellerOrders(
+    sellerUserId: string,
+    filters: OrderHistoryFilters,
+  ): Promise<PaginatedResponse<SellerOrderDto>> {
+    const productIds = await this.resolveSellerProductIds(sellerUserId);
+    if (productIds.length === 0) {
+      return this.emptyPage(filters);
+    }
+
+    const idSet = new Set(productIds);
+    const { orders, total } = await this.orderRepo.findByProductIds(productIds, {
+      page: filters.page,
+      limit: filters.limit,
+      status: filters.status,
+      fromDate: filters.fromDate,
+      toDate: filters.toDate,
+    });
+    const totalPages = Math.ceil(total / filters.limit);
+    return {
+      items: orders.map((o) => this.toSellerDto(o, idSet)),
+      total,
+      page: filters.page,
+      limit: filters.limit,
+      totalPages,
+      hasNext: filters.page < totalPages,
+      hasPrev: filters.page > 1,
+    };
+  }
+
+  async updateStatus(
+    userId: string,
+    role: string,
+    orderId: string,
+    status: OrderStatus,
+  ): Promise<Order> {
     if (role !== UserRole.ADMIN && role !== UserRole.SELLER) {
       throw new OrderError(403, 'Only sellers or admins can update order status');
     }
     const order = await this.requireOrder(orderId);
+
+    // A seller may only act on orders that contain one of their own products.
+    if (role === UserRole.SELLER) {
+      const productIds = new Set(await this.resolveSellerProductIds(userId));
+      const ownsLine = order.items.some((i) => productIds.has(i.productId));
+      if (!ownsLine) throw new OrderError(403, 'This order does not contain your products');
+    }
+
     const allowed = STATUS_TRANSITIONS[order.status] ?? [];
     if (!allowed.includes(status)) {
       throw new OrderError(400, `Cannot change status from ${order.status} to ${status}`);
@@ -258,6 +306,56 @@ export class OrderUseCase {
     const order = await this.orderRepo.findById(orderId);
     if (!order) throw new OrderError(404, 'Order not found');
     return order;
+  }
+
+  // Maps an authenticated seller user to the ids of every product they own.
+  private async resolveSellerProductIds(sellerUserId: string): Promise<string[]> {
+    const seller = await this.sellerRepo.findByUserId(sellerUserId);
+    if (!seller) throw new OrderError(403, 'You do not have a seller account');
+    return this.productRepo.findIdsBySeller(seller.id);
+  }
+
+  private emptyPage(filters: OrderHistoryFilters): PaginatedResponse<SellerOrderDto> {
+    return {
+      items: [],
+      total: 0,
+      page: filters.page,
+      limit: filters.limit,
+      totalPages: 0,
+      hasNext: false,
+      hasPrev: false,
+    };
+  }
+
+  private toSellerDto(o: OrderEntity, sellerProductIds: Set<string>): SellerOrderDto {
+    const items = o.items
+      .filter((i) => sellerProductIds.has(i.productId))
+      .map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        productName: i.productName,
+        variantName: i.variantName,
+        quantity: i.quantity,
+        unitPrice: i.unitPrice,
+        totalPrice: i.totalPrice,
+      }));
+    const sellerSubtotal = Math.round(items.reduce((s, i) => s + i.totalPrice, 0) * 100) / 100;
+    return {
+      _id: o.id,
+      orderNumber: o.orderNumber,
+      status: o.status,
+      deliveryType: o.deliveryType,
+      shippingAddress: o.shippingAddress,
+      items,
+      sellerSubtotal,
+      sellerItemCount: items.reduce((s, i) => s + i.quantity, 0),
+      buyerOrderTotal: o.totalAmount,
+      createdAt: o.createdAt.toISOString(),
+      paidAt: o.paidAt?.toISOString(),
+      shippedAt: o.shippedAt?.toISOString(),
+      deliveredAt: o.deliveredAt?.toISOString(),
+      cancelledAt: o.cancelledAt?.toISOString(),
+    };
   }
 
   private generateOrderNumber(): string {

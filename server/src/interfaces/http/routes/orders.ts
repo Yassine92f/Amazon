@@ -8,6 +8,7 @@ import { ProductRepository } from '../../../infrastructure/repositories/ProductR
 import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
 import { CartRepository } from '../../../infrastructure/repositories/CartRepository';
 import { CouponRepository } from '../../../infrastructure/repositories/CouponRepository';
+import { SellerRepository } from '../../../infrastructure/repositories/SellerRepository';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
 import { createOrderSchema, updateOrderStatusSchema } from '../schemas/orderSchemas';
@@ -17,6 +18,7 @@ const productRepository = new ProductRepository();
 const userRepository = new UserRepository();
 const cartRepository = new CartRepository();
 const couponRepository = new CouponRepository();
+const sellerRepository = new SellerRepository();
 const couponUseCase = new CouponUseCase(couponRepository);
 const orderUseCase = new OrderUseCase(
   orderRepository,
@@ -24,6 +26,7 @@ const orderUseCase = new OrderUseCase(
   userRepository,
   cartRepository,
   couponUseCase,
+  sellerRepository,
 );
 const orderController = new OrderController(orderUseCase);
 
@@ -34,6 +37,8 @@ router.use(authenticate);
 
 router.post('/', validate(createOrderSchema), orderController.create);
 router.get('/', orderController.list);
+// Seller-scoped order list — must precede the `/:id` matcher.
+router.get('/seller', authorize(UserRole.SELLER, UserRole.ADMIN), orderController.sellerList);
 router.get('/:id', orderController.getOne);
 router.patch(
   '/:id/status',

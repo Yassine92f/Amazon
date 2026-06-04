@@ -20,6 +20,8 @@ import {
   type SellerDto,
   type ProductSummaryDto,
 } from '../../lib/catalog';
+import { listSellerOrders } from '../../lib/commerce';
+import { OrderStatus } from '@ecommerce/shared';
 import { t, formatPrice, formatNumber, formatMonthYear } from '../../lib/i18n';
 
 export default function SellerDashboardPage() {
@@ -27,6 +29,7 @@ export default function SellerDashboardPage() {
   const [shop, setShop] = useState<SellerDto | null>(null);
   const [products, setProducts] = useState<ProductSummaryDto[]>([]);
   const [stats, setStats] = useState({ total: 0, active: 0, drafts: 0, outOfStock: 0 });
+  const [orderStats, setOrderStats] = useState({ count: 0, revenue: 0, monthRevenue: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +38,8 @@ export default function SellerDashboardPage() {
       getMyShop().catch(() => null),
       listMyProducts({ page: 1, limit: 5 }).catch(() => null),
       listMyProducts({ page: 1, limit: 1, isFeatured: undefined }).catch(() => null),
-    ]).then(([s, recent, full]) => {
+      listSellerOrders({ limit: 100 }).catch(() => null),
+    ]).then(([s, recent, full, orders]) => {
       if (cancelled) return;
       if (!s) {
         router.replace('/become-seller');
@@ -50,6 +54,23 @@ export default function SellerDashboardPage() {
         drafts: 0,
         outOfStock: items.filter((p) => !p.inStock).length,
       });
+      if (orders) {
+        const now = new Date();
+        const billable = orders.items.filter(
+          (o) => o.status !== OrderStatus.CANCELLED && o.status !== OrderStatus.REFUNDED,
+        );
+        const monthRevenue = billable
+          .filter((o) => {
+            const d = new Date(o.createdAt);
+            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+          })
+          .reduce((sum, o) => sum + o.sellerSubtotal, 0);
+        setOrderStats({
+          count: orders.total,
+          revenue: billable.reduce((sum, o) => sum + o.sellerSubtotal, 0),
+          monthRevenue,
+        });
+      }
       setLoading(false);
     });
     return () => {
@@ -114,20 +135,19 @@ export default function SellerDashboardPage() {
       <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t.seller.dash.statRevenue}
-          value="—"
-          hint={t.seller.dash.soon}
+          value={formatPrice(orderStats.revenue)}
           Icon={TrendingUp}
         />
         <StatCard
           label={t.seller.dash.statMonth}
-          value="—"
-          hint={t.seller.dash.soon}
+          value={formatPrice(orderStats.monthRevenue)}
           Icon={Calendar}
         />
         <StatCard
           label={t.seller.dash.statOrders}
-          value="—"
-          hint={t.seller.dash.soon}
+          value={formatNumber(orderStats.count)}
+          hint={t.sellerOrders.ordersCount(formatNumber(orderStats.count))}
+          href="/seller/orders"
           Icon={ShoppingBag}
         />
         <StatCard
@@ -220,15 +240,17 @@ function StatCard({
   label,
   value,
   hint,
+  href,
   Icon,
 }: {
   label: string;
   value: string;
   hint?: string;
+  href?: string;
   Icon: LucideIcon;
 }) {
-  return (
-    <div className="rounded-2xl border border-border bg-white p-5">
+  const inner = (
+    <>
       <div className="mb-2 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">{label}</p>
         <span className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-50 text-brand-600">
@@ -237,6 +259,14 @@ function StatCard({
       </div>
       <p className="text-2xl font-extrabold text-brand-900">{value}</p>
       {hint && <p className="mt-1 text-[11px] text-muted">{hint}</p>}
-    </div>
+    </>
+  );
+  const className = 'block rounded-2xl border border-border bg-white p-5';
+  return href ? (
+    <Link href={href} className={`${className} transition-colors hover:border-brand-300`}>
+      {inner}
+    </Link>
+  ) : (
+    <div className={className}>{inner}</div>
   );
 }
