@@ -52,6 +52,12 @@ export class ProductRepository implements IProductRepository {
     return ProductModel.countDocuments(filter);
   }
 
+  async findIdsBySeller(sellerId: string): Promise<string[]> {
+    if (!mongoose.isValidObjectId(sellerId)) return [];
+    const docs = await ProductModel.find({ sellerId }, { _id: 1 }).lean();
+    return docs.map((d) => (d._id as mongoose.Types.ObjectId).toString());
+  }
+
   async countByCategory(categoryId: string): Promise<number> {
     return ProductModel.countDocuments({ categoryId, isActive: true });
   }

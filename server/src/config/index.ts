@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+// .env lives at the monorepo root, three levels up from this file
+// (server/src/config in dev, server/dist/config after build).
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 export const config = {
   env: process.env.NODE_ENV || 'development',

@@ -118,6 +118,32 @@ export interface CouponValidation {
   message?: string;
 }
 
+// Seller-facing order view: a buyer order narrowed to the line items that
+// belong to the authenticated seller, plus the seller's own subtotal. A single
+// buyer order can appear for several sellers (multi-vendor), each seeing only
+// their slice.
+export interface SellerOrderDto {
+  _id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  deliveryType: DeliveryType;
+  shippingAddress: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  items: OrderItem[];
+  sellerSubtotal: number;
+  sellerItemCount: number;
+  buyerOrderTotal: number;
+  createdAt: string;
+  paidAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+}
+
 // Wishlist
 export interface WishlistItem {
   productId: string;

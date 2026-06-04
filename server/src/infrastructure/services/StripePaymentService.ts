@@ -12,6 +12,11 @@ export class StripePaymentService implements IPaymentService {
   private stripe: Stripe;
 
   constructor() {
+    if (!config.stripe.secretKey) {
+      throw new Error(
+        'STRIPE_SECRET_KEY is missing. Set it in the root .env file (see .env.example).',
+      );
+    }
     this.stripe = new Stripe(config.stripe.secretKey);
   }
 

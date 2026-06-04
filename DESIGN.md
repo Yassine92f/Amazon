@@ -181,3 +181,35 @@ Spring presets used across the app. All animations respect `prefers-reduced-moti
 - **Shopify Themes (Dawn)** — clean product cards, typography hierarchy, whitespace confidence
 - **Vinted** — warm palette, rounded UI, playful-but-mature tone
 - **Stripe** — card elevation model (borders inline, shadows floating), spacing discipline
+
+## Commerce & Checkout (cart, orders, payment, wishlist)
+
+Added with `feature/cart-orders`. The whole purchase funnel follows the warm,
+Stripe-inspired card model (inline borders, floating shadows, rounded-2xl panels).
+
+**Cart is guest-first.** A logged-out shopper can add, view and edit the cart
+(tracked by the backend's httpOnly `cartId` cookie). Authentication is required
+only to **proceed to payment** — clicking checkout while logged out routes to
+`/login?redirect=/checkout`. The cart store is server-backed (single source of
+truth); on login the guest cart is merged into the user's.
+
+**Surfaces**
+
+| Screen / component        | Notes                                                                                                                           |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Header cart + wishlist    | Always visible (guests included); live count badges (snappy spring).                                                            |
+| `CartDrawer` (slide-over) | Right slide-in (spring 380/38), free-shipping progress bar, line steppers.                                                      |
+| `/cart`                   | Two-column: line items + sticky summary card with free-shipping nudge.                                                          |
+| `/checkout`               | `ProtectedRoute`. Steps: address (radio cards + inline add) → delivery → coupon → Stripe Payment Element. Sticky order summary. |
+| `PaymentForm`             | Stripe Payment Element, `redirect: 'if_required'`, brand-tinted appearance (`colorPrimary #f07d1a`). Test-card hint.            |
+| `/orders`, `/orders/[id]` | History cards + detail with a 4-step status timeline; success banner polls the webhook.                                         |
+| `StatusBadge`             | Shared order-status pill (tinted bg + dot), reused buyer + seller side.                                                         |
+| `/wishlist`               | Product grid; heart toggle; add-to-cart resolves the cheapest in-stock variant.                                                 |
+| `/seller/orders`          | Seller's orders narrowed to their own line items + `sellerSubtotal`; forward status transitions; filter pills.                  |
+
+**Patterns**
+
+- Empty states: centered icon-in-circle (`bg-brand-50`), bold title + muted line + a single brand CTA. Reused across cart, orders, wishlist, seller orders.
+- Trust cues: `ShieldCheck` + "Paiement sécurisé par Stripe" under every pay/checkout CTA.
+- Order summary card is the recurring right-rail element (cart, checkout) — subtotal / shipping / discount / total with a hairline divider before the total.
+- Status colors: pending=amber, confirmed=blue, processing=indigo, shipped=sky, delivered=green, cancelled=red, refunded=gray.
