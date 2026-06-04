@@ -10,6 +10,7 @@ import {
   makeCouponRepo,
   makeOrderRepo,
   makeCartRepo,
+  makeSellerRepo,
 } from './helpers';
 
 function setup(
@@ -26,7 +27,15 @@ function setup(
   const orderRepo = makeOrderRepo();
   const cartRepo = makeCartRepo();
   const couponUseCase = new CouponUseCase(makeCouponRepo(opts.coupons ?? []));
-  const useCase = new OrderUseCase(orderRepo, productRepo, userRepo, cartRepo, couponUseCase);
+  const sellerRepo = makeSellerRepo();
+  const useCase = new OrderUseCase(
+    orderRepo,
+    productRepo,
+    userRepo,
+    cartRepo,
+    couponUseCase,
+    sellerRepo,
+  );
   return { useCase, productRepo, userRepo, orderRepo, cartRepo };
 }
 
@@ -132,15 +141,20 @@ describe('OrderUseCase access control & lifecycle', () => {
 
     // invalid jump pending -> delivered
     await expect(
-      useCase.updateStatus(UserRole.ADMIN, order._id, OrderStatus.DELIVERED),
+      useCase.updateStatus('admin-1', UserRole.ADMIN, order._id, OrderStatus.DELIVERED),
     ).rejects.toMatchObject({ statusCode: 400 });
 
     // a regular user cannot update status
     await expect(
-      useCase.updateStatus(UserRole.USER, order._id, OrderStatus.CONFIRMED),
+      useCase.updateStatus('user-1', UserRole.USER, order._id, OrderStatus.CONFIRMED),
     ).rejects.toMatchObject({ statusCode: 403 });
 
-    const cancelled = await useCase.updateStatus(UserRole.ADMIN, order._id, OrderStatus.CANCELLED);
+    const cancelled = await useCase.updateStatus(
+      'admin-1',
+      UserRole.ADMIN,
+      order._id,
+      OrderStatus.CANCELLED,
+    );
     expect(cancelled.status).toBe(OrderStatus.CANCELLED);
     expect(product.variants[0].stock).toBe(10); // restocked
   });

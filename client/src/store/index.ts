@@ -1,6 +1,19 @@
 import { create } from 'zustand';
 import type { User } from '@ecommerce/shared';
 import { api } from '../lib/api';
+import { useCartStore } from './cart';
+import { useWishlistStore } from './wishlist';
+
+// Called after a successful login/register: fold the guest cart into the user's
+// and load their wishlist. Best-effort — never blocks the auth flow.
+async function syncCommerceOnLogin() {
+  try {
+    await useCartStore.getState().mergeOnLogin();
+  } catch {
+    /* ignore */
+  }
+  useWishlistStore.getState().load();
+}
 
 interface AuthState {
   user: User | null;
@@ -41,6 +54,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       set({ user, isAuthenticated: true, isLoading: false });
+      await syncCommerceOnLogin();
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
@@ -58,6 +72,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       set({ user, isAuthenticated: true, isLoading: false });
+      await syncCommerceOnLogin();
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
@@ -79,6 +94,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     set({ user: null, isAuthenticated: false, isLoading: false });
+    // Drop the user's wishlist and reload the (now anonymous) cart.
+    useWishlistStore.getState().reset();
+    useCartStore.getState().load();
   },
 
   init: async () => {
@@ -90,6 +108,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const { data } = await api.get('/auth/me');
       set({ user: data.data, isAuthenticated: true, isLoading: false });
+      useWishlistStore.getState().load();
     } catch {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');

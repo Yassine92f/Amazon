@@ -10,8 +10,10 @@ import { ICouponRepository } from '../../src/domain/repositories/ICouponReposito
 import { IOrderRepository } from '../../src/domain/repositories/IOrderRepository';
 import { ICartRepository } from '../../src/domain/repositories/ICartRepository';
 import { IPaymentRepository } from '../../src/domain/repositories/IPaymentRepository';
+import { ISellerRepository } from '../../src/domain/repositories/ISellerRepository';
 import { IPaymentService } from '../../src/domain/services/IPaymentService';
 import { CartItemEntity, CartOwner } from '../../src/domain/entities/Cart';
+import { SellerEntity } from '../../src/domain/entities/Seller';
 
 // --- Builders -------------------------------------------------------------
 
@@ -132,6 +134,9 @@ export function makeProductRepo(products: ProductEntity[]): IProductRepository {
     deleteById: jest.fn(),
     search: jest.fn(),
     countBySeller: jest.fn(),
+    findIdsBySeller: jest.fn(async (sellerId: string) =>
+      products.filter((p) => p.sellerId === sellerId).map((p) => p.id),
+    ),
     countByCategory: jest.fn(),
     decrementVariantStock: jest.fn(async (pid: string, vid: string, qty: number) => {
       const v = findVariant(pid, vid);
@@ -206,6 +211,11 @@ export function makeOrderRepo(): IOrderRepository {
       const all = [...orders.values()].filter((o) => o.userId === userId);
       return { orders: all, total: all.length };
     }),
+    findByProductIds: jest.fn(async (productIds: string[]) => {
+      const set = new Set(productIds);
+      const all = [...orders.values()].filter((o) => o.items.some((i) => set.has(i.productId)));
+      return { orders: all, total: all.length };
+    }),
     updateById: jest.fn(async (id: string, data) => {
       const order = orders.get(id);
       if (!order) return null;
@@ -214,6 +224,41 @@ export function makeOrderRepo(): IOrderRepository {
     }),
     countByUser: jest.fn(async () => orders.size),
   };
+}
+
+export function buildSeller(overrides: Partial<SellerEntity> = {}): SellerEntity {
+  return {
+    id: 'seller-1',
+    userId: 'seller-user-1',
+    shopName: 'AudioVault',
+    shopSlug: 'audiovault',
+    description: 'Premium audio gear',
+    rating: 4.7,
+    reviewCount: 30,
+    totalSales: 120,
+    totalRevenue: 5000,
+    isVerified: true,
+    commissionRate: 0.1,
+    joinedAt: new Date('2026-01-01'),
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+    ...overrides,
+  };
+}
+
+export function makeSellerRepo(sellers: SellerEntity[] = [buildSeller()]): ISellerRepository {
+  const byUser = new Map(sellers.map((s) => [s.userId, s]));
+  const byId = new Map(sellers.map((s) => [s.id, s]));
+  return {
+    findById: jest.fn(async (id: string) => byId.get(id) ?? null),
+    findByUserId: jest.fn(async (userId: string) => byUser.get(userId) ?? null),
+    findBySlug: jest.fn(),
+    shopNameExists: jest.fn(),
+    create: jest.fn(),
+    updateByUserId: jest.fn(),
+    setVerified: jest.fn(),
+    findMany: jest.fn(),
+  } as unknown as ISellerRepository;
 }
 
 export function makeCartRepo(): ICartRepository {

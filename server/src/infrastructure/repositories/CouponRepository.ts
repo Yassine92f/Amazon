@@ -9,7 +9,19 @@ export class CouponRepository implements ICouponRepository {
   }
 
   async incrementUsage(id: string): Promise<void> {
-    await CouponModel.updateOne({ _id: id }, { $inc: { usedCount: 1 } });
+    // Atomic guard: only increment while still under the usage limit (when one is
+    // set). Prevents concurrent orders from pushing usedCount past usageLimit.
+    await CouponModel.updateOne(
+      {
+        _id: id,
+        $or: [
+          { usageLimit: { $exists: false } },
+          { usageLimit: null },
+          { $expr: { $lt: ['$usedCount', '$usageLimit'] } },
+        ],
+      },
+      { $inc: { usedCount: 1 } },
+    );
   }
 
   private toEntity(doc: CouponDocument): CouponEntity {

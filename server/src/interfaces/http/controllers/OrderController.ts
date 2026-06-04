@@ -41,10 +41,21 @@ export class OrderController {
     }
   };
 
+  sellerList = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req as AuthRequest;
+      const result = await this.orderUseCase.getSellerOrders(userId, this.parseFilters(req));
+      res.json({ success: true, data: result });
+    } catch (err) {
+      next(this.mapError(err));
+    }
+  };
+
   updateStatus = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { userRole } = req as AuthRequest;
+      const { userId, userRole } = req as AuthRequest;
       const order = await this.orderUseCase.updateStatus(
+        userId,
         userRole,
         req.params.id as string,
         req.body.status,

@@ -3,9 +3,13 @@
 import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'motion/react';
-import { Package, ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
+import { Package, ShoppingCart, Heart, Check } from 'lucide-react';
 import Header from '../../../components/Header';
+import { useCartStore } from '../../../store/cart';
+import { useWishlistStore } from '../../../store/wishlist';
+import { useAuthStore } from '../../../store';
 import StarRating from '../../../components/StarRating';
 import ReviewsList from '../../../components/catalog/ReviewsList';
 import CatalogProductCard from '../../../components/catalog/CatalogProductCard';
@@ -92,6 +96,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [quantity, setQuantity] = useState(1);
   const [related, setRelated] = useState<ProductSummaryDto[]>([]);
   const [notFound, setNotFound] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const router = useRouter();
+  const addToCart = useCartStore((s) => s.add);
+  const cartPending = useCartStore((s) => s.pendingKey);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const wishIds = useWishlistStore((s) => s.ids);
+  const wishToggle = useWishlistStore((s) => s.toggle);
+  const wishPending = useWishlistStore((s) => s.pendingId);
 
   useEffect(() => {
     let cancelled = false;
@@ -206,6 +220,35 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         v.stock > 0 &&
         others.every((g) => v.attributes[g.key] === selected[g.key]),
     );
+  }
+
+  const wishlisted = wishIds.has(product._id);
+  const lineId = `${product._id}:${variant._id}`;
+  const addingToCart = cartPending === lineId;
+
+  async function handleAddToCart() {
+    if (!product || !variant || variant.stock === 0) return;
+    setActionError(null);
+    try {
+      await addToCart({ productId: product._id, variantId: variant._id, quantity });
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1800);
+    } catch {
+      setActionError(useCartStore.getState().error);
+    }
+  }
+
+  async function handleToggleWishlist() {
+    if (!product) return;
+    if (!isAuthenticated) {
+      router.push(`/login?redirect=${encodeURIComponent(`/products/${slug}`)}`);
+      return;
+    }
+    try {
+      await wishToggle(product._id);
+    } catch {
+      /* ignore */
+    }
   }
 
   const specs: [string, string][] = [];
@@ -468,17 +511,60 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
               </div>
 
               <motion.button
+                onClick={handleAddToCart}
                 whileHover={{ scale: variant.stock === 0 ? 1 : 1.01 }}
                 whileTap={{ scale: variant.stock === 0 ? 1 : 0.98 }}
-                disabled={variant.stock === 0}
+                disabled={variant.stock === 0 || addingToCart}
                 className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-600 disabled:opacity-50"
               >
-                <ShoppingCart className="h-5 w-5" aria-hidden />
-                {t.product.addToCart}
-                <span className="opacity-90">· {formatPrice(variant.price * quantity)}</span>
+                {justAdded ? (
+                  <>
+                    <Check className="h-5 w-5" aria-hidden />
+                    {t.cart.added}
+                  </>
+                ) : addingToCart ? (
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <>
+                    <ShoppingCart className="h-5 w-5" aria-hidden />
+                    {t.product.addToCart}
+                    <span className="opacity-90">· {formatPrice(variant.price * quantity)}</span>
+                  </>
+                )}
               </motion.button>
+
+              {/* Wishlist toggle */}
+              <button
+                type="button"
+                onClick={handleToggleWishlist}
+                disabled={wishPending === product._id}
+                aria-pressed={wishlisted}
+                aria-label={t.header.wishlist}
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border transition-colors disabled:opacity-50 ${
+                  wishlisted
+                    ? 'border-brand-200 bg-brand-50 text-brand-600'
+                    : 'border-border bg-white text-muted hover:border-brand-300 hover:text-brand-600'
+                }`}
+              >
+                <Heart
+                  className="h-5 w-5"
+                  fill={wishlisted ? 'currentColor' : 'none'}
+                  aria-hidden
+                />
+              </button>
             </div>
-            <p className="mt-2 text-center text-xs text-muted">{t.product.cartComingSoon}</p>
+            <AnimatePresence>
+              {actionError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="mt-2 text-center text-xs font-medium text-[var(--color-error)]"
+                >
+                  {actionError}
+                </motion.p>
+              )}
+            </AnimatePresence>
 
             {/* ── Trust strip ── */}
             <div className="mt-6 grid grid-cols-3 gap-2 rounded-xl border border-border bg-white p-4">
