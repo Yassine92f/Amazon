@@ -117,6 +117,7 @@ function makeEmailService(): IEmailService {
     sendPasswordReset: jest.fn(async () => undefined),
     sendWelcome: jest.fn(async () => undefined),
     sendEmailVerification: jest.fn(async () => undefined),
+    sendOrderConfirmation: jest.fn(async () => undefined),
   };
 }
 

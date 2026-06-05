@@ -1,6 +1,9 @@
 import nodemailer, { Transporter } from 'nodemailer';
-import { IEmailService } from '../../domain/services/IEmailService';
+import { IEmailService, OrderConfirmationEmail } from '../../domain/services/IEmailService';
 import { config } from '../../config';
+
+const euro = (n: number) =>
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(n);
 
 export class EmailService implements IEmailService {
   private transporter: Transporter | null = null;
@@ -30,6 +33,16 @@ export class EmailService implements IEmailService {
   ): Promise<void> {
     const subject = 'Vérifiez votre adresse email';
     const html = verificationTemplate(firstName, verificationUrl);
+    await this.send(to, subject, html);
+  }
+
+  async sendOrderConfirmation(
+    to: string,
+    firstName: string,
+    order: OrderConfirmationEmail,
+  ): Promise<void> {
+    const subject = `Confirmation de votre commande ${order.orderNumber}`;
+    const html = orderConfirmationTemplate(firstName, order);
     await this.send(to, subject, html);
   }
 
@@ -121,6 +134,30 @@ function welcomeTemplate(firstName: string, verificationUrl: string): string {
      <p>Bienvenue sur Abracadabra ! Pour activer pleinement votre compte, vérifiez votre adresse email :</p>
      <p style="margin:24px 0;">${button(verificationUrl, 'Vérifier mon email')}</p>
      <p style="color:#666;font-size:13px;">Ce lien expire dans 24 heures.</p>`,
+  );
+}
+
+function orderConfirmationTemplate(firstName: string, order: OrderConfirmationEmail): string {
+  const rows = order.items
+    .map(
+      (i) => `<tr>
+        <td style="padding:8px 0;color:#333;font-size:14px;">${escapeHtml(i.name)} &times; ${i.quantity}</td>
+        <td style="padding:8px 0;color:#333;font-size:14px;text-align:right;white-space:nowrap;">${euro(i.total)}</td>
+      </tr>`,
+    )
+    .join('');
+  return shell(
+    'Confirmation de commande',
+    `<p>Bonjour ${escapeHtml(firstName)},</p>
+     <p>Merci pour votre commande ! Votre paiement a bien été reçu et votre commande
+        <strong>${escapeHtml(order.orderNumber)}</strong> est confirmée.</p>
+     <table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-top:1px solid #ebebe6;">
+       ${rows}
+       <tr><td style="padding:12px 0 0;border-top:1px solid #ebebe6;font-weight:600;color:#1a1a1a;">Total</td>
+           <td style="padding:12px 0 0;border-top:1px solid #ebebe6;font-weight:600;color:#1a1a1a;text-align:right;">${euro(order.totalAmount)}</td></tr>
+     </table>
+     <p style="margin:24px 0;">${button(order.orderUrl, 'Voir ma commande')}</p>
+     <p style="color:#666;font-size:13px;">Vous recevrez une notification dès l'expédition de votre colis.</p>`,
   );
 }
 

@@ -5,6 +5,9 @@ import { PaymentUseCase } from '../../../application/use-cases/PaymentUseCase';
 import { StripePaymentService } from '../../../infrastructure/services/StripePaymentService';
 import { PaymentRepository } from '../../../infrastructure/repositories/PaymentRepository';
 import { OrderRepository } from '../../../infrastructure/repositories/OrderRepository';
+import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
+import { EmailService } from '../../../infrastructure/services/EmailService';
+import { config } from '../../../config';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
 import { createPaymentIntentSchema, refundSchema } from '../schemas/paymentSchemas';
@@ -12,7 +15,16 @@ import { createPaymentIntentSchema, refundSchema } from '../schemas/paymentSchem
 const paymentService = new StripePaymentService();
 const paymentRepository = new PaymentRepository();
 const orderRepository = new OrderRepository();
-const paymentUseCase = new PaymentUseCase(paymentService, paymentRepository, orderRepository);
+const userRepository = new UserRepository();
+const emailService = new EmailService();
+const paymentUseCase = new PaymentUseCase(
+  paymentService,
+  paymentRepository,
+  orderRepository,
+  userRepository,
+  emailService,
+  { clientUrl: config.clientUrl },
+);
 const paymentController = new PaymentController(paymentUseCase);
 
 const router: IRouter = Router();

@@ -12,6 +12,7 @@ import { ICartRepository } from '../../src/domain/repositories/ICartRepository';
 import { IPaymentRepository } from '../../src/domain/repositories/IPaymentRepository';
 import { ISellerRepository } from '../../src/domain/repositories/ISellerRepository';
 import { IPaymentService } from '../../src/domain/services/IPaymentService';
+import { IEmailService } from '../../src/domain/services/IEmailService';
 import { CartItemEntity, CartOwner } from '../../src/domain/entities/Cart';
 import { SellerEntity } from '../../src/domain/entities/Seller';
 
@@ -186,7 +187,13 @@ export function makeCouponRepo(coupons: CouponEntity[]): ICouponRepository {
   return {
     findByCode: jest.fn(async (code: string) => map.get(code.toUpperCase().trim()) ?? null),
     incrementUsage: jest.fn(async () => undefined),
-  };
+    create: jest.fn(),
+    findById: jest.fn(),
+    findMany: jest.fn(async () => ({ coupons: [...map.values()], total: map.size })),
+    updateById: jest.fn(),
+    deleteById: jest.fn(async () => undefined),
+    codeExists: jest.fn(async (code: string) => map.has(code.toUpperCase().trim())),
+  } as unknown as ICouponRepository;
 }
 
 export function makeOrderRepo(): IOrderRepository {
@@ -303,6 +310,15 @@ export function makePaymentRepo(payments: PaymentEntity[] = []): IPaymentReposit
       Object.assign(payment, data, { updatedAt: new Date() });
       return payment;
     }),
+  };
+}
+
+export function makeEmailService(): IEmailService {
+  return {
+    sendPasswordReset: jest.fn(async () => undefined),
+    sendWelcome: jest.fn(async () => undefined),
+    sendEmailVerification: jest.fn(async () => undefined),
+    sendOrderConfirmation: jest.fn(async () => undefined),
   };
 }
 
