@@ -6,7 +6,7 @@ import {
   CouponListResult,
 } from '../../domain/repositories/ICouponRepository';
 import { CouponEntity } from '../../domain/entities/Coupon';
-import { CouponModel, CouponDocument } from '../database/models/Coupon';
+import { CouponModel, CouponDocument, CouponRedemptionModel } from '../database/models/Coupon';
 
 export class CouponRepository implements ICouponRepository {
   async findByCode(code: string): Promise<CouponEntity | null> {
@@ -61,6 +61,22 @@ export class CouponRepository implements ICouponRepository {
     return doc !== null;
   }
 
+  async countUserRedemptions(couponId: string, userId: string): Promise<number> {
+    if (!mongoose.isValidObjectId(couponId) || !mongoose.isValidObjectId(userId)) return 0;
+    return CouponRedemptionModel.countDocuments({ couponId, userId });
+  }
+
+  async recordRedemption(couponId: string, userId: string, orderId: string): Promise<void> {
+    if (
+      !mongoose.isValidObjectId(couponId) ||
+      !mongoose.isValidObjectId(userId) ||
+      !mongoose.isValidObjectId(orderId)
+    ) {
+      return;
+    }
+    await CouponRedemptionModel.create({ couponId, userId, orderId });
+  }
+
   async incrementUsage(id: string): Promise<void> {
     // Atomic guard: only increment while still under the usage limit (when one is
     // set). Prevents concurrent orders from pushing usedCount past usageLimit.
@@ -87,6 +103,7 @@ export class CouponRepository implements ICouponRepository {
       maxDiscount: doc.maxDiscount,
       expiresAt: doc.expiresAt,
       usageLimit: doc.usageLimit,
+      perUserLimit: doc.perUserLimit,
       usedCount: doc.usedCount,
       isActive: doc.isActive,
       createdAt: doc.createdAt,

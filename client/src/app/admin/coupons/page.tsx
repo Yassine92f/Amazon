@@ -41,6 +41,7 @@ export default function AdminCouponsPage() {
   const [maxDiscount, setMaxDiscount] = useState('');
   const [expiresAt, setExpiresAt] = useState('');
   const [usageLimit, setUsageLimit] = useState('');
+  const [perUserLimit, setPerUserLimit] = useState('');
   const [saving, setSaving] = useState(false);
 
   const showToast = (message: string, type: 'success' | 'error') => {
@@ -71,6 +72,7 @@ export default function AdminCouponsPage() {
     setMaxDiscount('');
     setExpiresAt('');
     setUsageLimit('');
+    setPerUserLimit('');
     setShowForm(false);
   };
 
@@ -91,6 +93,7 @@ export default function AdminCouponsPage() {
         maxDiscount: discountType === 'percentage' && maxDiscount ? Number(maxDiscount) : undefined,
         expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
         usageLimit: usageLimit ? Number(usageLimit) : undefined,
+        perUserLimit: perUserLimit ? Number(perUserLimit) : undefined,
       });
       showToast(t.adminCoupons.created, 'success');
       resetForm();
@@ -274,6 +277,18 @@ export default function AdminCouponsPage() {
                       step="1"
                       value={usageLimit}
                       onChange={(e) => setUsageLimit(e.target.value)}
+                      className={inputCls}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm font-medium text-text">
+                    {t.adminCoupons.fPerUserLimit}{' '}
+                    <span className="text-muted">{t.adminCoupons.optional}</span>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={perUserLimit}
+                      onChange={(e) => setPerUserLimit(e.target.value)}
                       className={inputCls}
                     />
                   </label>

@@ -29,6 +29,29 @@ describe('CouponUseCase.validate', () => {
     expect((await useCase.validate('ONCE', 100)).valid).toBe(false);
   });
 
+  it('rejects when the per-user limit is reached for that user', async () => {
+    const coupon = buildCoupon({ code: 'NEW1', perUserLimit: 1 });
+    const repo = makeCouponRepo([coupon]);
+    (repo.countUserRedemptions as jest.Mock).mockResolvedValue(1);
+    const useCase = new CouponUseCase(repo);
+
+    expect((await useCase.validate('NEW1', 100, 'user-1')).valid).toBe(false);
+    // Still valid when no user is provided (e.g. an unauthenticated preview).
+    expect((await useCase.validate('NEW1', 100)).valid).toBe(true);
+  });
+
+  it('allows a user under the per-user limit and records the redemption on use', async () => {
+    const coupon = buildCoupon({ id: 'c-new', code: 'NEW2', perUserLimit: 2 });
+    const repo = makeCouponRepo([coupon]);
+    (repo.countUserRedemptions as jest.Mock).mockResolvedValue(1);
+    const useCase = new CouponUseCase(repo);
+
+    expect((await useCase.validate('NEW2', 100, 'user-1')).valid).toBe(true);
+
+    await useCase.markUsed('c-new', 'user-1', 'order-9');
+    expect(repo.recordRedemption).toHaveBeenCalledWith('c-new', 'user-1', 'order-9');
+  });
+
   it('computes a percentage discount capped by maxDiscount', async () => {
     const coupon = buildCoupon({
       code: 'SAVE20',
