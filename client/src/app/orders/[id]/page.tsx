@@ -160,6 +160,7 @@ function OrderDetailInner({ id }: { id: string }) {
 
   const canCancel = order.status === OrderStatus.PENDING || order.status === OrderStatus.CONFIRMED;
   const paidOrConfirmed = order.status !== OrderStatus.PENDING;
+  const awaitingPayment = order.status === OrderStatus.PENDING;
 
   return (
     <main className="container-main py-8">
@@ -292,6 +293,16 @@ function OrderDetailInner({ id }: { id: string }) {
               </div>
             </dl>
           </section>
+
+          {awaitingPayment && (
+            <Link
+              href={`/orders/${order._id}/pay`}
+              className="flex items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-600"
+            >
+              <CreditCard className="h-4 w-4" aria-hidden />
+              {t.orders.payNow}
+            </Link>
+          )}
 
           {canCancel && (
             <div className="flex flex-col gap-2">

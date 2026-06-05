@@ -9,6 +9,7 @@ import { useAuthStore } from '../../store';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { api } from '../../lib/api';
 import { listOrders } from '../../lib/commerce';
+import { t } from '../../lib/i18n';
 
 type Tab = 'profile' | 'addresses' | 'preferences';
 
@@ -132,7 +133,7 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
-      showToast('Image trop volumineuse (max 2 Mo)', 'error');
+      showToast(t.account.toast.imageTooLarge, 'error');
       return;
     }
     setAvatarUploading(true);
@@ -144,9 +145,9 @@ export default function ProfilePage() {
           currentPassword: profilePassword || undefined,
         });
         setUser(data.data);
-        showToast('Photo de profil mise a jour', 'success');
+        showToast(t.account.toast.avatarUpdated, 'success');
       } catch {
-        showToast('Erreur lors du telechargement', 'error');
+        showToast(t.account.toast.uploadError, 'error');
       }
       setAvatarUploading(false);
     };
@@ -156,11 +157,11 @@ export default function ProfilePage() {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profilePassword) {
-      showToast('Mot de passe requis pour confirmer', 'error');
+      showToast(t.account.toast.passwordRequired, 'error');
       return;
     }
     if (!firstName.trim() || !lastName.trim()) {
-      showToast('Prenom et nom requis', 'error');
+      showToast(t.account.toast.nameRequired, 'error');
       return;
     }
     setSaving(true);
@@ -173,10 +174,11 @@ export default function ProfilePage() {
       });
       setUser(data.data);
       setProfilePassword('');
-      showToast('Profil mis a jour', 'success');
+      showToast(t.account.toast.profileUpdated, 'success');
     } catch (err: unknown) {
       showToast(
-        (err as { response?: { data?: { message?: string } } }).response?.data?.message || 'Erreur',
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          t.account.toast.genericError,
         'error',
       );
     }
@@ -186,31 +188,31 @@ export default function ProfilePage() {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPassword || !newPassword) {
-      showToast('Tous les champs requis', 'error');
+      showToast(t.account.toast.allFieldsRequired, 'error');
       return;
     }
     if (newPassword.length < 8) {
-      showToast('Minimum 8 caracteres', 'error');
+      showToast(t.account.toast.minChars(8), 'error');
       return;
     }
     if (newPassword !== confirmNewPassword) {
-      showToast('Les mots de passe ne correspondent pas', 'error');
+      showToast(t.account.toast.passwordMismatch, 'error');
       return;
     }
     if (currentPassword === newPassword) {
-      showToast('Le nouveau doit etre different', 'error');
+      showToast(t.account.toast.newMustDiffer, 'error');
       return;
     }
     try {
       await api.put('/auth/change-password', { currentPassword, newPassword });
-      showToast('Mot de passe modifie', 'success');
+      showToast(t.account.toast.passwordChanged, 'success');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmNewPassword('');
     } catch (err: unknown) {
       showToast(
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Mot de passe incorrect',
+          t.account.toast.wrongPassword,
         'error',
       );
     }
@@ -241,7 +243,7 @@ export default function ProfilePage() {
   const handleAddrSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addrLabel || !addrStreet || !addrCity || !addrPostal || !addrCountry) {
-      showToast('Tous les champs requis', 'error');
+      showToast(t.account.toast.allFieldsRequired, 'error');
       return;
     }
     try {
@@ -256,15 +258,15 @@ export default function ProfilePage() {
       if (editingAddr) {
         const { data } = await api.put(`/users/addresses/${editingAddr.id}`, body);
         setAddresses(data.data);
-        showToast('Adresse modifiee', 'success');
+        showToast(t.account.toast.addressUpdated, 'success');
       } else {
         const { data } = await api.post('/users/addresses', body);
         setAddresses(data.data);
-        showToast('Adresse ajoutee', 'success');
+        showToast(t.account.toast.addressAdded, 'success');
       }
       resetAddrForm();
     } catch {
-      showToast('Erreur', 'error');
+      showToast(t.account.toast.genericError, 'error');
     }
   };
 
@@ -272,9 +274,9 @@ export default function ProfilePage() {
     try {
       const { data } = await api.delete(`/users/addresses/${id}`);
       setAddresses(data.data);
-      showToast('Adresse supprimee', 'success');
+      showToast(t.account.toast.addressDeleted, 'success');
     } catch {
-      showToast('Erreur', 'error');
+      showToast(t.account.toast.genericError, 'error');
     }
   };
 
@@ -287,14 +289,14 @@ export default function ProfilePage() {
       const { data } = await api.put('/users/preferences', payload);
       setPrefs(data.data);
     } catch {
-      showToast('Erreur', 'error');
+      showToast(t.account.toast.genericError, 'error');
     }
   };
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'profile', label: 'Profil' },
-    { key: 'addresses', label: 'Adresses' },
-    { key: 'preferences', label: 'Preferences' },
+    { key: 'profile', label: t.account.tabs.profile },
+    { key: 'addresses', label: t.account.tabs.addresses },
+    { key: 'preferences', label: t.account.tabs.preferences },
   ];
 
   return (
@@ -319,7 +321,7 @@ export default function ProfilePage() {
               className="text-[13px] font-medium"
               style={{ color: 'var(--color-text-muted)' }}
             >
-              Accueil
+              {t.account.home}
             </Link>
             {user?.role === 'admin' && (
               <Link
@@ -327,7 +329,7 @@ export default function ProfilePage() {
                 className="text-[13px] font-medium"
                 style={{ color: 'var(--color-text-muted)' }}
               >
-                Admin
+                {t.account.admin}
               </Link>
             )}
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-[13px] font-bold text-white overflow-hidden">
@@ -393,19 +395,19 @@ export default function ProfilePage() {
             </span>
             <span className="rounded-full bg-brand-50 px-3.5 py-1 text-xs font-semibold text-brand-600 capitalize">
               {user?.role === 'admin'
-                ? 'Administrateur'
+                ? t.account.roleAdmin
                 : user?.role === 'seller'
-                  ? 'Vendeur'
-                  : 'Membre'}
+                  ? t.account.roleSeller
+                  : t.account.roleMember}
             </span>
             <div className="my-1 h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
             <div className="flex w-full justify-around">
               {[
-                { n: ordersCount, l: 'Commandes', href: '/orders' },
-                { n: 0, l: 'Avis' },
+                { n: ordersCount, l: t.account.stats.orders, href: '/orders' },
+                { n: 0, l: t.account.stats.reviews },
                 {
                   n: addresses.length || user?.addresses?.length || 0,
-                  l: 'Adresses',
+                  l: t.account.stats.addresses,
                   onClick: () => setTab('addresses'),
                 },
               ].map((s) => {
@@ -453,7 +455,7 @@ export default function ProfilePage() {
             <div className="my-1 h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
             <div className="flex w-full justify-between">
               <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
-                Inscrit le
+                {t.account.registeredOn}
               </span>
               <span className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>
                 {user?.createdAt
@@ -488,7 +490,7 @@ export default function ProfilePage() {
                   d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
                 />
               </svg>
-              Se deconnecter
+              {t.account.logout}
             </button>
           </motion.div>
 
@@ -523,10 +525,10 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-6">
                   <div>
                     <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                      Informations personnelles
+                      {t.account.profile.heading}
                     </h2>
                     <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                      Mot de passe requis pour confirmer.
+                      {t.account.profile.passwordHint}
                     </p>
                   </div>
                   <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
@@ -536,7 +538,7 @@ export default function ProfilePage() {
                           className="text-[13px] font-medium"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Prenom
+                          {t.account.profile.firstName}
                         </label>
                         <input
                           value={firstName}
@@ -551,7 +553,7 @@ export default function ProfilePage() {
                           className="text-[13px] font-medium"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Nom
+                          {t.account.profile.lastName}
                         </label>
                         <input
                           value={lastName}
@@ -567,7 +569,7 @@ export default function ProfilePage() {
                         className="text-[13px] font-medium"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Email
+                        {t.account.profile.email}
                       </label>
                       <input
                         value={user?.email ?? ''}
@@ -581,12 +583,12 @@ export default function ProfilePage() {
                         className="text-[13px] font-medium"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Telephone
+                        {t.account.profile.phone}
                       </label>
                       <input
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+33 6 12 34 56 78"
+                        placeholder={t.account.profile.phonePlaceholder}
                         className="h-10 rounded-lg px-3 text-sm outline-none"
                         style={inputStyle}
                       />
@@ -600,13 +602,13 @@ export default function ProfilePage() {
                         className="text-[13px] font-medium"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Mot de passe actuel <span className="text-red-400">*</span>
+                        {t.account.profile.currentPassword} <span className="text-red-400">*</span>
                       </label>
                       <input
                         type="password"
                         value={profilePassword}
                         onChange={(e) => setProfilePassword(e.target.value)}
-                        placeholder="Requis pour confirmer"
+                        placeholder={t.account.profile.currentPasswordPlaceholder}
                         required
                         className="h-10 rounded-lg px-3 text-sm outline-none"
                         style={inputStyle}
@@ -627,21 +629,21 @@ export default function ProfilePage() {
                           color: 'var(--color-text)',
                         }}
                       >
-                        Annuler
+                        {t.account.profile.cancel}
                       </button>
                       <button
                         type="submit"
                         disabled={saving}
                         className="rounded-lg bg-brand-500 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
                       >
-                        {saving ? 'Enregistrement...' : 'Enregistrer'}
+                        {saving ? t.account.profile.saving : t.account.profile.save}
                       </button>
                     </div>
                   </form>
 
                   <div className="h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
                   <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
-                    Changer le mot de passe
+                    {t.account.profile.changePassword}
                   </h3>
                   <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
@@ -649,7 +651,7 @@ export default function ProfilePage() {
                         className="text-[13px] font-medium"
                         style={{ color: 'var(--color-text)' }}
                       >
-                        Mot de passe actuel
+                        {t.account.profile.currentPassword}
                       </label>
                       <input
                         type="password"
@@ -666,13 +668,13 @@ export default function ProfilePage() {
                           className="text-[13px] font-medium"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Nouveau mot de passe
+                          {t.account.profile.newPassword}
                         </label>
                         <input
                           type="password"
                           value={newPassword}
                           onChange={(e) => setNewPassword(e.target.value)}
-                          placeholder="Min. 8 caracteres"
+                          placeholder={t.account.profile.newPasswordPlaceholder}
                           required
                           className="h-10 rounded-lg px-3 text-sm outline-none"
                           style={inputStyle}
@@ -683,13 +685,13 @@ export default function ProfilePage() {
                           className="text-[13px] font-medium"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Confirmer
+                          {t.account.profile.confirm}
                         </label>
                         <input
                           type="password"
                           value={confirmNewPassword}
                           onChange={(e) => setConfirmNewPassword(e.target.value)}
-                          placeholder="Retapez"
+                          placeholder={t.account.profile.confirmPlaceholder}
                           required
                           className="h-10 rounded-lg px-3 text-sm outline-none"
                           style={inputStyle}
@@ -712,7 +714,7 @@ export default function ProfilePage() {
                           ) : (
                             <Circle className="h-3.5 w-3.5" aria-hidden />
                           )}
-                          8+ caracteres
+                          {t.account.profile.charsHint(8)}
                         </span>
                         <span
                           className="flex items-center gap-1"
@@ -728,7 +730,7 @@ export default function ProfilePage() {
                           ) : (
                             <Circle className="h-3.5 w-3.5" aria-hidden />
                           )}
-                          Identiques
+                          {t.account.profile.identical}
                         </span>
                       </div>
                     )}
@@ -736,7 +738,7 @@ export default function ProfilePage() {
                       type="submit"
                       className="w-fit rounded-lg bg-brand-500 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-600"
                     >
-                      Modifier le mot de passe
+                      {t.account.profile.submitPassword}
                     </button>
                   </form>
                 </div>
@@ -748,10 +750,10 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                        Mes adresses
+                        {t.account.addresses.heading}
                       </h2>
                       <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                        Gerez vos adresses de livraison.
+                        {t.account.addresses.subtitle}
                       </p>
                     </div>
                     {!addrForm && (
@@ -763,7 +765,7 @@ export default function ProfilePage() {
                         }}
                         className="rounded-lg bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white hover:bg-brand-600"
                       >
-                        + Ajouter
+                        {t.account.addresses.add}
                       </button>
                     )}
                   </div>
@@ -785,13 +787,15 @@ export default function ProfilePage() {
                           className="text-[13px] font-semibold"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          {editingAddr ? "Modifier l'adresse" : 'Nouvelle adresse'}
+                          {editingAddr
+                            ? t.account.addresses.editTitle
+                            : t.account.addresses.newTitle}
                         </span>
                         <div className="grid grid-cols-2 gap-3">
                           <input
                             value={addrLabel}
                             onChange={(e) => setAddrLabel(e.target.value)}
-                            placeholder="Label (ex: Maison)"
+                            placeholder={t.account.addresses.labelPlaceholder}
                             required
                             className="h-9 rounded-lg px-3 text-sm outline-none"
                             style={inputStyle}
@@ -799,7 +803,7 @@ export default function ProfilePage() {
                           <input
                             value={addrCountry}
                             onChange={(e) => setAddrCountry(e.target.value)}
-                            placeholder="Pays"
+                            placeholder={t.account.addresses.countryPlaceholder}
                             required
                             className="h-9 rounded-lg px-3 text-sm outline-none"
                             style={inputStyle}
@@ -808,7 +812,7 @@ export default function ProfilePage() {
                         <input
                           value={addrStreet}
                           onChange={(e) => setAddrStreet(e.target.value)}
-                          placeholder="Rue"
+                          placeholder={t.account.addresses.streetPlaceholder}
                           required
                           className="h-9 rounded-lg px-3 text-sm outline-none"
                           style={inputStyle}
@@ -817,7 +821,7 @@ export default function ProfilePage() {
                           <input
                             value={addrCity}
                             onChange={(e) => setAddrCity(e.target.value)}
-                            placeholder="Ville"
+                            placeholder={t.account.addresses.cityPlaceholder}
                             required
                             className="h-9 rounded-lg px-3 text-sm outline-none"
                             style={inputStyle}
@@ -825,7 +829,7 @@ export default function ProfilePage() {
                           <input
                             value={addrPostal}
                             onChange={(e) => setAddrPostal(e.target.value)}
-                            placeholder="Code postal"
+                            placeholder={t.account.addresses.postalPlaceholder}
                             required
                             className="h-9 rounded-lg px-3 text-sm outline-none"
                             style={inputStyle}
@@ -841,14 +845,14 @@ export default function ProfilePage() {
                             onChange={(e) => setAddrDefault(e.target.checked)}
                             className="rounded"
                           />{' '}
-                          Adresse par defaut
+                          {t.account.addresses.defaultCheckbox}
                         </label>
                         <div className="flex gap-2">
                           <button
                             type="submit"
                             className="rounded-lg bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white hover:bg-brand-600"
                           >
-                            {editingAddr ? 'Enregistrer' : 'Ajouter'}
+                            {editingAddr ? t.account.addresses.save : t.account.addresses.addBtn}
                           </button>
                           <button
                             type="button"
@@ -859,7 +863,7 @@ export default function ProfilePage() {
                               color: 'var(--color-text)',
                             }}
                           >
-                            Annuler
+                            {t.account.addresses.cancel}
                           </button>
                         </div>
                       </motion.form>
@@ -876,7 +880,7 @@ export default function ProfilePage() {
                       style={{ border: '1px dashed var(--color-border)' }}
                     >
                       <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-                        Aucune adresse enregistree.
+                        {t.account.addresses.empty}
                       </p>
                     </div>
                   ) : (
@@ -897,7 +901,7 @@ export default function ProfilePage() {
                               </span>
                               {a.isDefault && (
                                 <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-600">
-                                  Par defaut
+                                  {t.account.addresses.defaultBadge}
                                 </span>
                               )}
                             </div>
@@ -921,7 +925,7 @@ export default function ProfilePage() {
                               className="text-[12px] font-medium hover:underline"
                               style={{ color: 'var(--color-brand-500)' }}
                             >
-                              Modifier
+                              {t.account.addresses.edit}
                             </button>
                             <button
                               type="button"
@@ -929,7 +933,7 @@ export default function ProfilePage() {
                               className="text-[12px] font-medium hover:underline"
                               style={{ color: 'var(--color-error)' }}
                             >
-                              Supprimer
+                              {t.account.addresses.delete}
                             </button>
                           </div>
                         </div>
@@ -944,10 +948,10 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-6">
                   <div>
                     <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
-                      Preferences
+                      {t.account.preferences.heading}
                     </h2>
                     <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
-                      Personnalisez votre experience.
+                      {t.account.preferences.subtitle}
                     </p>
                   </div>
 
@@ -962,7 +966,7 @@ export default function ProfilePage() {
                           className="text-[13px] font-semibold"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Langue et devise
+                          {t.account.preferences.langAndCurrency}
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1.5">
@@ -970,7 +974,7 @@ export default function ProfilePage() {
                               className="text-[12px] font-medium"
                               style={{ color: 'var(--color-text-muted)' }}
                             >
-                              Langue
+                              {t.account.preferences.language}
                             </label>
                             <select
                               value={prefs.language}
@@ -978,7 +982,7 @@ export default function ProfilePage() {
                               className="h-10 rounded-lg px-3 text-sm"
                               style={inputStyle}
                             >
-                              <option value="fr">Francais</option>
+                              <option value="fr">{t.account.preferences.langFr}</option>
                               <option value="en">English</option>
                               <option value="es">Espanol</option>
                               <option value="de">Deutsch</option>
@@ -989,7 +993,7 @@ export default function ProfilePage() {
                               className="text-[12px] font-medium"
                               style={{ color: 'var(--color-text-muted)' }}
                             >
-                              Devise
+                              {t.account.preferences.currency}
                             </label>
                             <select
                               value={prefs.currency}
@@ -1015,34 +1019,34 @@ export default function ProfilePage() {
                           className="text-[13px] font-semibold"
                           style={{ color: 'var(--color-text)' }}
                         >
-                          Notifications
+                          {t.account.preferences.notifications}
                         </h3>
                         {(
                           [
                             {
                               key: 'email',
-                              label: 'Notifications email',
-                              desc: 'Recevoir les notifications par email',
+                              label: t.account.preferences.notifEmail,
+                              desc: t.account.preferences.notifEmailDesc,
                             },
                             {
                               key: 'push',
-                              label: 'Notifications push',
-                              desc: 'Recevoir les notifications push',
+                              label: t.account.preferences.notifPush,
+                              desc: t.account.preferences.notifPushDesc,
                             },
                             {
                               key: 'orderUpdates',
-                              label: 'Mises a jour commandes',
-                              desc: 'Notifications sur le suivi de vos commandes',
+                              label: t.account.preferences.notifOrders,
+                              desc: t.account.preferences.notifOrdersDesc,
                             },
                             {
                               key: 'promotions',
-                              label: 'Promotions',
-                              desc: 'Recevoir les offres et promotions',
+                              label: t.account.preferences.notifPromotions,
+                              desc: t.account.preferences.notifPromotionsDesc,
                             },
                             {
                               key: 'priceDrops',
-                              label: 'Baisse de prix',
-                              desc: 'Alerte quand un produit en favoris baisse',
+                              label: t.account.preferences.notifPriceDrops,
+                              desc: t.account.preferences.notifPriceDropsDesc,
                             },
                           ] as const
                         ).map((n) => (

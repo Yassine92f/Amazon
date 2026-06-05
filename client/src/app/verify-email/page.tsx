@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import { api } from '../../lib/api';
+import { t } from '../../lib/i18n';
 
 type Status = 'pending' | 'verifying' | 'success' | 'error';
 
@@ -29,7 +30,7 @@ function VerifyEmailContent() {
         if (cancelled) return;
         const message =
           (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-          'Lien de vérification invalide ou expiré';
+          t.auth.verify.invalidLinkError;
         setErrorMessage(message);
         setStatus('error');
       }
@@ -48,7 +49,7 @@ function VerifyEmailContent() {
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        "Erreur lors de l'envoi";
+        t.auth.verify.sendError;
       setErrorMessage(message);
     }
     setResendLoading(false);
@@ -59,7 +60,7 @@ function VerifyEmailContent() {
       <div className="py-8 text-center">
         <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-brand-500)] border-t-transparent" />
         <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Vérification en cours…
+          {t.auth.verify.verifying}
         </p>
       </div>
     );
@@ -78,17 +79,17 @@ function VerifyEmailContent() {
           </svg>
         </div>
         <h1 className="mb-2 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-          Email vérifié
+          {t.auth.verify.successTitle}
         </h1>
         <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Votre adresse email est maintenant confirmée.
+          {t.auth.verify.successDesc}
         </p>
         <Link
           href="/login"
           className="inline-block rounded-lg px-6 py-2.5 text-sm font-semibold text-white"
           style={{ backgroundColor: 'var(--color-brand-500)' }}
         >
-          Se connecter
+          {t.auth.verify.signIn}
         </Link>
       </div>
     );
@@ -108,7 +109,7 @@ function VerifyEmailContent() {
             </svg>
           </div>
           <h1 className="mb-2 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-            Lien invalide
+            {t.auth.verify.invalidTitle}
           </h1>
           <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             {errorMessage}
@@ -123,19 +124,19 @@ function VerifyEmailContent() {
               border: '1px solid #bbf7d0',
             }}
           >
-            Si un compte existe avec cet email, un nouveau lien de vérification a été envoyé.
+            {t.auth.verify.resentNotice}
           </div>
         ) : (
           <form onSubmit={handleResend} className="space-y-3">
             <label className="block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-              Renvoyer un email de vérification
+              {t.auth.verify.resendLabel}
             </label>
             <input
               type="email"
               required
               value={resendEmail}
               onChange={(e) => setResendEmail(e.target.value)}
-              placeholder="votre@email.com"
+              placeholder={t.auth.verify.resendPlaceholder}
               className="w-full rounded-lg px-4 py-2.5 text-sm outline-none"
               style={{
                 border: '1px solid var(--color-border)',
@@ -151,7 +152,7 @@ function VerifyEmailContent() {
               className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
               style={{ backgroundColor: 'var(--color-brand-500)' }}
             >
-              {resendLoading ? 'Envoi…' : 'Renvoyer le lien'}
+              {resendLoading ? t.auth.verify.resending : t.auth.verify.resend}
             </motion.button>
           </form>
         )}
@@ -162,17 +163,17 @@ function VerifyEmailContent() {
   return (
     <div className="text-center">
       <h1 className="mb-2 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-        Vérification d&apos;email
+        {t.auth.verify.pendingTitle}
       </h1>
       <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-        Ouvrez le lien envoyé par email pour vérifier votre adresse.
+        {t.auth.verify.pendingDesc}
       </p>
       <Link
         href="/login"
         className="inline-block rounded-lg px-6 py-2.5 text-sm font-semibold text-white"
         style={{ backgroundColor: 'var(--color-brand-500)' }}
       >
-        Retour à la connexion
+        {t.auth.verify.backToLogin}
       </Link>
     </div>
   );
