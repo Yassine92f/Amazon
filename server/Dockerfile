@@ -34,6 +34,11 @@ COPY --from=builder --chown=nodejs:nodejs /app/deploy/node_modules ./node_module
 COPY --from=builder --chown=nodejs:nodejs /app/deploy/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/deploy/package.json ./package.json
 
+# Uploads land here at runtime (path.resolve(__dirname,'../../../../uploads') ->
+# /app/uploads). Create it owned by the runtime user so a named volume mounted
+# here inherits writable permissions and user images survive redeploys.
+RUN mkdir -p /app/uploads && chown nodejs:nodejs /app/uploads
+
 USER nodejs
 EXPOSE 5001
 
