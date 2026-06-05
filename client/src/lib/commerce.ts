@@ -126,6 +126,17 @@ export async function createPaymentIntent(orderId: string): Promise<CreatePaymen
   return data.data;
 }
 
+/**
+ * Confirm the order server-side right after Stripe reports success, so it is
+ * marked paid deterministically instead of waiting on the async webhook.
+ */
+export async function confirmPayment(
+  orderId: string,
+): Promise<{ status: OrderStatus; paid: boolean }> {
+  const { data } = await api.post('/payments/confirm', { orderId });
+  return data.data;
+}
+
 /* ── Wishlist ─────────────────────────────────────────────────────────── */
 
 export interface WishlistItemDto {

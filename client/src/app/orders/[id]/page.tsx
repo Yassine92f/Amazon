@@ -13,11 +13,12 @@ import {
   Truck,
   Home,
   XCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import Header from '../../../components/Header';
 import { ProtectedRoute } from '../../../components/ProtectedRoute';
 import StatusBadge from '../../../components/orders/StatusBadge';
-import { getOrder, cancelOrder } from '../../../lib/commerce';
+import { getOrder, cancelOrder, confirmPayment } from '../../../lib/commerce';
 import { t, formatPrice, formatLongDate } from '../../../lib/i18n';
 import { OrderStatus, DeliveryType, type Order } from '@ecommerce/shared';
 
@@ -101,17 +102,23 @@ function OrderDetailInner({ id }: { id: string }) {
     fetchOrder();
   }, [fetchOrder]);
 
-  // After a Stripe redirect the webhook may take a moment to flip PENDING →
-  // CONFIRMED. Poll a few times so the success state reflects reality.
+  // After payment, confirm the order deterministically (the checkout already
+  // does this, but this is a resilient fallback if that call was missed). Then
+  // poll a few times in case confirmation is still settling.
   useEffect(() => {
     if (!justPaid || !order || order.status !== OrderStatus.PENDING) return;
     if (pollCount.current >= 5) return;
     const timer = setTimeout(async () => {
       pollCount.current += 1;
+      try {
+        await confirmPayment(id);
+      } catch {
+        /* ignore — fall through to a plain refetch */
+      }
       await fetchOrder();
-    }, 2000);
+    }, 1500);
     return () => clearTimeout(timer);
-  }, [justPaid, order, fetchOrder]);
+  }, [justPaid, order, fetchOrder, id]);
 
   const handleCancel = async () => {
     if (!order || !window.confirm(t.orders.cancelConfirm)) return;
@@ -156,7 +163,11 @@ function OrderDetailInner({ id }: { id: string }) {
 
   return (
     <main className="container-main py-8">
-      <Link href="/orders" className="text-sm font-medium text-brand-600 hover:underline">
+      <Link
+        href="/orders"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden />
         {t.orders.backToOrders}
       </Link>
 

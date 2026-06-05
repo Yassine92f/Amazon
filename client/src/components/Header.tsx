@@ -19,6 +19,8 @@ import {
   BookOpen,
   Sparkles,
   ToyBrick,
+  Package,
+  Heart,
 } from 'lucide-react';
 import { useAuthStore } from '../store';
 import { useCartStore } from '../store/cart';
@@ -263,6 +265,24 @@ export default function Header() {
                         style={{ color: 'var(--color-text)' }}
                       >
                         {t.header.myProfile}
+                      </Link>
+                      <Link
+                        href="/orders"
+                        onClick={() => setShowMenu(false)}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        <Package className="h-4 w-4 text-muted" aria-hidden />
+                        {t.header.myOrders}
+                      </Link>
+                      <Link
+                        href="/wishlist"
+                        onClick={() => setShowMenu(false)}
+                        className="flex w-full items-center gap-2 px-4 py-2 text-sm transition-colors hover:bg-[var(--color-bg)]"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        <Heart className="h-4 w-4 text-muted" aria-hidden />
+                        {t.header.myWishlist}
                       </Link>
                       {user.role === UserRole.SELLER && (
                         <Link
