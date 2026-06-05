@@ -36,7 +36,7 @@ function setup(
     couponUseCase,
     sellerRepo,
   );
-  return { useCase, productRepo, userRepo, orderRepo, cartRepo };
+  return { useCase, productRepo, userRepo, orderRepo, cartRepo, sellerRepo };
 }
 
 const baseInput = {
@@ -46,6 +46,12 @@ const baseInput = {
 };
 
 describe('OrderUseCase.createOrder', () => {
+  it("credits the seller's sales count and revenue", async () => {
+    const { useCase, sellerRepo } = setup(); // product price 30, sellerId 'seller-1'
+    await useCase.createOrder('user-1', baseInput); // qty 2 -> revenue 60
+    expect(sellerRepo.incrementSales).toHaveBeenCalledWith('seller-1', 2, 60);
+  });
+
   it('rejects an invalid shipping address', async () => {
     const { useCase } = setup();
     await expect(
