@@ -233,6 +233,7 @@ export interface AdminCouponDto {
   maxDiscount?: number;
   expiresAt?: string;
   usageLimit?: number;
+  perUserLimit?: number;
   usedCount: number;
   isActive: boolean;
   createdAt: string;
@@ -247,6 +248,7 @@ export interface CreateCouponInput {
   maxDiscount?: number;
   expiresAt?: string;
   usageLimit?: number;
+  perUserLimit?: number;
   isActive?: boolean;
 }
 

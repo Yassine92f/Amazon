@@ -12,6 +12,7 @@ export const createCouponSchema = z.object({
   maxDiscount: z.number().min(0).optional(),
   expiresAt: z.string().datetime().optional(),
   usageLimit: z.number().int().positive().optional(),
+  perUserLimit: z.number().int().positive().optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -22,5 +23,6 @@ export const updateCouponSchema = z.object({
   maxDiscount: z.number().min(0).nullable().optional(),
   expiresAt: z.string().datetime().nullable().optional(),
   usageLimit: z.number().int().positive().nullable().optional(),
+  perUserLimit: z.number().int().positive().nullable().optional(),
   isActive: z.boolean().optional(),
 });
