@@ -98,6 +98,7 @@ export class OrderUseCase {
       const { coupon, discount, validation } = await this.couponUseCase.evaluate(
         input.couponCode,
         subtotal,
+        userId,
       );
       if (!validation.valid || !coupon) {
         throw new OrderError(400, validation.message ?? 'Invalid coupon');
@@ -155,7 +156,7 @@ export class OrderUseCase {
     for (const it of orderItems) {
       await this.productRepo.incrementTotalSold(it.productId, it.quantity);
     }
-    if (couponId) await this.couponUseCase.markUsed(couponId);
+    if (couponId) await this.couponUseCase.markUsed(couponId, userId, order.id);
     await this.cartRepo.clear({ type: 'user', id: userId });
 
     return this.toDto(order);
