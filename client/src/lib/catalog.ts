@@ -223,6 +223,60 @@ export async function deleteAdminProduct(id: string): Promise<void> {
   await api.delete(`/admin/products/${id}`);
 }
 
+// ── Admin coupons ──────────────────────────────────────────────────────
+export interface AdminCouponDto {
+  _id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minOrderAmount?: number;
+  maxDiscount?: number;
+  expiresAt?: string;
+  usageLimit?: number;
+  usedCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCouponInput {
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minOrderAmount?: number;
+  maxDiscount?: number;
+  expiresAt?: string;
+  usageLimit?: number;
+  isActive?: boolean;
+}
+
+export async function listAdminCoupons(
+  params: { page?: number; limit?: number } = {},
+): Promise<PaginatedResponse<AdminCouponDto>> {
+  const query: Record<string, string> = {};
+  if (params.page) query.page = String(params.page);
+  if (params.limit) query.limit = String(params.limit);
+  const { data } = await api.get('/admin/coupons', { params: query });
+  return data.data;
+}
+
+export async function createCoupon(input: CreateCouponInput): Promise<AdminCouponDto> {
+  const { data } = await api.post('/admin/coupons', input);
+  return data.data;
+}
+
+export async function updateCoupon(
+  id: string,
+  input: Partial<Omit<CreateCouponInput, 'code'>>,
+): Promise<AdminCouponDto> {
+  const { data } = await api.put(`/admin/coupons/${id}`, input);
+  return data.data;
+}
+
+export async function deleteCoupon(id: string): Promise<void> {
+  await api.delete(`/admin/coupons/${id}`);
+}
+
 // ── Categories API ─────────────────────────────────────────────────────
 
 export async function listCategories(): Promise<CategoryDto[]> {
