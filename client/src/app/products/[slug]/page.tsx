@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Package, ShoppingCart, Heart, Check } from 'lucide-react';
+import { Package, ShoppingCart, Heart, Check, Minus, Plus, ArrowRight } from 'lucide-react';
 import Header from '../../../components/Header';
 import { useCartStore } from '../../../store/cart';
 import { useWishlistStore } from '../../../store/wishlist';
@@ -493,20 +493,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
-                  aria-label="−"
-                  className="flex h-12 w-11 items-center justify-center text-lg font-bold text-text disabled:opacity-30"
+                  aria-label={t.cart.decrease}
+                  className="flex h-12 w-11 items-center justify-center text-text disabled:opacity-30"
                 >
-                  −
+                  <Minus className="h-4 w-4" aria-hidden />
                 </button>
                 <span className="w-8 text-center text-sm font-bold text-brand-900">{quantity}</span>
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
                   disabled={quantity >= maxQty}
-                  aria-label="+"
-                  className="flex h-12 w-11 items-center justify-center text-lg font-bold text-text disabled:opacity-30"
+                  aria-label={t.cart.increase}
+                  className="flex h-12 w-11 items-center justify-center text-text disabled:opacity-30"
                 >
-                  +
+                  <Plus className="h-4 w-4" aria-hidden />
                 </button>
               </div>
 
@@ -623,8 +623,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     <p className="font-bold text-brand-900">{product.shopName}</p>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-brand-600">
-                  {t.product.visitShop} →
+                <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
+                  {t.product.visitShop}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </span>
               </Link>
             )}

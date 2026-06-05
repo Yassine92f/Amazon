@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../../store';
 import { t } from '../../lib/i18n';
 
@@ -26,8 +27,9 @@ export default function SellerTopBar() {
         <div className="flex-1" />
         <Link
           href="/"
-          className="hidden text-xs font-semibold text-muted hover:text-brand-700 md:block"
+          className="hidden items-center gap-1.5 text-xs font-semibold text-muted hover:text-brand-700 md:inline-flex"
         >
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           {t.seller.backToMarketplace}
         </Link>
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">

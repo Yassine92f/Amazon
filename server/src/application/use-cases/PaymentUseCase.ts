@@ -59,6 +59,35 @@ export class PaymentUseCase {
     return { clientSecret: intent.clientSecret, paymentIntentId: intent.id };
   }
 
+  // Deterministic confirmation: the client calls this right after Stripe reports
+  // the payment succeeded, so the order is confirmed immediately instead of
+  // waiting on the (possibly undelivered, in local dev) webhook. The webhook
+  // remains the authoritative async backup; both go through the idempotent
+  // markPaid path.
+  async confirmPayment(
+    userId: string,
+    orderId: string,
+  ): Promise<{ status: OrderStatus; paid: boolean }> {
+    const order = await this.orderRepo.findById(orderId);
+    if (!order) throw new PaymentError(404, 'Order not found');
+    if (order.userId !== userId) throw new PaymentError(403, 'You cannot confirm this order');
+    if (order.status !== OrderStatus.PENDING) {
+      return { status: order.status, paid: true };
+    }
+
+    const payment = await this.paymentRepo.findByOrderId(order.id);
+    if (!payment) throw new PaymentError(404, 'No payment found for this order');
+
+    const intent = await this.paymentService.retrievePaymentIntent(payment.stripePaymentIntentId);
+    if (intent.status === 'succeeded') {
+      await this.markPaid(intent.id);
+    }
+
+    const updated = await this.orderRepo.findById(orderId);
+    const status = updated?.status ?? order.status;
+    return { status, paid: status !== OrderStatus.PENDING };
+  }
+
   async handleWebhook(payload: Buffer, signature: string): Promise<{ received: boolean }> {
     let event;
     try {

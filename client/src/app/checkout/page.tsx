@@ -5,7 +5,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { Elements } from '@stripe/react-stripe-js';
-import { MapPin, Home, Store, Tag, Check, ShoppingBag, Pencil, Plus } from 'lucide-react';
+import {
+  MapPin,
+  Home,
+  Store,
+  Tag,
+  Check,
+  ShoppingBag,
+  Pencil,
+  Plus,
+  ArrowLeft,
+} from 'lucide-react';
 import Header from '../../components/Header';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import PaymentForm from '../../components/checkout/PaymentForm';
@@ -15,6 +25,7 @@ import { getStripe } from '../../lib/stripe';
 import {
   createOrder,
   createPaymentIntent,
+  confirmPayment,
   cancelOrder,
   validateCoupon,
   addToCart,
@@ -206,6 +217,15 @@ function CheckoutInner() {
   };
 
   const handlePaymentSuccess = async () => {
+    // Confirm server-side so the order is marked paid without waiting on the
+    // webhook, then refresh the (now empty) cart and show the order.
+    if (order) {
+      try {
+        await confirmPayment(order._id);
+      } catch {
+        /* the order page will retry/confirm as a fallback */
+      }
+    }
     await loadCart();
     if (order) router.push(`/orders/${order._id}?payment=success`);
   };
@@ -239,7 +259,11 @@ function CheckoutInner() {
 
   return (
     <main className="container-main py-8">
-      <Link href="/cart" className="text-sm font-medium text-brand-600 hover:underline">
+      <Link
+        href="/cart"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:underline"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden />
         {t.checkout.backToCart}
       </Link>
       <h1 className="mb-6 mt-2 text-2xl font-extrabold text-brand-900">{t.checkout.title}</h1>
@@ -328,14 +352,14 @@ function CheckoutInner() {
                             <input
                               value={addrLabel}
                               onChange={(e) => setAddrLabel(e.target.value)}
-                              placeholder="Label (Maison)"
+                              placeholder={t.checkout.addr.label}
                               required
                               className="h-9 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-400"
                             />
                             <input
                               value={addrCountry}
                               onChange={(e) => setAddrCountry(e.target.value)}
-                              placeholder="Pays"
+                              placeholder={t.checkout.addr.country}
                               required
                               className="h-9 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-400"
                             />
@@ -343,7 +367,7 @@ function CheckoutInner() {
                           <input
                             value={addrStreet}
                             onChange={(e) => setAddrStreet(e.target.value)}
-                            placeholder="Rue"
+                            placeholder={t.checkout.addr.street}
                             required
                             className="h-9 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-400"
                           />
@@ -351,14 +375,14 @@ function CheckoutInner() {
                             <input
                               value={addrCity}
                               onChange={(e) => setAddrCity(e.target.value)}
-                              placeholder="Ville"
+                              placeholder={t.checkout.addr.city}
                               required
                               className="h-9 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-400"
                             />
                             <input
                               value={addrPostal}
                               onChange={(e) => setAddrPostal(e.target.value)}
-                              placeholder="Code postal"
+                              placeholder={t.checkout.addr.postalCode}
                               required
                               className="h-9 rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-400"
                             />
@@ -534,12 +558,25 @@ function CheckoutInner() {
                     stripe={stripePromise}
                     options={{
                       clientSecret,
+                      // Load the app font into the Stripe iframe — `inherit` does
+                      // not cross the iframe boundary, so the font must be supplied
+                      // explicitly here to match the rest of the UI.
+                      fonts: [
+                        {
+                          cssSrc:
+                            'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap',
+                        },
+                      ],
                       appearance: {
                         theme: 'stripe',
                         variables: {
                           colorPrimary: '#f07d1a',
-                          fontFamily: 'inherit',
+                          colorText: '#1f1710',
+                          colorTextSecondary: '#7a6e62',
+                          colorDanger: '#dc3545',
+                          fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
                           borderRadius: '10px',
+                          fontSizeBase: '15px',
                         },
                       },
                     }}

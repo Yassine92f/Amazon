@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '../../store';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
 import { api } from '../../lib/api';
+import { listOrders } from '../../lib/commerce';
 
 type Tab = 'profile' | 'addresses' | 'preferences';
 
@@ -44,6 +45,13 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<Tab>('profile');
   const [toast, setToast] = useState<Toast | null>(null);
+  const [ordersCount, setOrdersCount] = useState(0);
+
+  useEffect(() => {
+    listOrders({ limit: 1 })
+      .then((res) => setOrdersCount(res.total))
+      .catch(() => {});
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -393,19 +401,54 @@ export default function ProfilePage() {
             <div className="my-1 h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
             <div className="flex w-full justify-around">
               {[
-                { n: 0, l: 'Commandes' },
+                { n: ordersCount, l: 'Commandes', href: '/orders' },
                 { n: 0, l: 'Avis' },
-                { n: addresses.length || user?.addresses?.length || 0, l: 'Adresses' },
-              ].map((s) => (
-                <div key={s.l} className="flex flex-col items-center gap-1">
-                  <span className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-                    {s.n}
-                  </span>
-                  <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                    {s.l}
-                  </span>
-                </div>
-              ))}
+                {
+                  n: addresses.length || user?.addresses?.length || 0,
+                  l: 'Adresses',
+                  onClick: () => setTab('addresses'),
+                },
+              ].map((s) => {
+                const content = (
+                  <>
+                    <span className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
+                      {s.n}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      {s.l}
+                    </span>
+                  </>
+                );
+                const cls = 'flex flex-col items-center gap-1';
+                if (s.href) {
+                  return (
+                    <Link
+                      key={s.l}
+                      href={s.href}
+                      className={`${cls} transition-opacity hover:opacity-70`}
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+                if (s.onClick) {
+                  return (
+                    <button
+                      key={s.l}
+                      type="button"
+                      onClick={s.onClick}
+                      className={`${cls} transition-opacity hover:opacity-70`}
+                    >
+                      {content}
+                    </button>
+                  );
+                }
+                return (
+                  <div key={s.l} className={cls}>
+                    {content}
+                  </div>
+                );
+              })}
             </div>
             <div className="my-1 h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
             <div className="flex w-full justify-between">
