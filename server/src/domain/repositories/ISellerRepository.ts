@@ -36,4 +36,6 @@ export interface ISellerRepository {
     commissionRate?: number,
   ): Promise<SellerEntity | null>;
   findMany(params: FindSellersParams): Promise<{ sellers: SellerEntity[]; total: number }>;
+  // Bump a seller's lifetime sales count + revenue when an order is placed.
+  incrementSales(sellerId: string, salesDelta: number, revenueDelta: number): Promise<void>;
 }

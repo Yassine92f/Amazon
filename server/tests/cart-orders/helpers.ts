@@ -267,6 +267,7 @@ export function makeSellerRepo(sellers: SellerEntity[] = [buildSeller()]): ISell
     updateByUserId: jest.fn(),
     setVerified: jest.fn(),
     findMany: jest.fn(),
+    incrementSales: jest.fn(async () => undefined),
   } as unknown as ISellerRepository;
 }
 
