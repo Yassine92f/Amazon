@@ -32,6 +32,7 @@ const navItems = [
   { key: 'dashboard', label: t.admin.navDashboard, href: '/admin' },
   { key: 'users', label: t.admin.navUsers, href: '/admin/users' },
   { key: 'products', label: t.admin.navProducts, href: '/admin/products' },
+  { key: 'coupons', label: t.admin.navCoupons, href: '/admin/coupons' },
   { key: 'sellers', label: t.admin.navSellers, href: '/admin' },
   { key: 'orders', label: t.admin.navOrders, href: '/admin' },
   { key: 'settings', label: t.admin.navSettings, href: '/admin' },

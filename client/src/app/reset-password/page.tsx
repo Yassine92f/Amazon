@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { Check, Circle } from 'lucide-react';
 import { api } from '../../lib/api';
 import { GuestRoute } from '../../components/GuestRoute';
+import { t } from '../../lib/i18n';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -23,15 +24,15 @@ function ResetPasswordForm() {
     setError('');
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caracteres');
+      setError(t.auth.minChars(8));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas');
+      setError(t.auth.passwordMismatch);
       return;
     }
     if (!token) {
-      setError('Token de reinitialisation manquant');
+      setError(t.auth.reset.missingToken);
       return;
     }
 
@@ -42,7 +43,7 @@ function ResetPasswordForm() {
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-        'Erreur lors de la reinitialisation';
+        t.auth.reset.genericError;
       setError(message);
     }
     setLoading(false);
@@ -52,17 +53,17 @@ function ResetPasswordForm() {
     return (
       <div className="text-center">
         <h1 className="mb-2 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-          Lien invalide
+          {t.auth.reset.invalidTitle}
         </h1>
         <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Ce lien de reinitialisation est invalide ou a expire.
+          {t.auth.reset.invalidDesc}
         </p>
         <Link
           href="/forgot-password"
           className="inline-block rounded-lg px-6 py-2.5 text-sm font-semibold text-white"
           style={{ backgroundColor: 'var(--color-brand-500)' }}
         >
-          Demander un nouveau lien
+          {t.auth.reset.requestNewLink}
         </Link>
       </div>
     );
@@ -86,17 +87,17 @@ function ResetPasswordForm() {
           </svg>
         </div>
         <h1 className="mb-2 text-xl font-bold" style={{ color: 'var(--color-text)' }}>
-          Mot de passe reinitialise
+          {t.auth.reset.successTitle}
         </h1>
         <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          Votre mot de passe a ete modifie avec succes.
+          {t.auth.reset.successDesc}
         </p>
         <Link
           href="/login"
           className="inline-block rounded-lg px-6 py-2.5 text-sm font-semibold text-white"
           style={{ backgroundColor: 'var(--color-brand-500)' }}
         >
-          Se connecter
+          {t.auth.reset.signIn}
         </Link>
       </div>
     );
@@ -105,10 +106,10 @@ function ResetPasswordForm() {
   return (
     <>
       <h1 className="mb-2 text-2xl font-bold" style={{ color: 'var(--color-text)' }}>
-        Nouveau mot de passe
+        {t.auth.reset.title}
       </h1>
       <p className="mb-6 text-sm" style={{ color: 'var(--color-text-muted)' }}>
-        Choisissez un nouveau mot de passe pour votre compte
+        {t.auth.reset.subtitle}
       </p>
 
       {error && (
@@ -127,14 +128,14 @@ function ResetPasswordForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-            Nouveau mot de passe
+            {t.auth.reset.newPassword}
           </label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Minimum 8 caracteres"
+            placeholder={t.auth.reset.newPasswordPlaceholder}
             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
             style={{
               border: '1px solid var(--color-border)',
@@ -148,14 +149,14 @@ function ResetPasswordForm() {
 
         <div>
           <label className="mb-1 block text-sm font-medium" style={{ color: 'var(--color-text)' }}>
-            Confirmer le mot de passe
+            {t.auth.reset.confirmPassword}
           </label>
           <input
             type="password"
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Retapez votre mot de passe"
+            placeholder={t.auth.reset.confirmPlaceholder}
             className="w-full rounded-lg px-4 py-2.5 text-sm outline-none transition-colors"
             style={{
               border: '1px solid var(--color-border)',
@@ -180,7 +181,7 @@ function ResetPasswordForm() {
               ) : (
                 <Circle className="h-3.5 w-3.5" aria-hidden />
               )}
-              8+ caracteres
+              {t.auth.charsHint(8)}
             </span>
             <span
               className="flex items-center gap-1"
@@ -196,7 +197,7 @@ function ResetPasswordForm() {
               ) : (
                 <Circle className="h-3.5 w-3.5" aria-hidden />
               )}
-              Identiques
+              {t.auth.identical}
             </span>
           </div>
         )}
@@ -209,7 +210,7 @@ function ResetPasswordForm() {
           className="w-full rounded-lg py-2.5 text-sm font-semibold text-white transition-opacity disabled:opacity-60"
           style={{ backgroundColor: 'var(--color-brand-500)' }}
         >
-          {loading ? 'Reinitialisation...' : 'Reinitialiser le mot de passe'}
+          {loading ? t.auth.reset.submitting : t.auth.reset.submit}
         </motion.button>
       </form>
     </>
