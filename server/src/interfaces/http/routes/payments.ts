@@ -28,6 +28,12 @@ router.post(
   paymentController.createIntent,
 );
 router.post(
+  '/confirm',
+  authenticate,
+  validate(createPaymentIntentSchema),
+  paymentController.confirm,
+);
+router.post(
   '/refund',
   authenticate,
   authorize(UserRole.ADMIN),

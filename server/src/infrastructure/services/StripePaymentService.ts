@@ -4,6 +4,7 @@ import {
   IPaymentService,
   CreatePaymentIntentParams,
   PaymentIntentResult,
+  PaymentIntentStatus,
   RefundResult,
   PaymentWebhookEvent,
 } from '../../domain/services/IPaymentService';
@@ -31,6 +32,11 @@ export class StripePaymentService implements IPaymentService {
       throw new Error('Stripe did not return a client secret');
     }
     return { id: intent.id, clientSecret: intent.client_secret };
+  }
+
+  async retrievePaymentIntent(id: string): Promise<PaymentIntentStatus> {
+    const intent = await this.stripe.paymentIntents.retrieve(id);
+    return { id: intent.id, status: intent.status };
   }
 
   async refund(paymentIntentId: string, amount?: number): Promise<RefundResult> {

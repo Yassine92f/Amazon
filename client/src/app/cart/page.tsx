@@ -139,7 +139,7 @@ export default function CartPage() {
                               onClick={() =>
                                 setQuantity(it.productId, it.variantId, it.quantity - 1)
                               }
-                              aria-label="−"
+                              aria-label={t.cart.decrease}
                               className="flex h-9 w-9 items-center justify-center text-text disabled:opacity-30"
                             >
                               <Minus className="h-4 w-4" />
@@ -153,7 +153,7 @@ export default function CartPage() {
                               onClick={() =>
                                 setQuantity(it.productId, it.variantId, it.quantity + 1)
                               }
-                              aria-label="+"
+                              aria-label={t.cart.increase}
                               className="flex h-9 w-9 items-center justify-center text-text disabled:opacity-30"
                             >
                               <Plus className="h-4 w-4" />

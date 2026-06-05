@@ -56,6 +56,56 @@ describe('PaymentUseCase.createIntent', () => {
   });
 });
 
+describe('PaymentUseCase.confirmPayment', () => {
+  it('confirms a pending order when Stripe reports the intent succeeded', async () => {
+    const orderRepo = makeOrderRepo();
+    const order = await seedOrder(orderRepo);
+    const paymentRepo = makePaymentRepo([
+      buildPayment({
+        orderId: order.id,
+        status: PaymentStatus.PROCESSING,
+        stripePaymentIntentId: 'pi_123',
+      }),
+    ]);
+    const service = makePaymentService(); // retrievePaymentIntent → 'succeeded'
+    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+
+    const result = await useCase.confirmPayment('user-1', order.id);
+
+    expect(result).toEqual({ status: OrderStatus.CONFIRMED, paid: true });
+    expect((await orderRepo.findById(order.id))?.status).toBe(OrderStatus.CONFIRMED);
+  });
+
+  it('does not confirm while the intent is still processing', async () => {
+    const orderRepo = makeOrderRepo();
+    const order = await seedOrder(orderRepo);
+    const paymentRepo = makePaymentRepo([
+      buildPayment({
+        orderId: order.id,
+        stripePaymentIntentId: 'pi_p',
+        status: PaymentStatus.PROCESSING,
+      }),
+    ]);
+    const service = makePaymentService({
+      retrievePaymentIntent: jest.fn(async (id: string) => ({ id, status: 'processing' })),
+    });
+    const useCase = new PaymentUseCase(service, paymentRepo, orderRepo);
+
+    const result = await useCase.confirmPayment('user-1', order.id);
+    expect(result.paid).toBe(false);
+    expect((await orderRepo.findById(order.id))?.status).toBe(OrderStatus.PENDING);
+  });
+
+  it('rejects confirming an order the user does not own', async () => {
+    const orderRepo = makeOrderRepo();
+    const order = await seedOrder(orderRepo);
+    const useCase = new PaymentUseCase(makePaymentService(), makePaymentRepo(), orderRepo);
+    await expect(useCase.confirmPayment('intruder', order.id)).rejects.toMatchObject({
+      statusCode: 403,
+    });
+  });
+});
+
 describe('PaymentUseCase.handleWebhook', () => {
   it('confirms the order on payment_intent.succeeded and is idempotent', async () => {
     const orderRepo = makeOrderRepo();
