@@ -8,6 +8,7 @@ export interface ServerToClientEvents {
   'order:status-updated': (payload: OrderStatusPayload) => void;
   'cart:updated': (payload: CartUpdatedPayload) => void;
   'message:new': (payload: MessagePayload) => void;
+  'message:typing': (payload: TypingPayload) => void;
   'product:price-drop': (payload: PriceDropPayload) => void;
 }
 
@@ -64,4 +65,9 @@ export interface PriceDropPayload {
 export interface SendMessagePayload {
   conversationId: string;
   content: string;
+}
+
+export interface TypingPayload {
+  conversationId: string;
+  userId: string;
 }
