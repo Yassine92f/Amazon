@@ -21,10 +21,13 @@ import {
   ToyBrick,
   Package,
   Heart,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuthStore } from '../store';
 import { useCartStore } from '../store/cart';
 import { useWishlistStore } from '../store/wishlist';
+import { useMessagingStore } from '../store/messaging';
+import NotificationBell from './notifications/NotificationBell';
 import { t } from '../lib/i18n';
 import { UserRole } from '@ecommerce/shared';
 
@@ -51,6 +54,7 @@ export default function Header() {
   const cartCount = useCartStore((s) => s.cart?.totalItems ?? 0);
   const openCart = useCartStore((s) => s.openDrawer);
   const wishlistCount = useWishlistStore((s) => s.count);
+  const messagesUnread = useMessagingStore((s) => s.unreadTotal);
   const router = useRouter();
 
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : '';
@@ -228,6 +232,23 @@ export default function Header() {
 
             {isAuthenticated && user ? (
               <>
+                {/* Messages */}
+                <Link
+                  href="/messages"
+                  aria-label={t.header.messages}
+                  className="relative flex h-10 w-10 items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-50 hover:text-brand-600"
+                >
+                  <MessageSquare className="h-[22px] w-[22px]" aria-hidden />
+                  {messagesUnread > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {messagesUnread > 9 ? '9+' : messagesUnread}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Notifications */}
+                <NotificationBell />
+
                 {/* User avatar dropdown */}
                 <div className="relative">
                   <button

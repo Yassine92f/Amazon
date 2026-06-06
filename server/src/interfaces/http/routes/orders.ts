@@ -9,6 +9,9 @@ import { UserRepository } from '../../../infrastructure/repositories/UserReposit
 import { CartRepository } from '../../../infrastructure/repositories/CartRepository';
 import { CouponRepository } from '../../../infrastructure/repositories/CouponRepository';
 import { SellerRepository } from '../../../infrastructure/repositories/SellerRepository';
+import { NotificationUseCase } from '../../../application/use-cases/NotificationUseCase';
+import { NotificationRepository } from '../../../infrastructure/repositories/NotificationRepository';
+import { socketGateway } from '../../../infrastructure/realtime/SocketGateway';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
 import { createOrderSchema, updateOrderStatusSchema } from '../schemas/orderSchemas';
@@ -20,6 +23,7 @@ const cartRepository = new CartRepository();
 const couponRepository = new CouponRepository();
 const sellerRepository = new SellerRepository();
 const couponUseCase = new CouponUseCase(couponRepository);
+const notificationUseCase = new NotificationUseCase(new NotificationRepository(), socketGateway);
 const orderUseCase = new OrderUseCase(
   orderRepository,
   productRepository,
@@ -27,6 +31,7 @@ const orderUseCase = new OrderUseCase(
   cartRepository,
   couponUseCase,
   sellerRepository,
+  notificationUseCase,
 );
 const orderController = new OrderController(orderUseCase);
 

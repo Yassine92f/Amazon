@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { Store, BadgeCheck } from 'lucide-react';
 import Header from '../../../components/Header';
 import StarRating from '../../../components/StarRating';
+import ContactSellerButton from '../../../components/messages/ContactSellerButton';
 import CatalogProductCard from '../../../components/catalog/CatalogProductCard';
 import Pagination from '../../../components/catalog/Pagination';
 import { t, formatNumber, formatMonthYear } from '../../../lib/i18n';
@@ -191,6 +192,9 @@ export default function PublicShopPage({ params }: { params: Promise<{ slug: str
                 <span className="text-xs text-muted">
                   {t.shop.memberSince(formatMonthYear(shop.joinedAt))}
                 </span>
+              </div>
+              <div className="mt-3">
+                <ContactSellerButton sellerUserId={shop.userId} />
               </div>
             </div>
           </div>
