@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import { AuthProvider } from '../components/AuthProvider';
 import { CartProvider } from '../components/CartProvider';
+import { RealtimeProvider } from '../components/RealtimeProvider';
 import CartDrawer from '../components/cart/CartDrawer';
 import CompareBar from '../components/compare/CompareBar';
 import './globals.css';
@@ -23,11 +24,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr">
       <body className={font.className}>
         <AuthProvider>
-          <CartProvider>
-            {children}
-            <CartDrawer />
-            <CompareBar />
-          </CartProvider>
+          <RealtimeProvider>
+            <CartProvider>
+              {children}
+              <CartDrawer />
+              <CompareBar />
+            </CartProvider>
+          </RealtimeProvider>
         </AuthProvider>
       </body>
     </html>
