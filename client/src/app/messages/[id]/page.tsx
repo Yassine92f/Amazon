@@ -164,81 +164,83 @@ function ThreadInner({ id }: { id: string }) {
   }
 
   return (
-    <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-4 sm:px-6">
-      {/* Thread header */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-border py-4">
-        <Link
-          href="/messages"
-          aria-label={t.messages.back}
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-brand-50 hover:text-brand-600"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
-          {conversation?.otherUser.name.charAt(0).toUpperCase() ?? '?'}
-        </span>
-        <div>
-          <p className="font-bold text-brand-900">{conversation?.otherUser.name}</p>
-          {otherTyping && <p className="text-xs text-brand-600">{t.messages.typing}</p>}
+    <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-4 py-4 sm:px-6">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
+        {/* Thread header */}
+        <div className="flex shrink-0 items-center gap-3 border-b border-border px-5 py-3">
+          <Link
+            href="/messages"
+            aria-label={t.messages.back}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-muted hover:bg-brand-50 hover:text-brand-600"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
+            {conversation?.otherUser.name.charAt(0).toUpperCase() ?? '?'}
+          </span>
+          <div>
+            <p className="font-bold text-brand-900">{conversation?.otherUser.name}</p>
+            {otherTyping && <p className="text-xs text-brand-600">{t.messages.typing}</p>}
+          </div>
         </div>
-      </div>
 
-      {/* Messages */}
-      <div className="min-h-0 flex-1 overflow-y-auto py-5">
-        {messages.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted">{t.messages.threadEmpty}</p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {messages.map((m) => {
-              const mine = m.senderId === currentUserId;
-              return (
-                <li key={m._id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
-                      mine
-                        ? 'rounded-br-sm bg-brand-500 text-white'
-                        : 'rounded-bl-sm border border-border bg-white text-text'
-                    }`}
-                  >
-                    <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                    <span
-                      className={`mt-0.5 block text-right text-[10px] ${
-                        mine ? 'text-white/70' : 'text-muted'
+        {/* Messages */}
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[var(--color-bg)] px-5 py-5">
+          {messages.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted">{t.messages.threadEmpty}</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {messages.map((m) => {
+                const mine = m.senderId === currentUserId;
+                return (
+                  <li key={m._id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm ${
+                        mine
+                          ? 'rounded-br-sm bg-brand-500 text-white'
+                          : 'rounded-bl-sm border border-border bg-white text-text'
                       }`}
                     >
-                      {formatTime(m.createdAt)}
-                    </span>
-                  </motion.div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Composer — always pinned at the bottom of the viewport */}
-      <form onSubmit={handleSend} className="shrink-0 border-t border-border py-4">
-        {error && <p className="mb-2 text-xs font-medium text-[var(--color-error)]">{error}</p>}
-        <div className="flex items-center gap-2">
-          <input
-            value={input}
-            onChange={(e) => handleTyping(e.target.value)}
-            placeholder={t.messages.placeholder}
-            className="h-11 flex-1 rounded-full border border-border bg-white px-4 text-sm outline-none focus:border-brand-400"
-          />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            aria-label={t.messages.send}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600 disabled:opacity-50"
-          >
-            <Send className="h-5 w-5" aria-hidden />
-          </button>
+                      <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                      <span
+                        className={`mt-0.5 block text-right text-[10px] ${
+                          mine ? 'text-white/70' : 'text-muted'
+                        }`}
+                      >
+                        {formatTime(m.createdAt)}
+                      </span>
+                    </motion.div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <div ref={bottomRef} />
         </div>
-      </form>
+
+        {/* Composer — always pinned at the bottom of the viewport */}
+        <form onSubmit={handleSend} className="shrink-0 border-t border-border bg-white px-5 py-3">
+          {error && <p className="mb-2 text-xs font-medium text-[var(--color-error)]">{error}</p>}
+          <div className="flex items-center gap-2">
+            <input
+              value={input}
+              onChange={(e) => handleTyping(e.target.value)}
+              placeholder={t.messages.placeholder}
+              className="h-11 flex-1 rounded-full border border-border bg-white px-4 text-sm outline-none focus:border-brand-400"
+            />
+            <button
+              type="submit"
+              disabled={!input.trim()}
+              aria-label={t.messages.send}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600 disabled:opacity-50"
+            >
+              <Send className="h-5 w-5" aria-hidden />
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   );
 }
