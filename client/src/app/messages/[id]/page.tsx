@@ -164,12 +164,9 @@ function ThreadInner({ id }: { id: string }) {
   }
 
   return (
-    <main
-      className="container-main flex max-w-3xl flex-col py-6"
-      style={{ height: 'calc(100vh - 0px)' }}
-    >
+    <main className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col px-4 sm:px-6">
       {/* Thread header */}
-      <div className="flex items-center gap-3 border-b border-border pb-4">
+      <div className="flex shrink-0 items-center gap-3 border-b border-border py-4">
         <Link
           href="/messages"
           aria-label={t.messages.back}
@@ -187,7 +184,7 @@ function ThreadInner({ id }: { id: string }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto py-5">
+      <div className="min-h-0 flex-1 overflow-y-auto py-5">
         {messages.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted">{t.messages.threadEmpty}</p>
         ) : (
@@ -222,8 +219,8 @@ function ThreadInner({ id }: { id: string }) {
         <div ref={bottomRef} />
       </div>
 
-      {/* Composer */}
-      <form onSubmit={handleSend} className="border-t border-border pt-4">
+      {/* Composer — always pinned at the bottom of the viewport */}
+      <form onSubmit={handleSend} className="shrink-0 border-t border-border py-4">
         {error && <p className="mb-2 text-xs font-medium text-[var(--color-error)]">{error}</p>}
         <div className="flex items-center gap-2">
           <input
@@ -250,8 +247,14 @@ export default function MessageThreadPage({ params }: { params: Promise<{ id: st
   const { id } = use(params);
   return (
     <ProtectedRoute>
-      <Header />
-      <ThreadInner id={id} />
+      {/* Lock the viewport height so the composer stays pinned and only the
+          message list scrolls. */}
+      <div className="flex h-[100dvh] flex-col overflow-hidden">
+        <div className="shrink-0">
+          <Header />
+        </div>
+        <ThreadInner id={id} />
+      </div>
     </ProtectedRoute>
   );
 }
