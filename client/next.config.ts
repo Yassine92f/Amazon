@@ -9,6 +9,12 @@ import path from 'path';
 loadEnv({ path: path.resolve(process.cwd(), '../.env') });
 
 const nextConfig: NextConfig = {
+  // Emit a self-contained server bundle (.next/standalone) so the production
+  // image ships only the traced runtime files instead of the whole monorepo +
+  // pnpm. `outputFileTracingRoot` points at the repo root so the workspace
+  // dependency (@ecommerce/shared) is traced and bundled correctly.
+  output: 'standalone',
+  outputFileTracingRoot: path.resolve(process.cwd(), '..'),
   images: {
     remotePatterns: [
       {

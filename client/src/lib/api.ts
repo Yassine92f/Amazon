@@ -58,14 +58,22 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) throw new Error('No refresh token');
+        // The refresh token lives in an httpOnly cookie; `withCredentials` sends
+        // it. A legacy localStorage token is forwarded as a fallback for sessions
+        // created before the cookie migration.
+        const legacyToken =
+          typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+        const { data } = await axios.post(
+          `${API_URL}/auth/refresh`,
+          legacyToken ? { refreshToken: legacyToken } : {},
+          { withCredentials: true },
+        );
 
         const newAccessToken = data.data.accessToken;
         localStorage.setItem('accessToken', newAccessToken);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
+        // Drop any legacy token now that the cookie is authoritative.
+        localStorage.removeItem('refreshToken');
 
         processQueue(null, newAccessToken);
 

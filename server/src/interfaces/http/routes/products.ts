@@ -13,11 +13,15 @@ import { ReviewRepository } from '../../../infrastructure/repositories/ReviewRep
 import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
+import { cacheResponse } from '../middlewares/cache';
 import {
   createProductSchema,
   updateProductSchema,
   replyToReviewSchema,
 } from '../schemas/productSchemas';
+
+// Catalog reads are high-traffic and change rarely; cache them briefly in Redis.
+const PRODUCT_CACHE_TTL = 60; // seconds
 
 const productRepository = new ProductRepository();
 const categoryRepository = new CategoryRepository();
@@ -72,9 +76,9 @@ router.delete('/:id', authenticate, authorize(UserRole.SELLER), productControlle
 // Reviews for a product
 router.get('/:productId/reviews', reviewController.listForProduct);
 
-// Public lookup
-router.get('/', productController.search);
-router.get('/by-id/:id', productController.getById);
-router.get('/:slug', productController.getBySlug);
+// Public lookup (cached in Redis, invalidated on product writes)
+router.get('/', cacheResponse('products', PRODUCT_CACHE_TTL), productController.search);
+router.get('/by-id/:id', cacheResponse('products', PRODUCT_CACHE_TTL), productController.getById);
+router.get('/:slug', cacheResponse('products', PRODUCT_CACHE_TTL), productController.getBySlug);
 
 export default router;
