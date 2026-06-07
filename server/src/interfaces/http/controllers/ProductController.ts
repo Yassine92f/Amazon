@@ -3,6 +3,7 @@ import { ProductUseCase, ProductError } from '../../../application/use-cases/Pro
 import { ProductListFilters } from '../../../domain/repositories/IProductRepository';
 import { AppError } from '../middlewares/errorHandler';
 import { AuthRequest } from '../middlewares/auth';
+import { invalidateNamespace } from '../middlewares/cache';
 
 const VALID_SORT = new Set(['createdAt', 'price', 'rating', 'totalSold', 'relevance']);
 
@@ -41,6 +42,7 @@ export class ProductController {
     try {
       const { userId } = req as AuthRequest;
       const product = await this.productUseCase.create(userId, req.body);
+      await invalidateNamespace('products');
       res.status(201).json({ success: true, data: product });
     } catch (err) {
       next(this.mapError(err));
@@ -51,6 +53,7 @@ export class ProductController {
     try {
       const { userId } = req as AuthRequest;
       const product = await this.productUseCase.update(userId, req.params.id as string, req.body);
+      await invalidateNamespace('products');
       res.json({ success: true, data: product });
     } catch (err) {
       next(this.mapError(err));
@@ -61,6 +64,7 @@ export class ProductController {
     try {
       const { userId } = req as AuthRequest;
       await this.productUseCase.delete(userId, req.params.id as string);
+      await invalidateNamespace('products');
       res.json({ success: true, message: 'Product deleted' });
     } catch (err) {
       next(this.mapError(err));

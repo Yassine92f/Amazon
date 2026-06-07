@@ -50,9 +50,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ error: null, isLoading: true });
     try {
       const { data } = await api.post('/auth/login', { email, password });
-      const { user, accessToken, refreshToken } = data.data;
+      const { user, accessToken } = data.data;
+      // Only the short-lived access token is kept in JS. The refresh token is
+      // set by the server as an httpOnly cookie and never touches localStorage.
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
       set({ user, isAuthenticated: true, isLoading: false });
       await syncCommerceOnLogin();
     } catch (err: unknown) {
@@ -68,9 +69,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ error: null, isLoading: true });
     try {
       const { data: res } = await api.post('/auth/register', data);
-      const { user, accessToken, refreshToken } = res.data;
+      const { user, accessToken } = res.data;
+      // Refresh token is delivered as an httpOnly cookie (see login).
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
       set({ user, isAuthenticated: true, isLoading: false });
       await syncCommerceOnLogin();
     } catch (err: unknown) {
@@ -84,10 +85,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        await api.post('/auth/logout', { refreshToken });
-      }
+      // The server reads the refresh token from the httpOnly cookie and clears it.
+      await api.post('/auth/logout', {});
     } catch {
       // Ignore logout errors
     }
