@@ -153,6 +153,7 @@ export function makeProductRepo(products: ProductEntity[]): IProductRepository {
       const p = map.get(pid);
       if (p) p.totalSold += qty;
     }),
+    updateRating: jest.fn(async () => undefined),
   } as IProductRepository;
 }
 

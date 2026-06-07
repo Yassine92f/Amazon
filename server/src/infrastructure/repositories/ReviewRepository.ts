@@ -4,11 +4,34 @@ import {
   FindReviewsParams,
   FindSellerReviewsParams,
   ReviewStats,
+  CreateReviewData,
 } from '../../domain/repositories/IReviewRepository';
 import { ReviewEntity } from '../../domain/entities/Review';
 import { ReviewModel, ReviewDocument } from '../database/models/Review';
 
 export class ReviewRepository implements IReviewRepository {
+  async create(data: CreateReviewData): Promise<ReviewEntity> {
+    const doc = await ReviewModel.create({
+      userId: new mongoose.Types.ObjectId(data.userId),
+      productId: new mongoose.Types.ObjectId(data.productId),
+      orderId: new mongoose.Types.ObjectId(data.orderId),
+      rating: data.rating,
+      title: data.title,
+      comment: data.comment,
+      images: data.images ?? [],
+    });
+    return this.toEntity(doc);
+  }
+
+  async findByOrderAndUser(orderId: string, userId: string): Promise<ReviewEntity[]> {
+    if (!mongoose.isValidObjectId(orderId) || !mongoose.isValidObjectId(userId)) return [];
+    const docs = await ReviewModel.find({
+      orderId: new mongoose.Types.ObjectId(orderId),
+      userId: new mongoose.Types.ObjectId(userId),
+    });
+    return docs.map((d) => this.toEntity(d));
+  }
+
   async findByProduct(
     params: FindReviewsParams,
   ): Promise<{ reviews: ReviewEntity[]; total: number }> {
