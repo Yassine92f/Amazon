@@ -183,3 +183,24 @@ export const SHIPPING_COST: Record<DeliveryType, number> = {
 export function shippingFor(subtotal: number, delivery: DeliveryType): number {
   return subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST[delivery];
 }
+
+/* ── Reviews (post-delivery) ──────────────────────────────────────────── */
+
+export interface CreateReviewInput {
+  productId: string;
+  orderId: string;
+  rating: number;
+  title: string;
+  comment: string;
+}
+
+/** Post a review for a product from a delivered order. */
+export async function createReview(input: CreateReviewInput): Promise<void> {
+  await api.post('/reviews', input);
+}
+
+/** Product ids the current user has already reviewed within an order. */
+export async function getReviewedProductIds(orderId: string): Promise<string[]> {
+  const { data } = await api.get('/reviews/mine', { params: { orderId } });
+  return data.data.productIds;
+}

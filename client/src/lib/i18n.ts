@@ -1022,6 +1022,23 @@ export const t = {
     cancel: 'Annuler',
     formError: 'Vérifiez les champs du formulaire',
   },
+  // Post-delivery product reviews (order detail)
+  reviewForm: {
+    writeReview: 'Donner un avis',
+    published: 'Avis publié',
+    title: 'Votre avis',
+    ratingLabel: 'Note',
+    titleLabel: 'Titre',
+    titlePlaceholder: 'Résumez votre avis',
+    commentLabel: 'Commentaire',
+    commentPlaceholder: 'Partagez votre expérience avec ce produit…',
+    submit: 'Publier mon avis',
+    submitting: 'Publication…',
+    cancel: 'Annuler',
+    success: 'Merci pour votre avis !',
+    error: "Impossible de publier l'avis",
+    reviewableHint: 'Vous pouvez noter les articles de cette commande livrée.',
+  },
 } as const;
 
 export type Translations = typeof t;

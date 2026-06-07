@@ -11,6 +11,7 @@ import ordersRouter from './orders';
 import couponsRouter from './coupons';
 import wishlistRouter from './wishlist';
 import paymentsRouter from './payments';
+import reviewsRouter from './reviews';
 
 const router: IRouter = Router();
 
@@ -32,6 +33,7 @@ router.use('/orders', ordersRouter);
 router.use('/coupons', couponsRouter);
 router.use('/wishlist', wishlistRouter);
 router.use('/payments', paymentsRouter);
+router.use('/reviews', reviewsRouter);
 
 // router.use('/notifications', notificationsRouter); — Section 4
 // router.use('/messages', messagesRouter); — Section 4
