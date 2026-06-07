@@ -14,11 +14,19 @@ import {
   Home,
   XCircle,
   ArrowLeft,
+  Star,
+  PenLine,
 } from 'lucide-react';
 import Header from '../../../components/Header';
 import { ProtectedRoute } from '../../../components/ProtectedRoute';
 import StatusBadge from '../../../components/orders/StatusBadge';
-import { getOrder, cancelOrder, confirmPayment } from '../../../lib/commerce';
+import ReviewForm from '../../../components/orders/ReviewForm';
+import {
+  getOrder,
+  cancelOrder,
+  confirmPayment,
+  getReviewedProductIds,
+} from '../../../lib/commerce';
 import { t, formatPrice, formatLongDate } from '../../../lib/i18n';
 import { OrderStatus, DeliveryType, type Order } from '@ecommerce/shared';
 
@@ -83,6 +91,8 @@ function OrderDetailInner({ id }: { id: string }) {
   const [notFound, setNotFound] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [reviewedIds, setReviewedIds] = useState<string[]>([]);
+  const [reviewingId, setReviewingId] = useState<string | null>(null);
   const pollCount = useRef(0);
 
   const fetchOrder = useCallback(async () => {
@@ -101,6 +111,15 @@ function OrderDetailInner({ id }: { id: string }) {
   useEffect(() => {
     fetchOrder();
   }, [fetchOrder]);
+
+  // Once delivered, load which products the buyer has already reviewed.
+  useEffect(() => {
+    if (order?.status === OrderStatus.DELIVERED) {
+      getReviewedProductIds(id)
+        .then(setReviewedIds)
+        .catch(() => setReviewedIds([]));
+    }
+  }, [order?.status, id]);
 
   // After payment, confirm the order deterministically (the checkout already
   // does this, but this is a resilient fallback if that call was missed). Then
@@ -218,20 +237,53 @@ function OrderDetailInner({ id }: { id: string }) {
             {t.orders.orderItems}
           </h2>
           <ul className="divide-y divide-border">
-            {order.items.map((it) => (
-              <li key={`${it.productId}:${it.variantId}`} className="flex items-center gap-4 p-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50">
-                  <Package className="h-6 w-6 text-brand-400" aria-hidden />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-brand-900">{it.productName}</p>
-                  <p className="text-sm text-muted">
-                    {it.variantName} · {t.orders.qty(it.quantity)}
-                  </p>
-                </div>
-                <span className="font-bold text-brand-900">{formatPrice(it.totalPrice)}</span>
-              </li>
-            ))}
+            {order.items.map((it) => {
+              const reviewed = reviewedIds.includes(it.productId);
+              const canReview = order.status === OrderStatus.DELIVERED;
+              return (
+                <li key={`${it.productId}:${it.variantId}`} className="flex flex-col gap-3 p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50">
+                      <Package className="h-6 w-6 text-brand-400" aria-hidden />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-brand-900">{it.productName}</p>
+                      <p className="text-sm text-muted">
+                        {it.variantName} · {t.orders.qty(it.quantity)}
+                      </p>
+                    </div>
+                    <span className="font-bold text-brand-900">{formatPrice(it.totalPrice)}</span>
+                  </div>
+
+                  {canReview &&
+                    (reviewed ? (
+                      <span className="inline-flex w-fit items-center gap-1.5 text-xs font-semibold text-green-700">
+                        <Star className="h-3.5 w-3.5" fill="currentColor" aria-hidden />
+                        {t.reviewForm.published}
+                      </span>
+                    ) : reviewingId === it.productId ? (
+                      <ReviewForm
+                        productId={it.productId}
+                        orderId={order._id}
+                        onSuccess={() => {
+                          setReviewedIds((p) => [...p, it.productId]);
+                          setReviewingId(null);
+                        }}
+                        onCancel={() => setReviewingId(null)}
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setReviewingId(it.productId)}
+                        className="inline-flex w-fit items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-brand-600 transition-colors hover:border-brand-300"
+                      >
+                        <PenLine className="h-3.5 w-3.5" aria-hidden />
+                        {t.reviewForm.writeReview}
+                      </button>
+                    ))}
+                </li>
+              );
+            })}
           </ul>
         </section>
 

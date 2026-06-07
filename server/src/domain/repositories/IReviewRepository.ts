@@ -22,7 +22,20 @@ export interface FindSellerReviewsParams {
   onlyUnanswered?: boolean;
 }
 
+export interface CreateReviewData {
+  userId: string;
+  productId: string;
+  orderId: string;
+  rating: number;
+  title: string;
+  comment: string;
+  images?: string[];
+}
+
 export interface IReviewRepository {
+  create(data: CreateReviewData): Promise<ReviewEntity>;
+  // Reviews a user already wrote for the products of one order.
+  findByOrderAndUser(orderId: string, userId: string): Promise<ReviewEntity[]>;
   findByProduct(params: FindReviewsParams): Promise<{ reviews: ReviewEntity[]; total: number }>;
   getStats(productId: string): Promise<ReviewStats>;
   findById(id: string): Promise<ReviewEntity | null>;

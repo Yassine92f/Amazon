@@ -132,6 +132,7 @@ function makeProductRepo(initial?: ProductEntity): IProductRepository {
     decrementVariantStock: jest.fn(async () => true),
     incrementVariantStock: jest.fn(async () => undefined),
     incrementTotalSold: jest.fn(async () => undefined),
+    updateRating: jest.fn(async () => undefined),
   };
 }
 
