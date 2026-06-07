@@ -70,17 +70,14 @@ describe('Purchase flow', () => {
 
     const { productId, variantId } = await seedProduct('headphones', 30, 5);
 
-    const addr = await request(app)
-      .post('/api/users/addresses')
-      .set('Authorization', bearer)
-      .send({
-        label: 'Home',
-        street: '1 rue de Paris',
-        city: 'Paris',
-        postalCode: '75001',
-        country: 'France',
-        isDefault: true,
-      });
+    const addr = await request(app).post('/api/users/addresses').set('Authorization', bearer).send({
+      label: 'Home',
+      street: '1 rue de Paris',
+      city: 'Paris',
+      postalCode: '75001',
+      country: 'France',
+      isDefault: true,
+    });
     expect(addr.status).toBe(201);
     const addressId = addr.body.data[0].id ?? addr.body.data[0]._id;
 
@@ -117,17 +114,14 @@ describe('Purchase flow', () => {
     const bearer = `Bearer ${reg.body.data.accessToken}`;
     const { productId, variantId } = await seedProduct('limited', 20, 1);
 
-    const addr = await request(app)
-      .post('/api/users/addresses')
-      .set('Authorization', bearer)
-      .send({
-        label: 'Home',
-        street: '2 rue',
-        city: 'Lyon',
-        postalCode: '69001',
-        country: 'France',
-        isDefault: true,
-      });
+    const addr = await request(app).post('/api/users/addresses').set('Authorization', bearer).send({
+      label: 'Home',
+      street: '2 rue',
+      city: 'Lyon',
+      postalCode: '69001',
+      country: 'France',
+      isDefault: true,
+    });
     const addressId = addr.body.data[0].id ?? addr.body.data[0]._id;
 
     const order = await request(app)
