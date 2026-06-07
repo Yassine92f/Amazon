@@ -3,7 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
 import routes from './interfaces/http/routes';
+import { openapiSpec } from './interfaces/http/openapi';
 import { errorHandler } from './interfaces/http/middlewares/errorHandler';
 import { config } from './config';
 
@@ -31,6 +33,16 @@ app.use(cookieParser());
 if (config.env !== 'test') {
   app.use(morgan('dev'));
 }
+
+// API documentation (Swagger UI + raw OpenAPI JSON)
+app.get('/api/docs.json', (_req, res) => res.json(openapiSpec));
+app.use(
+  '/api/docs',
+  // helmet's default CSP blocks Swagger UI's inline assets; relax it for this path.
+  helmet({ contentSecurityPolicy: false }),
+  swaggerUi.serve,
+  swaggerUi.setup(openapiSpec, { customSiteTitle: 'Abracadabra API — Docs' }),
+);
 
 // Routes
 app.use('/api', routes);
