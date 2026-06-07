@@ -1,7 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, CookieOptions } from 'express';
 import { AuthUseCase, AuthError } from '../../../application/use-cases/AuthUseCase';
 import { AppError } from '../middlewares/errorHandler';
 import { AuthRequest } from '../middlewares/auth';
+import { config } from '../../../config';
+
+const REFRESH_COOKIE = 'refreshToken';
+// 7 days, matching the refresh token TTL.
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Cookie holding the refresh token. httpOnly keeps it out of reach of JS (so an
+ * XSS payload cannot exfiltrate it), the narrow path means it is only sent to
+ * the auth endpoints that need it, and `secure` is enforced in production
+ * (HTTPS only). SameSite=strict blocks it from cross-site requests (CSRF).
+ */
+function refreshCookieOptions(): CookieOptions {
+  return {
+    httpOnly: true,
+    secure: config.env === 'production',
+    sameSite: 'strict',
+    path: '/api/auth',
+    maxAge: REFRESH_COOKIE_MAX_AGE,
+  };
+}
 
 export class AuthController {
   constructor(private authUseCase: AuthUseCase) {}
@@ -9,6 +30,7 @@ export class AuthController {
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.authUseCase.register(req.body);
+      this.setRefreshCookie(res, result.refreshToken);
       res.status(201).json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));
@@ -18,6 +40,7 @@ export class AuthController {
   login = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.authUseCase.login(req.body);
+      this.setRefreshCookie(res, result.refreshToken);
       res.json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));
@@ -26,7 +49,12 @@ export class AuthController {
 
   refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const result = await this.authUseCase.refresh(req.body.refreshToken);
+      const token = this.readRefreshToken(req);
+      if (!token) {
+        throw new AppError(401, 'Refresh token is required');
+      }
+      const result = await this.authUseCase.refresh(token);
+      this.setRefreshCookie(res, result.refreshToken);
       res.json({ success: true, data: result });
     } catch (err) {
       next(this.mapError(err));
@@ -35,14 +63,29 @@ export class AuthController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      if (req.body.refreshToken) {
-        await this.authUseCase.logout(req.body.refreshToken);
+      const token = this.readRefreshToken(req);
+      if (token) {
+        await this.authUseCase.logout(token);
       }
+      this.clearRefreshCookie(res);
       res.json({ success: true, message: 'Logged out successfully' });
     } catch (err) {
       next(this.mapError(err));
     }
   };
+
+  /** Prefer the httpOnly cookie, fall back to the request body (legacy clients). */
+  private readRefreshToken(req: Request): string | undefined {
+    return req.cookies?.[REFRESH_COOKIE] || req.body?.refreshToken;
+  }
+
+  private setRefreshCookie(res: Response, token: string): void {
+    res.cookie(REFRESH_COOKIE, token, refreshCookieOptions());
+  }
+
+  private clearRefreshCookie(res: Response): void {
+    res.clearCookie(REFRESH_COOKIE, { ...refreshCookieOptions(), maxAge: undefined });
+  }
 
   getMe = async (req: Request, res: Response, next: NextFunction) => {
     try {

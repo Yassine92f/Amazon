@@ -1,3 +1,7 @@
+# Simple all-in-one stack for local full-stack testing (builds the prod images
+# but with relaxed config). For a hardened production deployment — secret
+# validation, healthcheck-gated startup, Mongo auth, internal-only datastores —
+# use docker-compose.prod.yml instead.
 version: '3.9'
 
 services:
@@ -27,8 +31,9 @@ services:
       dockerfile: server/Dockerfile
     container_name: ecommerce-server
     restart: unless-stopped
+    init: true
     ports:
-      - '5000:5000'
+      - '5001:5001'
     env_file:
       - .env
     depends_on:
@@ -42,12 +47,14 @@ services:
     build:
       context: .
       dockerfile: client/Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5001/api}
+        NEXT_PUBLIC_STRIPE_PUBLIC_KEY: ${NEXT_PUBLIC_STRIPE_PUBLIC_KEY:-}
     container_name: ecommerce-client
     restart: unless-stopped
+    init: true
     ports:
       - '3000:3000'
-    env_file:
-      - .env
     depends_on:
       - server
 
