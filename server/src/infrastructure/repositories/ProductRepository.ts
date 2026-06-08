@@ -17,6 +17,13 @@ export class ProductRepository implements IProductRepository {
     return doc ? this.toEntity(doc) : null;
   }
 
+  async findByIds(ids: string[]): Promise<ProductEntity[]> {
+    const valid = ids.filter((id) => mongoose.isValidObjectId(id));
+    if (valid.length === 0) return [];
+    const docs = await ProductModel.find({ _id: { $in: valid } });
+    return docs.map((doc) => this.toEntity(doc));
+  }
+
   async findBySlug(slug: string): Promise<ProductEntity | null> {
     const doc = await ProductModel.findOne({ slug: slug.toLowerCase() });
     return doc ? this.toEntity(doc) : null;
