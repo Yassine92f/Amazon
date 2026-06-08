@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_CatFold
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: null
+authentication: {}
+authenticationType: null
+description: Category browse + admin CRUD.
+headers: []
+name: Categories
+sortPriority: -1779945000000.0

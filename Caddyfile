@@ -1,0 +1,9 @@
+# Caddy reverse proxy for the API.
+# {$API_DOMAIN} is read from the environment (set in .env, e.g. api.tondomaine.com).
+# Caddy provisions and renews a Let's Encrypt certificate automatically and
+# proxies WebSocket (socket.io) connections transparently — no extra config.
+
+{$API_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy server:5001
+}

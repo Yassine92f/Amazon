@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_AddrList01
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_3zR8V5N6Pi
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: ''
+headers: []
+method: GET
+name: List Addresses
+sortPriority: 2000.0
+url: ${[ baseUrl ]}/users/addresses
+urlParameters: []

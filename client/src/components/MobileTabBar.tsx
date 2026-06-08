@@ -1,11 +1,14 @@
 'use client';
 
 import { motion } from 'motion/react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { t } from '../lib/i18n';
 
 const tabs = [
   {
-    label: 'Home',
-    active: true,
+    label: t.mobileTab.home,
+    href: '/',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -19,7 +22,8 @@ const tabs = [
     ),
   },
   {
-    label: 'Browse',
+    label: t.mobileTab.browse,
+    href: '/search',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -36,7 +40,8 @@ const tabs = [
     ),
   },
   {
-    label: 'Deals',
+    label: t.mobileTab.deals,
+    href: '/sellers',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -53,7 +58,8 @@ const tabs = [
     ),
   },
   {
-    label: 'Wishlist',
+    label: t.mobileTab.wishlist,
+    href: '/wishlist',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +72,8 @@ const tabs = [
     ),
   },
   {
-    label: 'Profile',
+    label: t.mobileTab.profile,
+    href: '/profile',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -85,6 +92,9 @@ const tabs = [
 ];
 
 export default function MobileTabBar() {
+  const pathname = usePathname();
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 block md:hidden">
       <div className="px-5 pb-5 pt-3">
@@ -94,20 +104,23 @@ export default function MobileTabBar() {
           transition={{ type: 'spring', stiffness: 300, damping: 30, delay: 0.5 }}
           className="flex items-center rounded-[36px] border border-border bg-white p-1 shadow-lg"
         >
-          {tabs.map((tab) => (
-            <button
-              key={tab.label}
-              type="button"
-              className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-[26px] py-2.5 transition-all ${
-                tab.active ? 'bg-brand-500 text-white' : 'text-muted hover:text-brand-600'
-              }`}
-            >
-              {tab.icon}
-              <span className="text-[10px] font-semibold uppercase tracking-wider">
-                {tab.label}
-              </span>
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            const active = isActive(tab.href);
+            return (
+              <Link
+                key={tab.label}
+                href={tab.href}
+                className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-[26px] py-2.5 transition-all ${
+                  active ? 'bg-brand-500 text-white' : 'text-muted hover:text-brand-600'
+                }`}
+              >
+                {tab.icon}
+                <span className="text-[10px] font-semibold uppercase tracking-wider">
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
         </motion.nav>
       </div>
     </div>

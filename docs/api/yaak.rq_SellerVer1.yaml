@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_SellerVer1
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_SellerFold
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "isVerified": true,
+      "commissionRate": 0.08
+    }
+bodyType: application/json
+description: Admin only. Mark a seller as verified and optionally adjust their commission.
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: srverhdr
+method: PUT
+name: Verify Seller (Admin)
+sortPriority: 5000.0
+url: ${[ baseUrl ]}/sellers/${[ sellerId ]}/verify
+urlParameters: []

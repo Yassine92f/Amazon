@@ -6,12 +6,21 @@ export interface CartItem {
   variantId: string;
   quantity: number;
   price: number;
+  // Display fields enriched by the API (optional — not persisted on guest carts)
+  productName?: string;
+  productSlug?: string;
+  image?: string;
+  variantName?: string;
+  inStock?: boolean;
+  maxStock?: number;
+  lineTotal?: number;
 }
 
 export interface Cart extends BaseEntity {
   userId: string;
   items: CartItem[];
   totalAmount: number;
+  totalItems?: number;
 }
 
 // Order
@@ -35,6 +44,8 @@ export interface OrderItem {
   variantId: string;
   productName: string;
   variantName: string;
+  // Image snapshot taken at purchase time (variant image, else product image).
+  image?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
@@ -46,6 +57,8 @@ export interface Order extends BaseEntity {
   items: OrderItem[];
   subtotal: number;
   shippingCost: number;
+  discountAmount: number;
+  couponCode?: string;
   totalAmount: number;
   status: OrderStatus;
   deliveryType: DeliveryType;
@@ -59,6 +72,7 @@ export interface Order extends BaseEntity {
   paidAt?: string;
   shippedAt?: string;
   deliveredAt?: string;
+  cancelledAt?: string;
 }
 
 // DTOs
@@ -104,6 +118,32 @@ export interface CouponValidation {
   discountValue: number;
   discountedAmount: number;
   message?: string;
+}
+
+// Seller-facing order view: a buyer order narrowed to the line items that
+// belong to the authenticated seller, plus the seller's own subtotal. A single
+// buyer order can appear for several sellers (multi-vendor), each seeing only
+// their slice.
+export interface SellerOrderDto {
+  _id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  deliveryType: DeliveryType;
+  shippingAddress: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  items: OrderItem[];
+  sellerSubtotal: number;
+  sellerItemCount: number;
+  buyerOrderTotal: number;
+  createdAt: string;
+  paidAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
 }
 
 // Wishlist

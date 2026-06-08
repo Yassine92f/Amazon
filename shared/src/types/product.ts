@@ -82,3 +82,40 @@ export interface CreateProductRequest {
 export interface UpdateProductRequest extends Partial<CreateProductRequest> {
   isActive?: boolean;
 }
+
+// Price-history transparency: shoppers see how the price of a product (or one
+// of its variants) has evolved over a recent window so they can spot real
+// discounts vs. inflated reference prices.
+export interface PriceHistoryPoint {
+  // ISO date (UTC, day-resolution) — one point per calendar day with at least
+  // one recorded price for the requested scope.
+  date: string;
+  price: number;
+}
+
+export interface PriceHistorySummary {
+  currentPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  avgPrice: number;
+  // Lowest price ever recorded across the full history (not just the window).
+  lowestEverPrice: number;
+  // True when the current price equals the lowest ever recorded — used to
+  // surface an honest "lowest price in N days/ever" badge.
+  isLowestEver: boolean;
+  // Percentage drop vs. the window's max price (rounded, non-negative).
+  dropFromMaxPercent: number;
+}
+
+export interface PriceHistoryResponse {
+  productId: string;
+  variantId?: string;
+  variantName?: string;
+  period: {
+    from: string;
+    to: string;
+    days: number;
+  };
+  points: PriceHistoryPoint[];
+  summary: PriceHistorySummary;
+}

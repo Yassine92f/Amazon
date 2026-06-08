@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_ProdFold
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: null
+authentication: {}
+authenticationType: null
+description: Products — public search/browse + seller CRUD + reviews browse.
+headers: []
+name: Products
+sortPriority: -1779940000000.0

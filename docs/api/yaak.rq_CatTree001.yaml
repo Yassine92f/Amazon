@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_CatTree001
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_CatFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Hierarchical tree of categories (parent → children).
+headers: []
+method: GET
+name: Category Tree
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/categories/tree
+urlParameters: []
