@@ -112,52 +112,16 @@ export default function Header() {
             <img src="/logo.svg" alt="Abracadabra" className="h-9 w-auto sm:h-10" />
           </Link>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex min-w-0 flex-1" role="search">
-            <div className="relative flex w-full items-center rounded-full border border-border bg-[var(--color-bg)] transition-all focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-200">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="ml-4 h-5 w-5 shrink-0 text-muted"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t.header.searchPlaceholder}
-                className="w-full bg-transparent py-2.5 pl-3 pr-4 text-sm text-brand-900 placeholder:text-muted focus:outline-none"
-              />
-              <button
-                type="submit"
-                aria-label={t.header.search}
-                className="mr-1 flex shrink-0 items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 16 16"
-                  fill="currentColor"
-                  className="h-4 w-4"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M9.965 11.026a5 5 0 111.06-1.06l2.755 2.754a.75.75 0 11-1.06 1.06l-2.755-2.754zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="hidden md:inline">{t.header.search}</span>
-              </button>
-            </div>
-          </form>
+          {/* Search Bar (inline on desktop; a dedicated row on mobile, below) */}
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={handleSearch}
+            className="hidden min-w-0 flex-1 lg:flex"
+          />
 
           {/* Action Icons */}
-          <div className="flex shrink-0 items-center gap-4 md:gap-5">
+          <div className="ml-auto flex shrink-0 items-center gap-4 md:gap-5 lg:ml-0">
             {/* Admin link */}
             {isAuthenticated && user?.role === UserRole.ADMIN && (
               <Link
@@ -383,13 +347,23 @@ export default function Header() {
 
                 <Link
                   href="/register"
-                  className="flex items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+                  className="hidden items-center gap-1.5 rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-600 sm:flex"
                 >
                   {t.header.register}
                 </Link>
               </>
             )}
           </div>
+        </div>
+
+        {/* Mobile search row (full width, below the top bar) */}
+        <div className="container-main pb-3 lg:hidden">
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={handleSearch}
+            className="flex w-full"
+          />
         </div>
       </div>
 
@@ -554,6 +528,63 @@ export default function Header() {
         </div>
       )}
     </header>
+  );
+}
+
+function SearchBar({
+  value,
+  onChange,
+  onSubmit,
+  className = '',
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onSubmit: (e: React.FormEvent) => void;
+  className?: string;
+}) {
+  return (
+    <form onSubmit={onSubmit} className={className} role="search">
+      <div className="relative flex w-full items-center rounded-full border border-border bg-[var(--color-bg)] transition-all focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-200">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className="ml-4 h-5 w-5 shrink-0 text-muted"
+        >
+          <path
+            fillRule="evenodd"
+            d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+            clipRule="evenodd"
+          />
+        </svg>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t.header.searchPlaceholder}
+          className="w-full bg-transparent py-2.5 pl-3 pr-4 text-sm text-brand-900 placeholder:text-muted focus:outline-none"
+        />
+        <button
+          type="submit"
+          aria-label={t.header.search}
+          className="mr-1 flex shrink-0 items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+            className="h-4 w-4"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9.965 11.026a5 5 0 111.06-1.06l2.755 2.754a.75.75 0 11-1.06 1.06l-2.755-2.754zM10.5 7a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="hidden md:inline">{t.header.search}</span>
+        </button>
+      </div>
+    </form>
   );
 }
 
