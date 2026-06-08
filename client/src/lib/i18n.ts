@@ -240,6 +240,25 @@ export const t = {
       secureTitle: 'Paiement sécurisé',
       secureDesc: 'SSL 256 bits',
     },
+    priceHistory: {
+      title: 'Historique du prix',
+      subtitle: 'Transparence : suivez l’évolution du prix avant d’acheter.',
+      loading: 'Chargement du graphique…',
+      empty: 'Pas encore assez de données pour afficher l’historique.',
+      currentPrice: 'Prix actuel',
+      minPrice: 'Plus bas',
+      maxPrice: 'Plus haut',
+      avgPrice: 'Moyenne',
+      lowestEverBadge: 'Prix le plus bas jamais affiché',
+      dropFromMax: (pct: number) => `−${pct}% vs maximum sur la période`,
+      noVariation: 'Prix stable sur la période',
+      period7: '7 jours',
+      period30: '30 jours',
+      period90: '90 jours',
+      period180: '6 mois',
+      period365: '1 an',
+      tooltipPriceOn: (date: string) => `Prix le ${date}`,
+    },
   },
 
   // Product comparison (tray + `/compare`)
@@ -629,6 +648,52 @@ export const t = {
     summary: 'Récapitulatif',
   },
 
+  // Eco-delivery transparency block — kept outside `checkout` so feature
+  // branches that touch the checkout copy don't fight over a shared object.
+  eco: {
+    title: 'Livraison écologique',
+    subtitle:
+      'Choisissez un mode de livraison à faible empreinte carbone. Délais et émissions sont des estimations.',
+    badgeRecommended: 'Recommandé',
+    badgeUrbanOnly: 'Zones urbaines',
+    estimatedDays: (n: number) => `≈ ${n} j ouvrés`,
+    emits: (kg: number) => `≈ ${kg.toFixed(2)} kg CO₂`,
+    saves: (kg: number) => `≈ −${kg.toFixed(2)} kg CO₂`,
+    equivalentCarKm: (km: number) => `soit environ ${km.toFixed(1)} km en voiture`,
+    summarySaved: (kg: number) => `Vous économisez environ ${kg.toFixed(2)} kg de CO₂`,
+    summaryNeutral: 'Choix standard — aucune économie',
+    confirmed: 'Choix de livraison écologique enregistré',
+    tree: {
+      title: 'Planter un arbre',
+      desc: 'Ajoutez 1 € à votre commande, nous plantons un arbre en votre nom via notre partenaire reforestation.',
+      toggleOn: '1 arbre sera planté pour cette commande',
+      toggleOff: 'Activer le don',
+      cost: '+ 1,00 €',
+      communityCounter: (n: number) =>
+        n > 0
+          ? `${n.toLocaleString('fr-FR')} arbres déjà plantés par la communauté`
+          : 'Soyez le premier à planter un arbre 🌱',
+    },
+    options: {
+      standard: {
+        label: 'Domicile — standard',
+        desc: 'Livraison à votre adresse en 2–4 jours ouvrés.',
+      },
+      pickup_grouped: {
+        label: 'Point relais — groupé',
+        desc: 'Vos colis sont regroupés sur la dernière tournée — bien moins de trajets.',
+      },
+      bike_cargo: {
+        label: 'Domicile — vélo-cargo',
+        desc: 'Livraison à domicile par vélo-cargo en zone urbaine — quasi zéro émission.',
+      },
+      slow_grouped: {
+        label: 'Point relais — lent',
+        desc: 'Retrait sous 5–7 j, livré mutualisé avec d’autres commandes.',
+      },
+    } as Record<string, { label: string; desc: string }>,
+  },
+
   // Checkout (`/checkout`)
   checkout: {
     title: 'Commande',
@@ -640,7 +705,7 @@ export const t = {
     shippingAddress: 'Adresse de livraison',
     noAddress: 'Aucune adresse enregistrée.',
     defaultBadge: 'Par défaut',
-    addAddress: '+ Ajouter une adresse',
+    addAddress: 'Ajouter une adresse',
     addAddressInline: 'Nouvelle adresse',
     addr: {
       label: 'Libellé (ex. Maison)',
@@ -665,6 +730,9 @@ export const t = {
     subtotal: 'Sous-total',
     shipping: 'Livraison',
     discount: 'Réduction',
+    treePledge: 'Don solidaire — 1 arbre planté',
+    treePledgeNote:
+      'Le don solidaire est reversé à notre partenaire reforestation et apparaît sur votre justificatif.',
     total: 'Total',
     payNow: 'Payer',
     placeOrder: 'Valider et payer',
