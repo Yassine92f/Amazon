@@ -30,6 +30,26 @@ export function authenticate(req: Request, _res: Response, next: NextFunction) {
   }
 }
 
+/**
+ * Attaches the user to the request when a valid token is present, but never
+ * rejects: anonymous requests pass through with no user set. Used by endpoints
+ * that personalize their response when logged in but also serve guests.
+ */
+export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) return next();
+
+  try {
+    const payload = tokenService.verifyAccessToken(header.split(' ')[1]);
+    (req as AuthRequest).userId = payload.userId;
+    (req as AuthRequest).userRole = payload.role;
+    (req as AuthRequest).userEmail = payload.email;
+  } catch {
+    // Ignore an invalid/expired token and continue as a guest.
+  }
+  next();
+}
+
 export function authorize(...roles: UserRole[]) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const userRole = (req as AuthRequest).userRole;

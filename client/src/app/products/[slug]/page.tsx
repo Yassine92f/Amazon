@@ -13,15 +13,14 @@ import { useAuthStore } from '../../../store';
 import StarRating from '../../../components/StarRating';
 import ReviewsList from '../../../components/catalog/ReviewsList';
 import PriceHistoryChart from '../../../components/catalog/PriceHistoryChart';
-import CatalogProductCard from '../../../components/catalog/CatalogProductCard';
+import RecommendationRail from '../../../components/recommendations/RecommendationRail';
 import { t, formatPrice, formatNumber } from '../../../lib/i18n';
+import { getProductBySlug, type ProductDto, type ProductVariantDto } from '../../../lib/catalog';
 import {
-  getProductBySlug,
-  searchProducts,
-  type ProductDto,
-  type ProductVariantDto,
-  type ProductSummaryDto,
-} from '../../../lib/catalog';
+  getSimilarProducts,
+  recordProductView,
+  type RecommendationItem,
+} from '../../../lib/commerce';
 
 /* ── Variant option model ────────────────────────────────────────────
  * Variants carry a free-form `attributes` map (e.g. { color, storage,
@@ -95,7 +94,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const [variantId, setVariantId] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [related, setRelated] = useState<ProductSummaryDto[]>([]);
+  const [related, setRelated] = useState<RecommendationItem[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -120,22 +119,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         setVariantId(cheapest?._id ?? null);
         setActiveImage(0);
         setQuantity(1);
-        // Recommendations: best-sellers from the same brand first, then the same
-        // category, de-duplicated and excluding the current product.
-        const [byBrand, byCategory] = await Promise.all([
-          p.brand
-            ? searchProducts({ brand: p.brand, sortBy: 'totalSold', limit: 6 })
-            : Promise.resolve(null),
-          searchProducts({ categoryId: p.categoryId, sortBy: 'totalSold', limit: 8 }),
-        ]);
+        // Track this view as a behavioral signal (no-op when logged out), then
+        // load engine-powered "you may also like" suggestions for this product.
+        void recordProductView(p._id);
+        const similar = await getSimilarProducts(p._id, 5);
         if (cancelled) return;
-        const seen = new Set<string>();
-        const merged = [...(byBrand?.items ?? []), ...byCategory.items].filter((r) => {
-          if (r.slug === slug || seen.has(r._id)) return false;
-          seen.add(r._id);
-          return true;
-        });
-        setRelated(merged.slice(0, 5));
+        setRelated(similar);
       })
       .catch(() => {
         if (!cancelled) setNotFound(true);
@@ -689,18 +678,10 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           />
         </div>
 
-        {/* ── Related products ── */}
+        {/* ── You may also like (recommendation engine) ── */}
         {related.length > 0 && (
           <section className="mt-14">
-            <h2 className="mb-5 flex items-center gap-2 text-xl font-bold text-brand-900">
-              <span className="inline-block h-6 w-1 rounded-full bg-brand-500" />
-              {t.product.relatedTitle}
-            </h2>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              {related.map((p) => (
-                <CatalogProductCard key={p._id} product={p} />
-              ))}
-            </div>
+            <RecommendationRail title={t.recommendations.youMayAlsoLike} items={related} />
           </section>
         )}
 
