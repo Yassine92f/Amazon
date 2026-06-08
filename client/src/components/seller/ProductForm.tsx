@@ -12,6 +12,7 @@ import {
   type ProductInput,
 } from '../../lib/catalog';
 import { t } from '../../lib/i18n';
+import ImageUploader from '../ImageUploader';
 
 interface VariantInput {
   name: string;
@@ -48,7 +49,6 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [tagDraft, setTagDraft] = useState('');
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
-  const [imageDraft, setImageDraft] = useState('');
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '');
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [variants, setVariants] = useState<VariantInput[]>(
@@ -83,22 +83,6 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
   };
 
   const removeTag = (tag: string) => setTags(tags.filter((x) => x !== tag));
-
-  const addImage = () => {
-    const url = imageDraft.trim();
-    if (!url) return;
-    try {
-      new URL(url);
-    } catch {
-      setError(t.seller.form.errInvalidImage);
-      return;
-    }
-    setImages([...images, url]);
-    setImageDraft('');
-    setError('');
-  };
-
-  const removeImage = (idx: number) => setImages(images.filter((_, i) => i !== idx));
 
   const updateVariant = (idx: number, patch: Partial<VariantInput>) => {
     setVariants(variants.map((v, i) => (i === idx ? { ...v, ...patch } : v)));
@@ -305,62 +289,11 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
 
           {/* Images */}
           <section className="rounded-2xl border border-border bg-white p-6">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4">
               <h2 className="text-base font-bold text-brand-900">{t.seller.form.images}</h2>
-              <span className="text-xs text-muted">
-                {images.length} / 10 · {t.seller.form.imagesHint}
-              </span>
+              <p className="mt-0.5 text-xs text-muted">{t.seller.form.imagesHint}</p>
             </div>
-            <div className="mb-3 flex gap-2">
-              <input
-                type="url"
-                value={imageDraft}
-                onChange={(e) => setImageDraft(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addImage();
-                  }
-                }}
-                placeholder={t.seller.form.imagePlaceholder}
-                className="flex-1 rounded-md border border-border bg-bg px-3 py-2.5 text-sm outline-none focus:border-brand-500"
-              />
-              <button
-                type="button"
-                onClick={addImage}
-                className="rounded-md bg-brand-500 px-4 py-2.5 text-sm font-bold text-white"
-              >
-                {t.seller.form.add}
-              </button>
-            </div>
-            {images.length === 0 ? (
-              <p className="text-xs text-muted">{t.seller.form.noImage}</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {images.map((url, i) => (
-                  <div
-                    key={url + i}
-                    className="relative h-24 w-24 overflow-hidden rounded-md border border-border bg-brand-50"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="h-full w-full object-cover" />
-                    {i === 0 && (
-                      <span className="absolute left-1 top-1 rounded-full bg-brand-500 px-1.5 py-0.5 text-[9px] font-bold text-white">
-                        {t.seller.form.main}
-                      </span>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(i)}
-                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-red-600 shadow"
-                      aria-label="×"
-                    >
-                      <X className="h-3 w-3" aria-hidden />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <ImageUploader value={images} onChange={setImages} max={10} />
           </section>
 
           {/* Variants */}
