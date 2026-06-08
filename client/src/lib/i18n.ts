@@ -310,6 +310,14 @@ export const t = {
     outOfStock: 'Épuisé',
   },
 
+  imageUploader: {
+    cta: 'Cliquez ou déposez une image',
+    hint: 'JPEG, PNG, WebP ou GIF · 5 Mo max',
+    uploading: 'Envoi en cours…',
+    remove: 'Retirer',
+    error: "L'image n'a pas pu être envoyée",
+  },
+
   recommendations: {
     forYou: 'Recommandé pour vous',
     forYouSubtitle: "D'après vos achats et les produits que vous avez consultés",
