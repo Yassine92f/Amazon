@@ -99,8 +99,8 @@ export default function ReviewsList({ productId }: { productId: string }) {
               <h4 className="mb-1 text-sm font-bold text-brand-900">{r.title}</h4>
               <p className="text-sm leading-relaxed text-text whitespace-pre-wrap">{r.comment}</p>
               {r.sellerResponse && (
-                <div className="mt-3 rounded-md border-l-2 border-brand-500 bg-brand-50 p-3">
-                  <p className="mb-1 text-xs font-bold text-brand-700">
+                <div className="mt-3 ml-4 rounded-lg bg-gray-50 p-3">
+                  <p className="mb-1 text-xs font-semibold text-muted">
                     {t.reviews.sellerResponse}
                   </p>
                   <p className="text-sm text-text">{r.sellerResponse.comment}</p>
