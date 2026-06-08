@@ -12,6 +12,7 @@ import couponsRouter from './coupons';
 import wishlistRouter from './wishlist';
 import paymentsRouter from './payments';
 import reviewsRouter from './reviews';
+import recommendationsRouter from './recommendations';
 
 const router: IRouter = Router();
 
@@ -34,6 +35,9 @@ router.use('/coupons', couponsRouter);
 router.use('/wishlist', wishlistRouter);
 router.use('/payments', paymentsRouter);
 router.use('/reviews', reviewsRouter);
+
+// Bonus — Recommendation engine
+router.use('/recommendations', recommendationsRouter);
 
 // router.use('/notifications', notificationsRouter); — Section 4
 // router.use('/messages', messagesRouter); — Section 4
