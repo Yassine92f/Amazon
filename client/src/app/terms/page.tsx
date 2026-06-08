@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import InfoPage from '../../components/InfoPage';
 
-export const metadata: Metadata = { title: 'Conditions d’utilisation — Abracadabra' };
+export const metadata: Metadata = { title: 'Conditions d’utilisation · Abracadabra' };
 
 export default function TermsPage() {
   return (
