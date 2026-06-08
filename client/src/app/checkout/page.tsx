@@ -280,7 +280,7 @@ function CheckoutInner() {
       </Link>
       <h1 className="mb-6 mt-2 text-2xl font-extrabold text-brand-900">{t.checkout.title}</h1>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px] lg:items-start">
         {/* Left: details or payment */}
         <div className="flex flex-col gap-5">
           {step === 'details' ? (

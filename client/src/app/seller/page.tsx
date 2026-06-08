@@ -157,7 +157,7 @@ export default function SellerDashboardPage() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
         <section className="rounded-2xl border border-border bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-bold text-brand-900">{t.seller.dash.recent}</h2>

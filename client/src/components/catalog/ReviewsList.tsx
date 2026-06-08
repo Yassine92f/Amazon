@@ -41,7 +41,7 @@ export default function ReviewsList({ productId }: { productId: string }) {
   const maxBucket = Math.max(...data.stats.distribution.map((d) => d.count), 1);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[280px_1fr]">
       <div className="rounded-lg border border-border bg-white p-5">
         <div className="mb-3 flex items-end gap-2">
           <span className="text-4xl font-extrabold text-brand-900">
