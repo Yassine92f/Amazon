@@ -90,18 +90,36 @@ export class CartUseCase {
     await this.cartRepo.clear(owner);
   }
 
-  async mergeGuestIntoUser(guestId: string, userId: string): Promise<Cart> {
-    const guestOwner: CartOwner = { type: 'guest', id: guestId };
+  // Folds a guest cart into the authenticated user's cart. The guest lines come
+  // from the server-side cart resolved via the `cartId` cookie when available;
+  // otherwise we fall back to the lines the client passes explicitly, because
+  // the httpOnly cookie is cross-origin and strict browsers can drop it on this
+  // call — without the fallback the cart would silently vanish at login.
+  async mergeGuestIntoUser(
+    userId: string,
+    source: { guestId?: string; items?: AddItemInput[] },
+  ): Promise<Cart> {
     const userOwner: CartOwner = { type: 'user', id: userId };
 
-    const guest = await this.cartRepo.get(guestOwner);
-    if (!guest || guest.items.length === 0) {
-      return this.getCart(userOwner);
+    let incoming: CartItemEntity[] = [];
+    if (source.guestId) {
+      const guest = await this.cartRepo.get({ type: 'guest', id: source.guestId });
+      if (guest && guest.items.length > 0) incoming = guest.items;
     }
+    if (incoming.length === 0 && source.items?.length) {
+      // price is a placeholder — clampToStock refreshes it from the live variant.
+      incoming = source.items.map((i) => ({
+        productId: i.productId,
+        variantId: i.variantId,
+        quantity: i.quantity,
+        price: 0,
+      }));
+    }
+    if (incoming.length === 0) return this.getCart(userOwner);
 
     const user = await this.cartRepo.get(userOwner);
     const items = user?.items ?? [];
-    for (const gi of guest.items) {
+    for (const gi of incoming) {
       const existing = items.find(
         (i) => i.productId === gi.productId && i.variantId === gi.variantId,
       );
@@ -111,7 +129,7 @@ export class CartUseCase {
 
     const clamped = await this.clampToStock(items);
     await this.cartRepo.save(userOwner, clamped);
-    await this.cartRepo.clear(guestOwner);
+    if (source.guestId) await this.cartRepo.clear({ type: 'guest', id: source.guestId });
     return this.buildDto(userOwner, clamped);
   }
 
