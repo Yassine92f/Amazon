@@ -230,7 +230,7 @@ function OrderDetailInner({ id }: { id: string }) {
         <Timeline status={order.status} />
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px] lg:items-start">
         {/* Items */}
         <section className="overflow-hidden rounded-2xl border border-border bg-white">
           <h2 className="border-b border-border px-5 py-3 text-sm font-bold text-brand-900">
