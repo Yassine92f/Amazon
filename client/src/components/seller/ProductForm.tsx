@@ -21,6 +21,7 @@ interface VariantInput {
   compareAtPrice: string;
   stock: string;
   attributes: { key: string; value: string }[];
+  images: string[];
 }
 
 interface Props {
@@ -38,6 +39,7 @@ function emptyVariant(): VariantInput {
     compareAtPrice: '',
     stock: '0',
     attributes: [],
+    images: [],
   };
 }
 
@@ -60,6 +62,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
           compareAtPrice: v.compareAtPrice?.toString() ?? '',
           stock: v.stock.toString(),
           attributes: Object.entries(v.attributes).map(([key, value]) => ({ key, value })),
+          images: v.images ?? [],
         }))
       : [emptyVariant()],
   );
@@ -125,6 +128,7 @@ export default function ProductForm({ initial, onSubmit, onDelete, submitLabel }
         attributes: Object.fromEntries(
           v.attributes.filter((a) => a.key && a.value).map((a) => [a.key, a.value]),
         ),
+        images: v.images,
       })),
     };
 
@@ -569,6 +573,11 @@ function VariantRow({
             {t.seller.form.attrAdd}
           </button>
         </div>
+      </div>
+      <div className="mt-3 border-t border-border pt-3">
+        <p className="text-xs font-semibold text-muted">{t.seller.form.vImages}</p>
+        <p className="mb-2 text-xs text-muted">{t.seller.form.vImagesHint}</p>
+        <ImageUploader value={variant.images} onChange={(images) => onChange({ images })} max={6} />
       </div>
     </div>
   );
