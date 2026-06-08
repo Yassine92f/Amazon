@@ -11,6 +11,7 @@ import { ReviewModel } from '../infrastructure/database/models/Review';
 import { OrderModel } from '../infrastructure/database/models/Order';
 import { CouponModel, CouponRedemptionModel } from '../infrastructure/database/models/Coupon';
 import { ProductViewModel } from '../infrastructure/database/models/ProductView';
+import { ConversationModel, MessageModel } from '../infrastructure/database/models/Conversation';
 
 const DEFAULT_PASSWORD = 'Password123';
 
@@ -1107,6 +1108,22 @@ const reviewPool: { rating: number; title: string; comment: string }[] = [
   },
 ];
 
+// French keyword tags appended per category so the (French) UI search matches
+// the English product catalogue (e.g. searching "casque" finds the headphones).
+const frTagsByCategory: Record<string, string[]> = {
+  audio: ['casque', 'écouteurs', 'audio', 'sans-fil'],
+  phones: ['smartphone', 'téléphone', 'mobile'],
+  computers: ['informatique', 'ordinateur', 'bureautique'],
+  wearables: ['montre connectée', 'objet connecté', 'fitness'],
+  gaming: ['jeu vidéo', 'console', 'manette'],
+  fashion: ['mode', 'vêtement', 'chaussures'],
+  sports: ['sport', 'fitness', 'musculation'],
+  beauty: ['beauté', 'soin', 'cosmétique'],
+  books: ['livre', 'lecture'],
+  home: ['maison', 'cuisine', 'électroménager'],
+  toys: ['jouet', 'loisir'],
+};
+
 interface RunOptions {
   cleanFirst: boolean;
 }
@@ -1222,6 +1239,12 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     const buyerDocs = await UserModel.find({ email: { $in: buyerEmails } });
     const buyerUserIds = buyerDocs.map((u) => u._id);
 
+    // Conversations + their messages involving any seeded user.
+    const seedUserIds = [...buyerUserIds, ...sellerUserIds];
+    const convDocs = await ConversationModel.find({ participants: { $in: seedUserIds } });
+    await MessageModel.deleteMany({ conversationId: { $in: convDocs.map((c) => c._id) } });
+    await ConversationModel.deleteMany({ _id: { $in: convDocs.map((c) => c._id) } });
+
     await CouponRedemptionModel.deleteMany({});
     await CouponModel.deleteMany({ code: { $in: coupons.map((c) => c.code) } });
     await OrderModel.deleteMany({ userId: { $in: buyerUserIds } });
@@ -1238,6 +1261,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
   // ── Users + Sellers ────────────────────────────────────────
   const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
   const sellerIdByShopSlug = new Map<string, mongoose.Types.ObjectId>();
+  const sellerUserIdByShopSlug = new Map<string, mongoose.Types.ObjectId>();
 
   for (const s of sellers) {
     const user = await UserModel.create({
@@ -1249,6 +1273,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       status: UserStatus.ACTIVE,
       emailVerified: true,
     });
+    sellerUserIdByShopSlug.set(s.shopSlug, user._id as mongoose.Types.ObjectId);
     const seller = await SellerModel.create({
       userId: user._id,
       shopName: s.shopName,
@@ -1348,7 +1373,8 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       slug: p.slug,
       description: p.description,
       brand: p.brand,
-      tags: p.tags,
+      // English tags + French keywords so the French UI search finds them.
+      tags: [...new Set([...p.tags, ...(frTagsByCategory[p.categorySlug] ?? [])])],
       images: p.image ? [p.image] : [],
       variants: p.variants.map((v) => ({
         name: v.name,
@@ -1591,6 +1617,35 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     }
   }
   console.log(`[seed]   ${viewTotal} product views`);
+
+  // ── A sample conversation (so the messaging UI isn't empty in a demo) ──
+  const aliceId = buyerByEmail.get('alice@abracadabra.local');
+  const appleSellerUserId = sellerUserIdByShopSlug.get('apple-store');
+  if (aliceId && appleSellerUserId) {
+    const thread = [
+      { from: aliceId, text: "Bonjour, l'iPhone 15 Pro est-il disponible en bleu titane ?" },
+      {
+        from: appleSellerUserId,
+        text: 'Bonjour ! Oui, le coloris Bleu Titane est en stock, expédié sous 24h.',
+      },
+      { from: aliceId, text: 'Parfait, merci beaucoup pour votre réactivité !' },
+    ];
+    const conv = await ConversationModel.create({
+      participants: [aliceId, appleSellerUserId],
+      lastMessage: thread[thread.length - 1].text,
+      lastMessageAt: daysAgo(1),
+    });
+    for (let i = 0; i < thread.length; i++) {
+      await MessageModel.create({
+        conversationId: conv._id,
+        senderId: thread[i].from,
+        content: thread[i].text,
+        isRead: i < thread.length - 1, // last message left unread for the seller
+        createdAt: daysAgo(1),
+      });
+    }
+    console.log(`[seed]   1 sample conversation (${thread.length} messages)`);
+  }
 
   console.log('\n[seed] ✅ Done.');
   console.log(`[seed]   ${sellers.length} sellers (login with password "${DEFAULT_PASSWORD}")`);
