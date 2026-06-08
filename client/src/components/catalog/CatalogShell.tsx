@@ -113,7 +113,7 @@ export default function CatalogShell({
   }
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
     activeChips.push({
-      label: `€${filters.minPrice ?? 0} — €${filters.maxPrice ?? '∞'}`,
+      label: `€${filters.minPrice ?? 0} à €${filters.maxPrice ?? '∞'}`,
       clear: () => setFilters((s) => ({ ...s, minPrice: undefined, maxPrice: undefined })),
     });
   }
