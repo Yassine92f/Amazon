@@ -342,12 +342,12 @@ export default function ProfilePage() {
           </div>
         </header>
 
-        <div className="mx-auto flex max-w-[1100px] items-start gap-8 p-8">
+        <div className="mx-auto flex max-w-[1100px] flex-col items-start gap-6 p-4 sm:p-6 lg:flex-row lg:gap-8 lg:p-8">
           {/* Side panel */}
           <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex w-[320px] shrink-0 flex-col items-center gap-5 rounded-xl p-6"
+            className="flex w-full shrink-0 flex-col items-center gap-5 rounded-xl p-6 lg:w-[320px]"
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '1px solid var(--color-border)',
