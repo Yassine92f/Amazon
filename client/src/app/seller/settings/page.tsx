@@ -6,6 +6,7 @@ import { motion } from 'motion/react';
 import { ExternalLink } from 'lucide-react';
 import { getMyShop, updateMyShop, type SellerDto } from '../../../lib/catalog';
 import { t } from '../../../lib/i18n';
+import ImageUploader from '../../../components/ImageUploader';
 
 export default function SellerSettingsPage() {
   const [shop, setShop] = useState<SellerDto | null>(null);
@@ -128,12 +129,10 @@ export default function SellerSettingsPage() {
             {t.seller.shopSettings.logoUrl}{' '}
             <span className="text-xs font-normal text-muted">{t.seller.shopSettings.optional}</span>
           </label>
-          <input
-            type="url"
-            value={logo}
-            onChange={(e) => setLogo(e.target.value)}
-            placeholder={t.seller.shopSettings.logoPlaceholder}
-            className="w-full rounded-md border border-border bg-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500"
+          <ImageUploader
+            value={logo ? [logo] : []}
+            onChange={(urls) => setLogo(urls[0] ?? '')}
+            single
           />
         </div>
 
@@ -142,12 +141,10 @@ export default function SellerSettingsPage() {
             {t.seller.shopSettings.bannerUrl}{' '}
             <span className="text-xs font-normal text-muted">{t.seller.shopSettings.optional}</span>
           </label>
-          <input
-            type="url"
-            value={banner}
-            onChange={(e) => setBanner(e.target.value)}
-            placeholder={t.seller.shopSettings.bannerPlaceholder}
-            className="w-full rounded-md border border-border bg-bg px-4 py-2.5 text-sm outline-none focus:border-brand-500"
+          <ImageUploader
+            value={banner ? [banner] : []}
+            onChange={(urls) => setBanner(urls[0] ?? '')}
+            single
           />
         </div>
 

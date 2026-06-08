@@ -16,6 +16,7 @@ import ecoDeliveryRouter from './ecoDelivery';
 import recommendationsRouter from './recommendations';
 import notificationsRouter from './notifications';
 import messagesRouter from './messages';
+import uploadsRouter from './uploads';
 
 const router: IRouter = Router();
 
@@ -41,6 +42,9 @@ router.use('/reviews', reviewsRouter);
 
 // Transversal — eco-delivery (CO2 transparency at checkout).
 router.use('/eco-delivery', ecoDeliveryRouter);
+
+// Image uploads (multipart -> local disk, served from /uploads)
+router.use('/uploads', uploadsRouter);
 
 // Bonus — Recommendation engine
 router.use('/recommendations', recommendationsRouter);
