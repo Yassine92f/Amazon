@@ -29,7 +29,6 @@ import {
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import Header from '@/components/Header';
-import MobileTabBar from '@/components/MobileTabBar';
 import SiteFooter from '@/components/SiteFooter';
 import CatalogProductCard from '@/components/catalog/CatalogProductCard';
 import HomeRecommendations from '@/components/recommendations/HomeRecommendations';
@@ -467,8 +466,6 @@ export default function Home() {
       </main>
 
       <SiteFooter />
-
-      <MobileTabBar />
     </>
   );
 }

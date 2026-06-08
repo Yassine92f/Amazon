@@ -22,6 +22,11 @@ import {
   Package,
   Heart,
   MessageSquare,
+  Menu,
+  X,
+  User,
+  LogOut,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAuthStore } from '../store';
 import { useCartStore } from '../store/cart';
@@ -50,6 +55,7 @@ const categories = [
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [mobileNav, setMobileNav] = useState(false);
   const { user, isAuthenticated, logout } = useAuthStore();
   const cartCount = useCartStore((s) => s.cart?.totalItems ?? 0);
   const openCart = useCartStore((s) => s.openDrawer);
@@ -90,10 +96,20 @@ export default function Header() {
 
       {/* Main Navigation */}
       <div className="border-b border-border bg-white">
-        <div className="container-main flex items-center gap-4 py-3 md:gap-6">
+        <div className="container-main flex items-center gap-3 py-3 md:gap-6">
+          {/* Mobile menu toggle */}
+          <button
+            type="button"
+            onClick={() => setMobileNav(true)}
+            aria-label="Menu"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-brand-900 hover:bg-brand-50 lg:hidden"
+          >
+            <Menu className="h-6 w-6" aria-hidden />
+          </button>
+
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center" aria-label="Abracadabra">
-            <img src="/logo.svg" alt="Abracadabra" className="h-10 w-auto" />
+            <img src="/logo.svg" alt="Abracadabra" className="h-9 w-auto sm:h-10" />
           </Link>
 
           {/* Search Bar */}
@@ -404,6 +420,166 @@ export default function Header() {
           </ul>
         </div>
       </nav>
+
+      {/* Mobile slide-over menu */}
+      {mobileNav && (
+        <div className="fixed inset-0 z-[60] lg:hidden" role="dialog" aria-modal="true">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileNav(false)}
+            aria-hidden
+          />
+          <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-[340px] flex-col bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <img src="/logo.svg" alt="Abracadabra" className="h-8 w-auto" />
+              <button
+                type="button"
+                onClick={() => setMobileNav(false)}
+                aria-label="Fermer"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-gray-50"
+              >
+                <X className="h-5 w-5" aria-hidden />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              {/* Account */}
+              <div className="border-b border-border p-3">
+                {isAuthenticated && user ? (
+                  <div className="flex flex-col gap-0.5">
+                    <div className="mb-1 flex items-center gap-2 px-2">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-[13px] font-bold text-white">
+                        {initials}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-brand-900">
+                          {user.firstName} {user.lastName}
+                        </span>
+                        <span className="block truncate text-xs text-muted">{user.email}</span>
+                      </span>
+                    </div>
+                    <MobileLink href="/profile" onClick={() => setMobileNav(false)} Icon={User}>
+                      {t.header.myProfile}
+                    </MobileLink>
+                    <MobileLink href="/orders" onClick={() => setMobileNav(false)} Icon={Package}>
+                      {t.header.myOrders}
+                    </MobileLink>
+                    <MobileLink
+                      href="/messages"
+                      onClick={() => setMobileNav(false)}
+                      Icon={MessageSquare}
+                    >
+                      {t.header.messages}
+                    </MobileLink>
+                    {user.role === UserRole.SELLER && (
+                      <MobileLink
+                        href="/seller"
+                        onClick={() => setMobileNav(false)}
+                        Icon={Store}
+                      >
+                        {t.header.sellerHub}
+                      </MobileLink>
+                    )}
+                    {user.role === UserRole.USER && (
+                      <MobileLink
+                        href="/become-seller"
+                        onClick={() => setMobileNav(false)}
+                        Icon={Store}
+                      >
+                        {t.header.becomeSeller}
+                      </MobileLink>
+                    )}
+                    {user.role === UserRole.ADMIN && (
+                      <MobileLink
+                        href="/admin"
+                        onClick={() => setMobileNav(false)}
+                        Icon={LayoutDashboard}
+                      >
+                        {t.header.admin}
+                      </MobileLink>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex items-center gap-2.5 rounded-lg px-2 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="h-[18px] w-[18px]" aria-hidden />
+                      {t.header.logout}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Link
+                      href="/login"
+                      onClick={() => setMobileNav(false)}
+                      className="flex flex-1 items-center justify-center rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-brand-900"
+                    >
+                      {t.header.login}
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setMobileNav(false)}
+                      className="flex flex-1 items-center justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white"
+                    >
+                      {t.header.register}
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick links */}
+              <div className="border-b border-border p-3">
+                <MobileLink href="/wishlist" onClick={() => setMobileNav(false)} Icon={Heart}>
+                  {t.header.wishlist}
+                </MobileLink>
+                <MobileLink href="/sellers" onClick={() => setMobileNav(false)} Icon={Store}>
+                  {t.header.shops}
+                </MobileLink>
+              </div>
+
+              {/* Categories */}
+              <div className="p-3">
+                <p className="px-2 pb-1 text-xs font-bold uppercase tracking-wide text-muted">
+                  {t.header.allCategories}
+                </p>
+                {categories.map((cat) => (
+                  <MobileLink
+                    key={cat.slug}
+                    href={`/c/${cat.slug}`}
+                    onClick={() => setMobileNav(false)}
+                    Icon={cat.Icon}
+                  >
+                    {cat.label}
+                  </MobileLink>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
+  );
+}
+
+function MobileLink({
+  href,
+  onClick,
+  Icon,
+  children,
+}: {
+  href: string;
+  onClick: () => void;
+  Icon: typeof Heart;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="flex items-center gap-2.5 rounded-lg px-2 py-2.5 text-sm font-medium text-brand-900 hover:bg-brand-50"
+    >
+      <Icon className="h-[18px] w-[18px] text-brand-500" aria-hidden />
+      {children}
+    </Link>
   );
 }

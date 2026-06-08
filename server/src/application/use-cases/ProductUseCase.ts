@@ -360,12 +360,15 @@ export class ProductUseCase {
   }
 
   private async enrichFacets(facets: ProductFacets): Promise<ProductFacets> {
-    const categories = await Promise.all(
+    const resolved = await Promise.all(
       facets.categories.map(async (c) => {
         const cat = await this.categoryRepo.findById(c.value);
-        return { ...c, label: cat?.name };
+        return cat ? { ...c, label: cat.name } : null;
       }),
     );
+    // Drop facet buckets whose category no longer exists (orphan refs from
+    // deleted/re-seeded categories) so the UI never shows a raw ObjectId.
+    const categories = resolved.filter((c): c is NonNullable<typeof c> => c !== null);
     return { ...facets, categories };
   }
 }
