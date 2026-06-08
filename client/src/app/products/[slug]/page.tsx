@@ -477,7 +477,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
             </div>
 
             {/* ── Quantity + add to cart ── */}
-            <div className="mt-5 flex items-stretch gap-3">
+            <div className="mt-5 flex flex-wrap items-stretch gap-3">
               <div className="flex items-center rounded-lg border border-border bg-white">
                 <button
                   type="button"
@@ -505,7 +505,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 whileHover={{ scale: variant.stock === 0 ? 1 : 1.01 }}
                 whileTap={{ scale: variant.stock === 0 ? 1 : 0.98 }}
                 disabled={variant.stock === 0 || addingToCart}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-brand-500 px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-600 disabled:opacity-50"
+                className="order-last flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-brand-600 disabled:opacity-50 sm:order-none sm:w-auto sm:flex-1 sm:py-0"
               >
                 {justAdded ? (
                   <>
@@ -530,7 +530,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                 disabled={wishPending === product._id}
                 aria-pressed={wishlisted}
                 aria-label={t.header.wishlist}
-                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border transition-colors disabled:opacity-50 ${
+                className={`order-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border transition-colors disabled:opacity-50 sm:order-none ${
                   wishlisted
                     ? 'border-brand-200 bg-brand-50 text-brand-600'
                     : 'border-border bg-white text-muted hover:border-brand-300 hover:text-brand-600'
