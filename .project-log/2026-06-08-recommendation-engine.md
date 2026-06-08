@@ -44,8 +44,11 @@ co-purchased with what they own, minus everything they already engaged with and
 anything out of stock. We score that pool, normalize each component across it,
 blend, and keep the top N.
 
-**Cold start.** A brand-new user with no history gets the _trending_ list
-(best-sellers), so the rail is never empty.
+**Cold start & backfill.** A brand-new user with no history gets the _trending_
+list (best-sellers). And whenever a narrow taste profile yields fewer
+personalized candidates than requested, the rail is **backfilled with trending**
+products (excluding what the user already engaged with) so it is always full and
+worth showing.
 
 **Explainability.** The backend returns a machine `reasonCode`
 (`bought_together`, `category_affinity`, `brand_affinity`, `similar`,
