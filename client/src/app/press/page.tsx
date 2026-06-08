@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import InfoPage from '../../components/InfoPage';
 
-export const metadata: Metadata = { title: 'Presse — Abracadabra' };
+export const metadata: Metadata = { title: 'Presse · Abracadabra' };
 
 export default function PressPage() {
   return (
