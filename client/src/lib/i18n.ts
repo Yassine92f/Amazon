@@ -80,7 +80,7 @@ export const t = {
   },
 
   header: {
-    announcement: "SOLDES DE PRINTEMPS — jusqu'à -50 % sur plus de 10 000 articles",
+    announcement: "SOLDES DE PRINTEMPS : jusqu'à -50 % sur plus de 10 000 articles",
     announcementCta: "J'en profite",
     searchPlaceholder: 'Rechercher des produits, des marques et plus…',
     search: 'Rechercher',
@@ -142,8 +142,8 @@ export const t = {
     newArrivals: 'Nouveautés',
     emptyProducts: 'Aucun produit à afficher pour le moment.',
     emptyCategories: 'Aucune catégorie pour le moment.',
-    promoTitle: 'Téléchargez notre application — 10 € offerts sur votre première commande !',
-    promoSubtitle: 'Utilisez le code HELLO10 au paiement. Réservé aux nouveaux clients.',
+    promoTitle: 'Téléchargez notre application : 10 € offerts sur votre première commande !',
+    promoSubtitle: 'Utilisez le code WELCOME10 au paiement. Réservé aux nouveaux clients.',
     promoCta: "Obtenir l'application",
     trust: {
       shippingTitle: 'Livraison offerte',
@@ -173,7 +173,7 @@ export const t = {
     press: 'Presse',
     privacy: 'Politique de confidentialité',
     terms: "Conditions d'utilisation",
-    rights: '© 2026 Abracadabra — Tous droits réservés.',
+    rights: '© 2026 Abracadabra. Tous droits réservés.',
   },
 
   catalog: {
@@ -221,10 +221,10 @@ export const t = {
     inStock: 'En stock',
     readyToShip: 'Prêt à expédier',
     outOfStock: 'En rupture de stock',
-    lowStock: (n: number) => `Plus que ${n} en stock — commandez vite`,
+    lowStock: (n: number) => `Plus que ${n} en stock, commandez vite`,
     save: (amount: string) => `Économisez ${amount}`,
     variant: 'Variante',
-    outShort: '— épuisé',
+    outShort: 'épuisé',
     quantity: 'Quantité',
     addToCart: 'Ajouter au panier',
     cartComingSoon: 'Le panier arrive dans la prochaine version (feature/cart-orders).',
@@ -315,7 +315,7 @@ export const t = {
     forYouSubtitle: "D'après vos achats et les produits que vous avez consultés",
     youMayAlsoLike: 'Vous aimerez aussi',
     trendingTitle: 'Tendances du moment',
-    empty: 'Pas encore de recommandation — explorez le catalogue pour en débloquer.',
+    empty: 'Pas encore de recommandation. Explorez le catalogue pour en débloquer.',
     // Builds the explainable "why" chip shown on each recommended product.
     reason: (code: string, label?: string): string => {
       switch (code) {
@@ -338,7 +338,7 @@ export const t = {
 
   reviews: {
     loading: 'Chargement des avis…',
-    empty: 'Aucun avis pour le moment — soyez le premier à partager votre expérience.',
+    empty: 'Aucun avis pour le moment, soyez le premier à partager votre expérience.',
     outOf5: 'sur 5',
     sellerResponse: 'Réponse du vendeur',
   },
@@ -496,7 +496,7 @@ export const t = {
     orders: 'Commandes',
     reviews: 'Avis',
     settings: 'Paramètres',
-    footerHub: '© 2026 Abracadabra — Espace vendeur',
+    footerHub: '© 2026 Abracadabra · Espace vendeur',
     policies: 'Conditions vendeur',
     fees: 'Commissions',
     support: 'Support',
@@ -607,7 +607,7 @@ export const t = {
       imagesHint: '1ʳᵉ = principale',
       imagePlaceholder: 'https://cdn.exemple.com/votre-image.jpg',
       add: 'Ajouter',
-      noImage: 'Aucune image — collez une URL ci-dessus.',
+      noImage: 'Aucune image pour le moment.',
       main: 'Principale',
       variants: 'Variantes',
       variantsDesc: 'Différentes tailles, couleurs, configurations.',
@@ -705,7 +705,7 @@ export const t = {
     saves: (kg: number) => `≈ −${kg.toFixed(2)} kg CO₂`,
     equivalentCarKm: (km: number) => `soit environ ${km.toFixed(1)} km en voiture`,
     summarySaved: (kg: number) => `Vous économisez environ ${kg.toFixed(2)} kg de CO₂`,
-    summaryNeutral: 'Choix standard — aucune économie',
+    summaryNeutral: 'Choix standard, aucune économie',
     confirmed: 'Choix de livraison écologique enregistré',
     tree: {
       title: 'Planter un arbre',
@@ -720,19 +720,19 @@ export const t = {
     },
     options: {
       standard: {
-        label: 'Domicile — standard',
+        label: 'Domicile · standard',
         desc: 'Livraison à votre adresse en 2–4 jours ouvrés.',
       },
       pickup_grouped: {
-        label: 'Point relais — groupé',
-        desc: 'Vos colis sont regroupés sur la dernière tournée — bien moins de trajets.',
+        label: 'Point relais · groupé',
+        desc: 'Vos colis sont regroupés sur la dernière tournée, bien moins de trajets.',
       },
       bike_cargo: {
-        label: 'Domicile — vélo-cargo',
-        desc: 'Livraison à domicile par vélo-cargo en zone urbaine — quasi zéro émission.',
+        label: 'Domicile · vélo-cargo',
+        desc: 'Livraison à domicile par vélo-cargo en zone urbaine, quasi zéro émission.',
       },
       slow_grouped: {
-        label: 'Point relais — lent',
+        label: 'Point relais · lent',
         desc: 'Retrait sous 5–7 j, livré mutualisé avec d’autres commandes.',
       },
     } as Record<string, { label: string; desc: string }>,
@@ -774,7 +774,7 @@ export const t = {
     subtotal: 'Sous-total',
     shipping: 'Livraison',
     discount: 'Réduction',
-    treePledge: 'Don solidaire — 1 arbre planté',
+    treePledge: 'Don solidaire : 1 arbre planté',
     treePledgeNote:
       'Le don solidaire est reversé à notre partenaire reforestation et apparaît sur votre justificatif.',
     total: 'Total',
@@ -792,7 +792,7 @@ export const t = {
     emptyCart: 'Votre panier est vide.',
     selectAddress: 'Sélectionnez une adresse de livraison',
     testCardHint:
-      'Mode test — utilisez la carte 4242 4242 4242 4242, une date future et un CVC quelconque.',
+      'Mode test : utilisez la carte 4242 4242 4242 4242, une date future et un CVC quelconque.',
     stripeKeyMissing:
       'Paiement indisponible : la clé publique Stripe est manquante. Renseignez NEXT_PUBLIC_STRIPE_PUBLIC_KEY dans le .env racine et redémarrez le serveur.',
   },

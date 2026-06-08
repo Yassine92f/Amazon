@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { SearchX } from 'lucide-react';
+import { SearchX, SlidersHorizontal, X } from 'lucide-react';
 import FiltersSidebar, { type FilterState } from './FiltersSidebar';
 import CatalogProductCard from './CatalogProductCard';
 import Pagination from './Pagination';
@@ -55,6 +55,7 @@ export default function CatalogShell({
   const [result, setResult] = useState<ProductSearchResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false); // mobile filters drawer
 
   useEffect(() => {
     setFilters((s) => ({ ...s, categoryId: fixedCategoryId }));
@@ -132,27 +133,38 @@ export default function CatalogShell({
   return (
     <div className="min-h-screen bg-bg">
       <div className="container-main py-6">
-        <div className="mb-4 flex items-end justify-between gap-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold text-brand-900">{title}</h1>
+            <h1 className="text-2xl font-extrabold text-brand-900 sm:text-3xl">{title}</h1>
             {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
             {result && (
               <p className="mt-1 text-sm text-muted">{t.catalog.productCount(result.total)}</p>
             )}
           </div>
-          <select
-            value={sortBy}
-            onChange={(e) =>
-              setSortBy(e.target.value as NonNullable<ProductSearchParams['sortBy']>)
-            }
-            className="rounded-md border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text outline-none focus:border-brand-500"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {t.catalog.sortPrefix} : {o.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            {/* Mobile-only: open the filters drawer (sidebar is desktop-only). */}
+            <button
+              type="button"
+              onClick={() => setShowFilters(true)}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-2.5 text-sm font-semibold text-text lg:hidden"
+            >
+              <SlidersHorizontal className="h-4 w-4 text-brand-500" aria-hidden />
+              {t.filters.title}
+            </button>
+            <select
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy(e.target.value as NonNullable<ProductSearchParams['sortBy']>)
+              }
+              className="flex-1 rounded-md border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text outline-none focus:border-brand-500 sm:flex-none"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {t.catalog.sortPrefix} : {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {activeChips.length > 0 && (
@@ -179,19 +191,59 @@ export default function CatalogShell({
           </div>
         )}
 
-        <div className="flex gap-6 items-start">
-          <FiltersSidebar
-            facets={result?.facets ?? EMPTY_FACETS}
-            state={filters}
-            onChange={(s) => {
-              setFilters(s);
-              setPage(1);
-            }}
-            onReset={reset}
-            hideCategorySection={hideCategorySection}
-          />
+        <div className="flex items-start gap-6">
+          {/* Desktop sidebar */}
+          <div className="hidden lg:block">
+            <FiltersSidebar
+              facets={result?.facets ?? EMPTY_FACETS}
+              state={filters}
+              onChange={(s) => {
+                setFilters(s);
+                setPage(1);
+              }}
+              onReset={reset}
+              hideCategorySection={hideCategorySection}
+            />
+          </div>
 
-          <div className="flex-1">
+          {/* Mobile filters drawer */}
+          {showFilters && (
+            <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true">
+              <div
+                className="absolute inset-0 bg-black/40"
+                onClick={() => setShowFilters(false)}
+                aria-hidden
+              />
+              <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-[320px] flex-col bg-white shadow-xl">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <span className="text-base font-bold text-brand-900">{t.filters.title}</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowFilters(false)}
+                    aria-label="Fermer"
+                    className="flex h-8 w-8 items-center justify-center rounded-md text-muted hover:bg-gray-50"
+                  >
+                    <X className="h-5 w-5" aria-hidden />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-2">
+                  <FiltersSidebar
+                    facets={result?.facets ?? EMPTY_FACETS}
+                    state={filters}
+                    onChange={(s) => {
+                      setFilters(s);
+                      setPage(1);
+                    }}
+                    onReset={reset}
+                    hideCategorySection={hideCategorySection}
+                    className="w-full border-0 p-3"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
             {loading ? (
               <GridSkeleton />
             ) : error ? (
