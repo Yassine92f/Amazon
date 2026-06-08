@@ -2093,11 +2093,30 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
   // Authored by buyers. orderId is synthetic until Section 3 (orders) lands;
   // some reviews ship with a seller response, most are left open so the seller
   // hub can demonstrate replying to them.
+  // Keep the demo buyer's delivered-order products un-reviewed BY HER, so the
+  // "write a review" flow can be shown live from her orders page. Other buyers
+  // still review these products, so they never look empty.
+  const DEMO_BUYER_EMAIL = 'alice@abracadabra.local';
+  const demoBuyerId = buyerByEmail.get(DEMO_BUYER_EMAIL);
+  const demoReservedProductIds = new Set(
+    (personas[DEMO_BUYER_EMAIL]?.baskets.flat() ?? [])
+      .map((slug) => productBySlug.get(slug)?.id.toString())
+      .filter((id): id is string => Boolean(id)),
+  );
+
   let reviewTotal = 0;
   for (const productId of createdProducts) {
     const n = randInt(3, 4); // 3–4 reviews per product
     const shuffled = [...buyerIds].sort(() => rand() - 0.5).slice(0, n);
     for (let i = 0; i < shuffled.length; i++) {
+      // Skip the demo buyer on her own purchased products (see note above).
+      if (
+        demoBuyerId &&
+        shuffled[i].equals(demoBuyerId) &&
+        demoReservedProductIds.has(productId.toString())
+      ) {
+        continue;
+      }
       const tpl = reviewPool[Math.floor(rand() * reviewPool.length)];
       const withResponse = i === 0 && rand() < 0.4;
       await ReviewModel.create({
