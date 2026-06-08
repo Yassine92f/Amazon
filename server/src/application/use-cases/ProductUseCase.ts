@@ -7,7 +7,9 @@ import {
 } from '../../domain/repositories/IProductRepository';
 import { ICategoryRepository } from '../../domain/repositories/ICategoryRepository';
 import { ISellerRepository } from '../../domain/repositories/ISellerRepository';
+import { IPriceHistoryRepository } from '../../domain/repositories/IPriceHistoryRepository';
 import { ProductEntity, ProductVariantEntity } from '../../domain/entities/Product';
+import { PriceHistoryUseCase } from './PriceHistoryUseCase';
 import { slugify } from '../utils/slugify';
 
 export interface ProductVariantDto {
@@ -99,11 +101,21 @@ export type UpdateProductInput = Partial<CreateProductInput> & {
 };
 
 export class ProductUseCase {
+  private readonly priceHistory?: PriceHistoryUseCase;
+
   constructor(
     private productRepo: IProductRepository,
     private categoryRepo: ICategoryRepository,
     private sellerRepo: ISellerRepository,
-  ) {}
+    // Optional: when provided, every price change is appended to the audit
+    // series consumed by the price-transparency chart. Tests that don't care
+    // about history can simply omit it.
+    priceHistoryRepo?: IPriceHistoryRepository,
+  ) {
+    if (priceHistoryRepo) {
+      this.priceHistory = new PriceHistoryUseCase(priceHistoryRepo, productRepo);
+    }
+  }
 
   async create(userId: string, input: CreateProductInput): Promise<ProductDto> {
     const seller = await this.sellerRepo.findByUserId(userId);
@@ -141,6 +153,7 @@ export class ProductUseCase {
     };
 
     const product = await this.productRepo.create(data);
+    await this.priceHistory?.recordCreate(product);
     return this.toDto(product);
   }
 
@@ -185,12 +198,16 @@ export class ProductUseCase {
 
     const updated = await this.productRepo.updateById(productId, data);
     if (!updated) throw new ProductError(500, 'Failed to update product');
+    if (data.variants && this.priceHistory) {
+      await this.priceHistory.recordUpdate(product.variants, updated.variants, updated.id);
+    }
     return this.toDto(updated);
   }
 
   async delete(userId: string, productId: string): Promise<void> {
     await this.requireOwnedByUser(userId, productId);
     await this.productRepo.deleteById(productId);
+    await this.priceHistory?.deleteForProduct(productId);
   }
 
   async getBySlug(slug: string): Promise<ProductDto> {
