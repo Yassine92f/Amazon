@@ -3,14 +3,17 @@ import { UserRole } from '@ecommerce/shared';
 import { ProductController } from '../controllers/ProductController';
 import { ReviewController } from '../controllers/ReviewController';
 import { SellerReviewController } from '../controllers/SellerReviewController';
+import { PriceHistoryController } from '../controllers/PriceHistoryController';
 import { ProductUseCase } from '../../../application/use-cases/ProductUseCase';
 import { ReviewBrowseUseCase } from '../../../application/use-cases/ReviewBrowseUseCase';
 import { SellerReviewUseCase } from '../../../application/use-cases/SellerReviewUseCase';
+import { PriceHistoryUseCase } from '../../../application/use-cases/PriceHistoryUseCase';
 import { ProductRepository } from '../../../infrastructure/repositories/ProductRepository';
 import { CategoryRepository } from '../../../infrastructure/repositories/CategoryRepository';
 import { SellerRepository } from '../../../infrastructure/repositories/SellerRepository';
 import { ReviewRepository } from '../../../infrastructure/repositories/ReviewRepository';
 import { UserRepository } from '../../../infrastructure/repositories/UserRepository';
+import { PriceHistoryRepository } from '../../../infrastructure/repositories/PriceHistoryRepository';
 import { authenticate, authorize } from '../middlewares/auth';
 import { validate } from '../middlewares/validate';
 import { cacheResponse } from '../middlewares/cache';
@@ -28,8 +31,14 @@ const categoryRepository = new CategoryRepository();
 const sellerRepository = new SellerRepository();
 const reviewRepository = new ReviewRepository();
 const userRepository = new UserRepository();
+const priceHistoryRepository = new PriceHistoryRepository();
 
-const productUseCase = new ProductUseCase(productRepository, categoryRepository, sellerRepository);
+const productUseCase = new ProductUseCase(
+  productRepository,
+  categoryRepository,
+  sellerRepository,
+  priceHistoryRepository,
+);
 const reviewUseCase = new ReviewBrowseUseCase(reviewRepository, userRepository);
 const sellerReviewUseCase = new SellerReviewUseCase(
   reviewRepository,
@@ -37,10 +46,12 @@ const sellerReviewUseCase = new SellerReviewUseCase(
   sellerRepository,
   userRepository,
 );
+const priceHistoryUseCase = new PriceHistoryUseCase(priceHistoryRepository, productRepository);
 
 const productController = new ProductController(productUseCase);
 const reviewController = new ReviewController(reviewUseCase);
 const sellerReviewController = new SellerReviewController(sellerReviewUseCase);
+const priceHistoryController = new PriceHistoryController(priceHistoryUseCase);
 
 const router: IRouter = Router();
 
@@ -75,6 +86,13 @@ router.delete('/:id', authenticate, authorize(UserRole.SELLER), productControlle
 
 // Reviews for a product
 router.get('/:productId/reviews', reviewController.listForProduct);
+
+// Price history (transparency chart on product detail page) — public, cacheable.
+router.get(
+  '/:id/price-history',
+  cacheResponse('products', PRODUCT_CACHE_TTL),
+  priceHistoryController.get,
+);
 
 // Public lookup (cached in Redis, invalidated on product writes)
 router.get('/', cacheResponse('products', PRODUCT_CACHE_TTL), productController.search);

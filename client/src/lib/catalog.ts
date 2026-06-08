@@ -422,6 +422,40 @@ export async function deleteProduct(id: string): Promise<void> {
   await api.delete(`/products/${id}`);
 }
 
+// ── Price history API ──────────────────────────────────────────────────
+
+export interface PriceHistoryPointDto {
+  date: string;
+  price: number;
+}
+
+export interface PriceHistorySummaryDto {
+  currentPrice: number;
+  minPrice: number;
+  maxPrice: number;
+  avgPrice: number;
+  lowestEverPrice: number;
+  isLowestEver: boolean;
+  dropFromMaxPercent: number;
+}
+
+export interface PriceHistoryDto {
+  productId: string;
+  variantId?: string;
+  variantName?: string;
+  period: { from: string; to: string; days: number };
+  points: PriceHistoryPointDto[];
+  summary: PriceHistorySummaryDto;
+}
+
+export async function getPriceHistory(
+  productId: string,
+  params: { variantId?: string; days?: number } = {},
+): Promise<PriceHistoryDto> {
+  const { data } = await api.get(`/products/${productId}/price-history`, { params });
+  return data.data;
+}
+
 // ── Reviews API ────────────────────────────────────────────────────────
 
 export async function listProductReviews(

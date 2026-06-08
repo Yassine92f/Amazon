@@ -6,6 +6,7 @@ import { UserModel } from '../infrastructure/database/models/User';
 import { SellerModel } from '../infrastructure/database/models/Seller';
 import { CategoryModel } from '../infrastructure/database/models/Category';
 import { ProductModel } from '../infrastructure/database/models/Product';
+import { PriceHistoryModel } from '../infrastructure/database/models/PriceHistory';
 import { ReviewModel } from '../infrastructure/database/models/Review';
 import { OrderModel } from '../infrastructure/database/models/Order';
 import { CouponModel, CouponRedemptionModel } from '../infrastructure/database/models/Coupon';
@@ -1110,6 +1111,99 @@ interface RunOptions {
   cleanFirst: boolean;
 }
 
+// Storylines for the price-history chart so the seeded data reads as real
+// market motion instead of random noise. Each variant rolls one of these.
+type PriceStory = 'lowest-ever' | 'recent-drop' | 'spike-then-back' | 'gentle-down' | 'volatile';
+
+const PRICE_STORIES: PriceStory[] = [
+  'lowest-ever',
+  'recent-drop',
+  'spike-then-back',
+  'gentle-down',
+  'volatile',
+];
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function seedPriceHistoryForProduct(productDoc: any): Promise<void> {
+  const DAYS = 120;
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  for (const variant of productDoc.variants) {
+    const current: number = variant.price;
+    const story = PRICE_STORIES[Math.floor(Math.random() * PRICE_STORIES.length)];
+
+    const entries: { daysAgo: number; price: number }[] = [];
+
+    switch (story) {
+      case 'lowest-ever':
+        // Was much pricier (+30–40%), then steadily dropped to today's value
+        // which is the lowest ever recorded. Earns the green badge.
+        entries.push({ daysAgo: DAYS, price: round(current * 1.4) });
+        entries.push({ daysAgo: 90, price: round(current * 1.3) });
+        entries.push({ daysAgo: 60, price: round(current * 1.2) });
+        entries.push({ daysAgo: 30, price: round(current * 1.1) });
+        entries.push({ daysAgo: 10, price: round(current * 1.05) });
+        break;
+
+      case 'recent-drop':
+        // Stable around +20% for most of the window, then a sharp markdown in
+        // the last two weeks. Earns the orange "drop from max" badge.
+        entries.push({ daysAgo: DAYS, price: round(current * 1.2) });
+        entries.push({ daysAgo: 80, price: round(current * 1.22) });
+        entries.push({ daysAgo: 40, price: round(current * 1.2) });
+        entries.push({ daysAgo: 14, price: round(current * 1.18) });
+        entries.push({ daysAgo: 7, price: round(current * 1.05) });
+        break;
+
+      case 'spike-then-back':
+        // A one-month spike (e.g. shortage), then back to the original level.
+        // Demonstrates that "regular" price ≠ recent peak.
+        entries.push({ daysAgo: DAYS, price: round(current) });
+        entries.push({ daysAgo: 80, price: round(current * 1.05) });
+        entries.push({ daysAgo: 50, price: round(current * 1.35) });
+        entries.push({ daysAgo: 30, price: round(current * 1.3) });
+        entries.push({ daysAgo: 15, price: round(current * 1.1) });
+        break;
+
+      case 'gentle-down':
+        // Slow, monotonic decrease — a maturing product.
+        entries.push({ daysAgo: DAYS, price: round(current * 1.15) });
+        entries.push({ daysAgo: 90, price: round(current * 1.12) });
+        entries.push({ daysAgo: 60, price: round(current * 1.08) });
+        entries.push({ daysAgo: 30, price: round(current * 1.04) });
+        entries.push({ daysAgo: 10, price: round(current * 1.02) });
+        break;
+
+      case 'volatile':
+        // Up-and-down — exposes a seller that keeps repricing.
+        entries.push({ daysAgo: DAYS, price: round(current * 1.0) });
+        entries.push({ daysAgo: 95, price: round(current * 1.18) });
+        entries.push({ daysAgo: 70, price: round(current * 0.92) });
+        entries.push({ daysAgo: 45, price: round(current * 1.25) });
+        entries.push({ daysAgo: 20, price: round(current * 1.0) });
+        entries.push({ daysAgo: 8, price: round(current * 1.08) });
+        break;
+    }
+
+    // Latest observation always equals the current buy-box price.
+    entries.push({ daysAgo: 1, price: current });
+
+    await PriceHistoryModel.insertMany(
+      entries.map((e) => ({
+        productId: productDoc._id,
+        variantId: variant._id,
+        price: e.price,
+        recordedAt: new Date(now - e.daysAgo * oneDay),
+      })),
+    );
+  }
+}
+
+function round(value: number): number {
+  return Math.max(1, Math.round(value * 100) / 100);
+}
+
 async function run({ cleanFirst }: RunOptions): Promise<void> {
   console.log(`[seed] Connecting to ${config.mongodb.uri}`);
   await mongoose.connect(config.mongodb.uri);
@@ -1133,6 +1227,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     await OrderModel.deleteMany({ userId: { $in: buyerUserIds } });
     await ProductViewModel.deleteMany({ userId: { $in: buyerUserIds } });
     await ReviewModel.deleteMany({ productId: { $exists: true } });
+    await PriceHistoryModel.deleteMany({});
     await ProductModel.deleteMany({ sellerId: { $in: sellerIds } });
     await SellerModel.deleteMany({ _id: { $in: sellerIds } });
     await UserModel.deleteMany({ _id: { $in: sellerUserIds } });
@@ -1271,6 +1366,8 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       isFeatured: p.isFeatured ?? false,
     });
     createdProducts.push(doc._id as mongoose.Types.ObjectId);
+
+    // Index this product so persona-driven orders + views can resolve it later.
     const firstVariant = doc.variants[0];
     productBySlug.set(p.slug, {
       id: doc._id as mongoose.Types.ObjectId,
@@ -1280,6 +1377,13 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       variantName: firstVariant.name,
       price: firstVariant.price,
     });
+
+    // ── Synthetic price history (~120 days, varied storylines) ──
+    // Each variant gets one of a small set of "stories" so the demo isn't all
+    // noise — some products are at their lowest ever, some had a big spike,
+    // some are gently trending down. The latest observation always lands on
+    // the current buy-box price.
+    await seedPriceHistoryForProduct(doc);
     console.log(`[seed]   product: ${p.name}`);
   }
 
