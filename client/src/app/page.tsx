@@ -32,6 +32,7 @@ import { motion } from 'motion/react';
 import Header from '@/components/Header';
 import MobileTabBar from '@/components/MobileTabBar';
 import CatalogProductCard from '@/components/catalog/CatalogProductCard';
+import HomeRecommendations from '@/components/recommendations/HomeRecommendations';
 import { t } from '@/lib/i18n';
 import {
   searchProducts,
@@ -307,6 +308,9 @@ export default function Home() {
             </div>
           </motion.div>
         </section>
+
+        {/* ── Recommended for you (personalized, logged-in only) ── */}
+        <HomeRecommendations />
 
         {/* ── Flash Deals ── */}
         <div className="bg-white py-8">
