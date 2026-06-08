@@ -128,6 +128,60 @@ const sellers: SellerSeed[] = [
     description: 'Coffee machines, beauty, books and lifestyle picks for the modern home.',
     isVerified: false,
   },
+  {
+    email: 'gamezone@abracadabra.local',
+    firstName: 'Game',
+    lastName: 'Zone',
+    shopName: 'GameZone',
+    shopSlug: 'gamezone',
+    description: 'Consoles, controllers and accessories for every gamer. Latest releases in stock.',
+    isVerified: true,
+  },
+  {
+    email: 'mobileplanet@abracadabra.local',
+    firstName: 'Mobile',
+    lastName: 'Planet',
+    shopName: 'Mobile Planet',
+    shopSlug: 'mobile-planet',
+    description: 'Smartphones, chargers and mobile accessories from every major brand.',
+    isVerified: true,
+  },
+  {
+    email: 'sneaklab@abracadabra.local',
+    firstName: 'Sneak',
+    lastName: 'Lab',
+    shopName: 'SneakLab',
+    shopSlug: 'sneaklab',
+    description: 'Curated sneakers and streetwear. Authentic pairs, fast shipping.',
+    isVerified: true,
+  },
+  {
+    email: 'maisonco@abracadabra.local',
+    firstName: 'Maison',
+    lastName: 'Co',
+    shopName: 'Maison & Co',
+    shopSlug: 'maison-co',
+    description: 'Home appliances and smart home essentials for a modern interior.',
+    isVerified: true,
+  },
+  {
+    email: 'beautycorner@abracadabra.local',
+    firstName: 'Beauty',
+    lastName: 'Corner',
+    shopName: 'Beauty Corner',
+    shopSlug: 'beauty-corner',
+    description: 'Skincare, fragrance and beauty from dermatologist-loved brands.',
+    isVerified: false,
+  },
+  {
+    email: 'bookhaven@abracadabra.local',
+    firstName: 'Book',
+    lastName: 'Haven',
+    shopName: 'BookHaven',
+    shopSlug: 'bookhaven',
+    description: 'Bestsellers, classics and timeless reads for every shelf.',
+    isVerified: true,
+  },
 ];
 
 const categories: CategorySeed[] = [
@@ -945,6 +999,547 @@ const products: ProductSeed[] = [
     reviewCount: 12100,
     totalSold: 7800,
   },
+
+  // ── Expanded catalogue (more shops, more variety) ──
+  {
+    slug: 'sennheiser-momentum-4',
+    name: 'Sennheiser Momentum 4 Wireless',
+    description:
+      'Audiophile sound, adaptive noise cancellation and an exceptional 60-hour battery life. Refined, comfortable design for all-day listening.',
+    shopSlug: 'techhub-premium',
+    categorySlug: 'audio',
+    brand: 'Sennheiser',
+    tags: ['headphones', 'wireless', 'noise-cancelling'],
+    variants: [
+      {
+        name: 'Black',
+        sku: 'SENN-M4-BLK',
+        price: 299,
+        compareAtPrice: 349,
+        stock: 26,
+        attributes: { color: 'black' },
+      },
+    ],
+    rating: 4.6,
+    reviewCount: 1840,
+    totalSold: 720,
+  },
+  {
+    slug: 'marshall-emberton-2',
+    name: 'Marshall Emberton II Portable Speaker',
+    description:
+      'Iconic Marshall design with 360° True Stereophonic sound, 30+ hours of playtime and IP67 water resistance.',
+    shopSlug: 'techhub-premium',
+    categorySlug: 'audio',
+    brand: 'Marshall',
+    tags: ['speaker', 'bluetooth', 'portable'],
+    variants: [
+      {
+        name: 'Black & Brass',
+        sku: 'MRSH-EMB2-BLK',
+        price: 169,
+        stock: 44,
+        attributes: { color: 'black' },
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 2210,
+    totalSold: 980,
+  },
+  {
+    slug: 'apple-iphone-15',
+    name: 'Apple iPhone 15 128GB',
+    description:
+      'Dynamic Island, 48MP main camera and USB-C. A16 Bionic chip and an all-day battery in a durable aluminium design.',
+    shopSlug: 'apple-store',
+    categorySlug: 'phones',
+    brand: 'Apple',
+    tags: ['smartphone', '5g', 'apple'],
+    variants: [
+      {
+        name: 'Blue 128GB',
+        sku: 'APL-IP15-128-BLU',
+        price: 869,
+        stock: 30,
+        attributes: { color: 'blue', storage: '128GB' },
+      },
+      {
+        name: 'Black 128GB',
+        sku: 'APL-IP15-128-BLK',
+        price: 869,
+        stock: 21,
+        attributes: { color: 'black', storage: '128GB' },
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 4310,
+    totalSold: 1620,
+    isFeatured: true,
+  },
+  {
+    slug: 'oneplus-12',
+    name: 'OnePlus 12 256GB',
+    description:
+      'Snapdragon 8 Gen 3, 120Hz ProXDR display and Hasselblad camera. 100W fast charging for a full day in 30 minutes.',
+    shopSlug: 'mobile-planet',
+    categorySlug: 'phones',
+    brand: 'OnePlus',
+    tags: ['smartphone', '5g', 'android'],
+    variants: [
+      {
+        name: 'Flowy Emerald 256GB',
+        sku: 'OP-12-256-GRN',
+        price: 749,
+        compareAtPrice: 869,
+        stock: 24,
+        attributes: { color: 'green', storage: '256GB' },
+      },
+    ],
+    rating: 4.6,
+    reviewCount: 1290,
+    totalSold: 540,
+  },
+  {
+    slug: 'dell-xps-13',
+    name: 'Dell XPS 13 Laptop',
+    description:
+      'InfinityEdge 13.4-inch display, Intel Core Ultra, machined aluminium chassis. Premium ultraportable for work on the go.',
+    shopSlug: 'techhub-premium',
+    categorySlug: 'computers',
+    brand: 'Dell',
+    tags: ['laptop', 'ultrabook', 'windows'],
+    variants: [
+      {
+        name: 'Platinum 512GB',
+        sku: 'DELL-XPS13-512',
+        price: 1099,
+        compareAtPrice: 1399,
+        stock: 16,
+      },
+    ],
+    rating: 4.5,
+    reviewCount: 980,
+    totalSold: 410,
+  },
+  {
+    slug: 'samsung-monitor-32',
+    name: 'Samsung Smart Monitor M8 32"',
+    description:
+      '4K UHD smart monitor with built-in streaming apps, SlimFit camera and sleek design. Works as a monitor and a smart TV.',
+    shopSlug: 'techhub-premium',
+    categorySlug: 'computers',
+    brand: 'Samsung',
+    tags: ['monitor', '4k', 'smart'],
+    variants: [
+      {
+        name: '32" 4K Warm White',
+        sku: 'SAM-M8-32-WHT',
+        price: 599,
+        compareAtPrice: 729,
+        stock: 19,
+      },
+    ],
+    rating: 4.4,
+    reviewCount: 760,
+    totalSold: 290,
+  },
+  {
+    slug: 'anker-charger-hub',
+    name: 'Anker 735 GaNPrime 65W Charger',
+    description:
+      'Compact 3-port GaN charger that powers a laptop, phone and earbuds at once. Foldable plug for travel.',
+    shopSlug: 'mobile-planet',
+    categorySlug: 'computers',
+    brand: 'Anker',
+    tags: ['charger', 'usb-c', 'travel'],
+    variants: [
+      {
+        name: 'Black',
+        sku: 'ANK-735-BLK',
+        price: 49,
+        compareAtPrice: 69,
+        stock: 120,
+        attributes: { color: 'black' },
+      },
+    ],
+    rating: 4.8,
+    reviewCount: 5400,
+    totalSold: 4100,
+  },
+  {
+    slug: 'xbox-series-x',
+    name: 'Xbox Series X Console',
+    description:
+      'The fastest, most powerful Xbox ever. 4K gaming at up to 120 FPS, 1TB SSD and Quick Resume across multiple games.',
+    shopSlug: 'gamezone',
+    categorySlug: 'gaming',
+    brand: 'Microsoft',
+    tags: ['console', 'xbox', '4k'],
+    variants: [{ name: '1TB Black', sku: 'XBX-SX-1TB', price: 499, stock: 14 }],
+    rating: 4.8,
+    reviewCount: 6700,
+    totalSold: 2400,
+    isFeatured: true,
+  },
+  {
+    slug: 'nintendo-switch-oled',
+    name: 'Nintendo Switch OLED',
+    description:
+      'Vivid 7-inch OLED screen, enhanced audio and a wide adjustable stand. Play at home or on the go.',
+    shopSlug: 'gamezone',
+    categorySlug: 'gaming',
+    brand: 'Nintendo',
+    tags: ['console', 'nintendo', 'handheld'],
+    variants: [
+      {
+        name: 'White',
+        sku: 'NIN-SW-OLED-WHT',
+        price: 349,
+        stock: 33,
+        attributes: { color: 'white' },
+      },
+    ],
+    rating: 4.9,
+    reviewCount: 9100,
+    totalSold: 3600,
+    isFeatured: true,
+  },
+  {
+    slug: 'xbox-controller',
+    name: 'Xbox Wireless Controller',
+    description:
+      'Textured grips, hybrid D-pad and Bluetooth for play on console, PC and mobile. Up to 40 hours on AA batteries.',
+    shopSlug: 'gamezone',
+    categorySlug: 'gaming',
+    brand: 'Microsoft',
+    tags: ['controller', 'xbox', 'wireless'],
+    variants: [
+      {
+        name: 'Carbon Black',
+        sku: 'XBX-CTRL-BLK',
+        price: 59,
+        compareAtPrice: 69,
+        stock: 78,
+        attributes: { color: 'black' },
+      },
+      {
+        name: 'Robot White',
+        sku: 'XBX-CTRL-WHT',
+        price: 59,
+        compareAtPrice: 69,
+        stock: 41,
+        attributes: { color: 'white' },
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 8800,
+    totalSold: 5200,
+  },
+  {
+    slug: 'fitbit-charge-6',
+    name: 'Fitbit Charge 6',
+    description:
+      'Advanced fitness tracker with built-in GPS, heart-rate tracking and Google apps. Up to 7 days of battery.',
+    shopSlug: 'techhub-premium',
+    categorySlug: 'wearables',
+    brand: 'Fitbit',
+    tags: ['fitness-tracker', 'health', 'gps'],
+    variants: [
+      {
+        name: 'Obsidian',
+        sku: 'FB-CH6-OBS',
+        price: 149,
+        compareAtPrice: 179,
+        stock: 52,
+        attributes: { color: 'black' },
+      },
+    ],
+    rating: 4.5,
+    reviewCount: 3200,
+    totalSold: 1700,
+  },
+  {
+    slug: 'ray-ban-aviator',
+    name: 'Ray-Ban Aviator Classic',
+    description:
+      'The timeless aviator with crystal lenses and a lightweight metal frame. 100% UV protection, made in Italy.',
+    shopSlug: 'sneaklab',
+    categorySlug: 'fashion',
+    brand: 'Ray-Ban',
+    tags: ['sunglasses', 'accessories', 'classic'],
+    variants: [
+      {
+        name: 'Gold / Green',
+        sku: 'RB-AV-GLD',
+        price: 169,
+        stock: 36,
+        attributes: { color: 'gold' },
+      },
+    ],
+    rating: 4.8,
+    reviewCount: 5600,
+    totalSold: 3100,
+  },
+  {
+    slug: 'new-balance-550',
+    name: 'New Balance 550',
+    description:
+      'Retro basketball silhouette with premium leather and a clean, versatile look. An everyday streetwear staple.',
+    shopSlug: 'sneaklab',
+    categorySlug: 'fashion',
+    brand: 'New Balance',
+    tags: ['sneakers', 'shoes', 'streetwear'],
+    variants: [
+      {
+        name: 'White / Green — EU 42',
+        sku: 'NB-550-WG-42',
+        price: 119.99,
+        stock: 22,
+        attributes: { size: '42', color: 'white' },
+      },
+      {
+        name: 'White / Green — EU 43',
+        sku: 'NB-550-WG-43',
+        price: 119.99,
+        stock: 17,
+        attributes: { size: '43', color: 'white' },
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 2400,
+    totalSold: 1300,
+  },
+  {
+    slug: 'levis-501-jeans',
+    name: "Levi's 501 Original Jeans",
+    description:
+      'The original blue jean since 1873. Straight leg, button fly and a timeless fit in durable cotton denim.',
+    shopSlug: 'sneaklab',
+    categorySlug: 'fashion',
+    brand: "Levi's",
+    tags: ['jeans', 'denim', 'classic'],
+    variants: [
+      {
+        name: 'Mid Blue — W32 L32',
+        sku: 'LV-501-3232',
+        price: 99.99,
+        stock: 40,
+        attributes: { size: '32', color: 'blue' },
+      },
+    ],
+    rating: 4.6,
+    reviewCount: 8900,
+    totalSold: 5400,
+  },
+  {
+    slug: 'herschel-backpack',
+    name: 'Herschel Little America Backpack',
+    description:
+      'Mountaineering-inspired backpack with a padded 15" laptop sleeve, magnetic strap closures and signature striped lining.',
+    shopSlug: 'sneaklab',
+    categorySlug: 'fashion',
+    brand: 'Herschel',
+    tags: ['backpack', 'bag', 'everyday'],
+    variants: [
+      {
+        name: 'Black',
+        sku: 'HSL-LA-BLK',
+        price: 89.99,
+        compareAtPrice: 109.99,
+        stock: 31,
+        attributes: { color: 'black' },
+      },
+    ],
+    rating: 4.7,
+    reviewCount: 3400,
+    totalSold: 1900,
+  },
+  {
+    slug: 'hydro-flask-bottle',
+    name: 'Hydro Flask 32oz Wide Mouth',
+    description:
+      'TempShield insulation keeps drinks cold 24h, hot 12h. Durable powder coat and a leak-proof Flex Cap.',
+    shopSlug: 'fitlife-pro',
+    categorySlug: 'sports',
+    brand: 'Hydro Flask',
+    tags: ['bottle', 'hydration', 'outdoor'],
+    variants: [
+      {
+        name: 'Pacific Blue',
+        sku: 'HF-32-BLU',
+        price: 44.95,
+        stock: 86,
+        attributes: { color: 'blue' },
+      },
+      { name: 'Black', sku: 'HF-32-BLK', price: 44.95, stock: 64, attributes: { color: 'black' } },
+    ],
+    rating: 4.8,
+    reviewCount: 11200,
+    totalSold: 8700,
+  },
+  {
+    slug: 'foam-roller-fitness',
+    name: 'FitLife High-Density Foam Roller',
+    description:
+      'Firm, textured EVA foam roller for deep-tissue massage and recovery. Lightweight and grid-patterned for targeted relief.',
+    shopSlug: 'fitlife-pro',
+    categorySlug: 'sports',
+    brand: 'FitLife',
+    tags: ['recovery', 'fitness', 'massage'],
+    variants: [{ name: '45cm Black', sku: 'FL-FR-45', price: 29.99, stock: 95 }],
+    rating: 4.5,
+    reviewCount: 4200,
+    totalSold: 3300,
+  },
+  {
+    slug: 'kettlebell-16kg',
+    name: 'FitLife Cast Iron Kettlebell 16kg',
+    description:
+      'Solid cast-iron kettlebell with a smooth, wide handle and a flat base. Powder-coated for a secure grip.',
+    shopSlug: 'fitlife-pro',
+    categorySlug: 'sports',
+    brand: 'FitLife',
+    tags: ['strength', 'home-gym', 'fitness'],
+    variants: [
+      { name: '16kg', sku: 'FL-KB-16', price: 54.99, stock: 48 },
+      { name: '24kg', sku: 'FL-KB-24', price: 74.99, stock: 27 },
+    ],
+    rating: 4.7,
+    reviewCount: 2100,
+    totalSold: 1100,
+  },
+  {
+    slug: 'chanel-no5-perfume',
+    name: 'Chanel N°5 Eau de Parfum 100ml',
+    description:
+      'The legendary fragrance: a timeless floral aldehyde bouquet. An icon of elegance in its minimalist bottle.',
+    shopSlug: 'beauty-corner',
+    categorySlug: 'beauty',
+    brand: 'Chanel',
+    tags: ['perfume', 'fragrance', 'luxury'],
+    variants: [{ name: '100ml', sku: 'CHN-N5-100', price: 169, stock: 38 }],
+    rating: 4.9,
+    reviewCount: 6700,
+    totalSold: 2900,
+    isFeatured: true,
+  },
+  {
+    slug: 'dyson-v15-vacuum',
+    name: 'Dyson V15 Detect Cordless Vacuum',
+    description:
+      'Laser reveals microscopic dust, and a sensor counts particles in real time. Powerful suction with up to 60 minutes of run time.',
+    shopSlug: 'maison-co',
+    categorySlug: 'home',
+    brand: 'Dyson',
+    tags: ['vacuum', 'cordless', 'appliance'],
+    variants: [
+      { name: 'Yellow / Nickel', sku: 'DYS-V15-YLW', price: 599, compareAtPrice: 699, stock: 17 },
+    ],
+    rating: 4.7,
+    reviewCount: 3900,
+    totalSold: 1400,
+  },
+  {
+    slug: 'nespresso-vertuo',
+    name: 'Nespresso Vertuo Next Coffee Machine',
+    description:
+      'Barista-grade coffee and espresso at the touch of a button. Centrifusion tech reads each capsule for the perfect cup.',
+    shopSlug: 'maison-co',
+    categorySlug: 'home',
+    brand: 'Nespresso',
+    tags: ['coffee', 'kitchen', 'espresso'],
+    variants: [
+      {
+        name: 'Matte Black',
+        sku: 'NSP-VTX-BLK',
+        price: 129,
+        compareAtPrice: 179,
+        stock: 42,
+        attributes: { color: 'black' },
+      },
+    ],
+    rating: 4.5,
+    reviewCount: 5100,
+    totalSold: 3200,
+  },
+  {
+    slug: 'philips-hue-kit',
+    name: 'Philips Hue White & Color Starter Kit',
+    description:
+      'Three smart bulbs plus a bridge. 16 million colours, voice control and scenes that sync with music and movies.',
+    shopSlug: 'maison-co',
+    categorySlug: 'home',
+    brand: 'Philips Hue',
+    tags: ['smart-home', 'lighting', 'connected'],
+    variants: [
+      { name: 'E27 x3 + Bridge', sku: 'PHL-HUE-KIT3', price: 169, compareAtPrice: 199, stock: 29 },
+    ],
+    rating: 4.6,
+    reviewCount: 4400,
+    totalSold: 2100,
+  },
+  {
+    slug: 'sapiens-book',
+    name: 'Sapiens: A Brief History of Humankind',
+    description:
+      'Yuval Noah Harari’s landmark exploration of how Homo sapiens came to dominate the planet. International bestseller.',
+    shopSlug: 'bookhaven',
+    categorySlug: 'books',
+    brand: 'Harper',
+    tags: ['history', 'bestseller', 'non-fiction'],
+    variants: [
+      { name: 'Paperback', sku: 'BK-SAP-PB', price: 13.99, stock: 160 },
+      { name: 'Hardcover', sku: 'BK-SAP-HC', price: 24.99, stock: 38 },
+    ],
+    rating: 4.8,
+    reviewCount: 28700,
+    totalSold: 12300,
+  },
+  {
+    slug: 'dune-book',
+    name: 'Dune by Frank Herbert',
+    description:
+      'The science-fiction masterpiece of politics, religion and ecology on the desert planet Arrakis. The book behind the films.',
+    shopSlug: 'bookhaven',
+    categorySlug: 'books',
+    brand: 'Hodder',
+    tags: ['sci-fi', 'classic', 'fiction'],
+    variants: [{ name: 'Paperback', sku: 'BK-DUNE-PB', price: 11.99, stock: 142 }],
+    rating: 4.8,
+    reviewCount: 19400,
+    totalSold: 9800,
+  },
+  {
+    slug: 'lego-millennium-falcon',
+    name: 'LEGO Star Wars Millennium Falcon',
+    description:
+      '1351-piece model of the iconic starship with detailed interior, minifigures and rotating gun turrets. A collector favourite.',
+    shopSlug: 'lifestyle-co',
+    categorySlug: 'toys',
+    brand: 'LEGO',
+    tags: ['building', 'collectible', 'star-wars'],
+    variants: [
+      { name: 'Standard set', sku: 'LEGO-SW-MF', price: 169.99, compareAtPrice: 189.99, stock: 21 },
+    ],
+    rating: 4.9,
+    reviewCount: 8700,
+    totalSold: 3900,
+    isFeatured: true,
+  },
+  {
+    slug: 'rubiks-cube',
+    name: "Rubik's Cube 3x3",
+    description:
+      'The original 3x3 puzzle. Over 43 quintillion combinations and only one solution. Faster turning, smoother play.',
+    shopSlug: 'lifestyle-co',
+    categorySlug: 'toys',
+    brand: "Rubik's",
+    tags: ['puzzle', 'classic', 'brain'],
+    variants: [{ name: 'Classic', sku: 'RBK-3X3', price: 12.99, stock: 210 }],
+    rating: 4.7,
+    reviewCount: 15600,
+    totalSold: 11200,
+  },
 ];
 
 // Admin + buyer accounts (buyers author the seeded product reviews).
@@ -1105,6 +1700,78 @@ const reviewPool: { rating: number; title: string; comment: string }[] = [
     rating: 4,
     title: 'Bonne surprise',
     comment: 'Je recommande, l’ensemble est solide et bien pensé. Parfait pour un usage quotidien.',
+  },
+  {
+    rating: 5,
+    title: 'Exactement ce que je cherchais',
+    comment:
+      'Commande passée le soir, reçue le surlendemain. Le produit est fidèle aux photos et fonctionne parfaitement. Rien à redire.',
+  },
+  {
+    rating: 5,
+    title: 'Achat les yeux fermés',
+    comment:
+      'Troisième commande chez ce vendeur, toujours impeccable. Emballage protecteur et finition haut de gamme.',
+  },
+  {
+    rating: 4,
+    title: 'Très bien pour le prix',
+    comment:
+      'Difficile de trouver mieux dans cette gamme de prix. Quelques finitions perfectibles mais l’essentiel y est.',
+  },
+  {
+    rating: 4,
+    title: 'Conforme et fiable',
+    comment:
+      'Utilisé quotidiennement depuis trois semaines, aucun souci à signaler. Je le rachèterais sans hésiter.',
+  },
+  {
+    rating: 3,
+    title: 'Mitigé',
+    comment:
+      'Le produit en lui-même est correct mais l’emballage était abîmé à la réception. Le contenu était heureusement intact.',
+  },
+  {
+    rating: 3,
+    title: 'Fait le travail',
+    comment:
+      'Ni bon ni mauvais, il remplit sa fonction. Je m’attendais à un peu mieux au vu des avis, mais ça reste honnête.',
+  },
+  {
+    rating: 5,
+    title: 'Qualité au rendez-vous',
+    comment:
+      'Matériaux premium, prise en main agréable. On sent que c’est pensé dans le détail. Vendeur sérieux et réactif.',
+  },
+  {
+    rating: 2,
+    title: 'Un peu déçu',
+    comment:
+      'Le produit fonctionne mais ne correspond pas tout à fait à mes attentes. Le rapport qualité-prix me semble un peu juste.',
+  },
+  {
+    rating: 4,
+    title: 'Livraison rapide',
+    comment:
+      'Expédition le jour même, suivi clair. Le produit est de bonne qualité et l’ensemble est cohérent avec la description.',
+  },
+  {
+    rating: 5,
+    title: 'Rien à redire',
+    comment:
+      'Parfait du début à la fin : commande simple, livraison soignée, produit excellent. Je recommande à 100 %.',
+  },
+  {
+    rating: 4,
+    title: 'Bon achat',
+    comment:
+      'Produit sérieux, conforme à la fiche. Une légère odeur de neuf au déballage qui part vite, sinon rien à signaler.',
+  },
+  {
+    rating: 3,
+    title: 'Correct mais sans plus',
+    comment:
+      'Ça fait le job pour un usage occasionnel. Pour un usage intensif, j’aurais peut-être visé une gamme au-dessus.',
   },
 ];
 
@@ -1375,7 +2042,8 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       brand: p.brand,
       // English tags + French keywords so the French UI search finds them.
       tags: [...new Set([...p.tags, ...(frTagsByCategory[p.categorySlug] ?? [])])],
-      images: p.image ? [p.image] : [],
+      // Real product photo downloaded from Pexels into client/public/products.
+      images: [`/products/${p.slug}.jpg`],
       variants: p.variants.map((v) => ({
         name: v.name,
         sku: v.sku,
