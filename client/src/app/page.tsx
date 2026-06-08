@@ -25,12 +25,12 @@ import {
   Dumbbell,
   BookOpen,
   ArrowRight,
-  Globe,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
 import Header from '@/components/Header';
 import MobileTabBar from '@/components/MobileTabBar';
+import SiteFooter from '@/components/SiteFooter';
 import CatalogProductCard from '@/components/catalog/CatalogProductCard';
 import HomeRecommendations from '@/components/recommendations/HomeRecommendations';
 import { t } from '@/lib/i18n';
@@ -466,89 +466,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="bg-brand-900 text-white">
-        <div className="container-main py-12">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-extrabold text-white">
-                  A
-                </span>
-                <span className="text-lg font-extrabold">Abracadabra</span>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-white/50 max-w-[260px]">
-                {t.footer.tagline}
-              </p>
-            </div>
-            <div>
-              <h4 className="text-sm font-bold mb-3">{t.footer.shop}</h4>
-              <nav className="flex flex-col gap-2">
-                <Link href="/search" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.allProducts}
-                </Link>
-                <Link href="/c/electronics" className="text-sm text-white/50 hover:text-white">
-                  {t.categories.electronics}
-                </Link>
-                <Link href="/c/fashion" className="text-sm text-white/50 hover:text-white">
-                  {t.categories.fashion}
-                </Link>
-                <Link href="/c/gaming" className="text-sm text-white/50 hover:text-white">
-                  {t.categories.gaming}
-                </Link>
-              </nav>
-            </div>
-            <div>
-              <h4 className="text-sm font-bold mb-3">{t.footer.sellers}</h4>
-              <nav className="flex flex-col gap-2">
-                <Link href="/sellers" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.allShops}
-                </Link>
-                <Link href="/become-seller" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.becomeSeller}
-                </Link>
-                <Link href="/seller" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.sellerHub}
-                </Link>
-              </nav>
-            </div>
-            <div>
-              <h4 className="text-sm font-bold mb-3">{t.footer.company}</h4>
-              <nav className="flex flex-col gap-2">
-                <a href="#" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.about}
-                </a>
-                <a href="#" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.careers}
-                </a>
-                <a href="#" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.press}
-                </a>
-              </nav>
-            </div>
-            <div>
-              <h4 className="text-sm font-bold mb-3">{t.footer.legal}</h4>
-              <nav className="flex flex-col gap-2">
-                <a href="#" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.privacy}
-                </a>
-                <a href="#" className="text-sm text-white/50 hover:text-white">
-                  {t.footer.terms}
-                </a>
-              </nav>
-            </div>
-          </div>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/40">
-            <span>{t.footer.rights}</span>
-            <div className="flex items-center gap-4">
-              <span>{t.common.currency}</span>
-              <span className="flex items-center gap-1.5">
-                <Globe className="h-3.5 w-3.5" aria-hidden />
-                {t.common.language}
-              </span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <MobileTabBar />
     </>
