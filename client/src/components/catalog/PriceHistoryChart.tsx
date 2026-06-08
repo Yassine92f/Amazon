@@ -291,9 +291,15 @@ function Chart({
 
   // Pick a comfortable number of X labels based on the chart width.
   const targetLabels = Math.max(3, Math.min(6, Math.floor(plotW / 110)));
-  const xLabelIdx = Array.from({ length: targetLabels }, (_, i) =>
-    Math.round((i * (points.length - 1)) / (targetLabels - 1)),
-  );
+  // De-duplicate: with very few data points, rounding can map several labels to
+  // the same index, which collides as a React key and overlaps visually.
+  const xLabelIdx = [
+    ...new Set(
+      Array.from({ length: targetLabels }, (_, i) =>
+        Math.round((i * (points.length - 1)) / Math.max(1, targetLabels - 1)),
+      ),
+    ),
+  ];
 
   function pickIndexFromX(clientX: number, svg: SVGSVGElement): number {
     const rect = svg.getBoundingClientRect();
