@@ -19,7 +19,12 @@ interface ImageUploaderProps {
  * stores the returned URLs and renders removable previews. Replaces the old
  * "paste a CDN URL" inputs everywhere images are needed.
  */
-export default function ImageUploader({ value, onChange, max = 10, single = false }: ImageUploaderProps) {
+export default function ImageUploader({
+  value,
+  onChange,
+  max = 10,
+  single = false,
+}: ImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -99,7 +104,9 @@ export default function ImageUploader({ value, onChange, max = 10, single = fals
             void uploadFiles(e.dataTransfer.files);
           }}
           className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed px-4 py-6 text-center transition-colors ${
-            dragging ? 'border-brand-400 bg-brand-50' : 'border-border hover:border-brand-300 hover:bg-gray-50'
+            dragging
+              ? 'border-brand-400 bg-brand-50'
+              : 'border-border hover:border-brand-300 hover:bg-gray-50'
           }`}
         >
           {uploading ? (
