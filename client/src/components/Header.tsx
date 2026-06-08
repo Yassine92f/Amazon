@@ -21,10 +21,13 @@ import {
   ToyBrick,
   Package,
   Heart,
+  MessageSquare,
 } from 'lucide-react';
 import { useAuthStore } from '../store';
 import { useCartStore } from '../store/cart';
 import { useWishlistStore } from '../store/wishlist';
+import { useMessagingStore } from '../store/messaging';
+import NotificationBell from './notifications/NotificationBell';
 import { t } from '../lib/i18n';
 import { UserRole } from '@ecommerce/shared';
 
@@ -51,6 +54,7 @@ export default function Header() {
   const cartCount = useCartStore((s) => s.cart?.totalItems ?? 0);
   const openCart = useCartStore((s) => s.openDrawer);
   const wishlistCount = useWishlistStore((s) => s.count);
+  const messagesUnread = useMessagingStore((s) => s.unreadTotal);
   const router = useRouter();
 
   const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : '';
@@ -75,12 +79,12 @@ export default function Header() {
           <Zap className="h-4 w-4 shrink-0 text-gold-300" aria-hidden />
           <span>{t.header.announcement}</span>
           <span className="text-brand-200">·</span>
-          <a
-            href="#"
+          <Link
+            href="/search"
             className="text-gold-300 underline underline-offset-2 hover:text-white transition-colors"
           >
             {t.header.announcementCta}
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -88,13 +92,8 @@ export default function Header() {
       <div className="border-b border-border bg-white">
         <div className="container-main flex items-center gap-4 py-3 md:gap-6">
           {/* Logo */}
-          <Link href="/" className="flex shrink-0 items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500 text-lg font-extrabold text-white">
-              A
-            </span>
-            <span className="hidden sm:flex items-center">
-              <span className="text-xl font-extrabold text-brand-900">Abracadabra</span>
-            </span>
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Abracadabra">
+            <img src="/logo.svg" alt="Abracadabra" className="h-10 w-auto" />
           </Link>
 
           {/* Search Bar */}
@@ -233,6 +232,23 @@ export default function Header() {
 
             {isAuthenticated && user ? (
               <>
+                {/* Messages */}
+                <Link
+                  href="/messages"
+                  aria-label={t.header.messages}
+                  className="relative flex h-10 w-10 items-center justify-center rounded-lg text-muted transition-colors hover:bg-brand-50 hover:text-brand-600"
+                >
+                  <MessageSquare className="h-[22px] w-[22px]" aria-hidden />
+                  {messagesUnread > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {messagesUnread > 9 ? '9+' : messagesUnread}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Notifications */}
+                <NotificationBell />
+
                 {/* User avatar dropdown */}
                 <div className="relative">
                   <button

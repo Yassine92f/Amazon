@@ -80,6 +80,9 @@ function makeProductRepo(initial?: ProductEntity): IProductRepository {
 
   return {
     findById: jest.fn(async (id: string) => products.get(id) ?? null),
+    findByIds: jest.fn(async (ids: string[]) =>
+      ids.map((id) => products.get(id)).filter((p): p is ProductEntity => Boolean(p)),
+    ),
     findBySlug: jest.fn(async (slug: string) => {
       for (const p of products.values()) if (p.slug === slug) return p;
       return null;

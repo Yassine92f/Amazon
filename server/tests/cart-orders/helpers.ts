@@ -128,6 +128,9 @@ export function makeProductRepo(products: ProductEntity[]): IProductRepository {
     map.get(pid)?.variants.find((v) => v.id === vid);
   return {
     findById: jest.fn(async (id: string) => map.get(id) ?? null),
+    findByIds: jest.fn(async (ids: string[]) =>
+      ids.map((id) => map.get(id)).filter((p): p is ProductEntity => Boolean(p)),
+    ),
     findBySlug: jest.fn(),
     slugExists: jest.fn(),
     create: jest.fn(),

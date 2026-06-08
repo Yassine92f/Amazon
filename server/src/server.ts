@@ -1,22 +1,27 @@
-import type { Server } from 'http';
+import http from 'http';
 import app from './app';
 import { config, validateConfig } from './config';
 import { connectDatabase, closeDatabase } from './infrastructure/database/connection';
 import { closeRedis } from './infrastructure/cache/redis';
+import { initSocket } from './interfaces/websocket/socketServer';
 import { logger } from './infrastructure/logging/logger';
 
 async function bootstrap() {
   validateConfig();
   await connectDatabase();
 
-  const server: Server = app.listen(config.port, () => {
+  // Wrap Express in an HTTP server so socket.io can share the same port.
+  const httpServer = http.createServer(app);
+  initSocket(httpServer);
+
+  httpServer.listen(config.port, () => {
     logger.info(
-      { port: config.port, env: config.env },
+      { port: config.port, env: config.env, websocket: true },
       `Server running on http://localhost:${config.port}/api`,
     );
   });
 
-  registerShutdownHandlers(server);
+  registerShutdownHandlers(httpServer);
 }
 
 /**
@@ -24,7 +29,7 @@ async function bootstrap() {
  * Triggered by SIGTERM (orchestrator stop) and SIGINT (Ctrl-C). A hard timeout
  * guarantees the process eventually dies even if a connection hangs.
  */
-function registerShutdownHandlers(server: Server) {
+function registerShutdownHandlers(server: http.Server) {
   let shuttingDown = false;
 
   const shutdown = async (signal: string) => {

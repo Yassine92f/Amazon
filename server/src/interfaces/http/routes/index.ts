@@ -13,6 +13,9 @@ import wishlistRouter from './wishlist';
 import paymentsRouter from './payments';
 import reviewsRouter from './reviews';
 import ecoDeliveryRouter from './ecoDelivery';
+import recommendationsRouter from './recommendations';
+import notificationsRouter from './notifications';
+import messagesRouter from './messages';
 
 const router: IRouter = Router();
 
@@ -39,7 +42,11 @@ router.use('/reviews', reviewsRouter);
 // Transversal — eco-delivery (CO2 transparency at checkout).
 router.use('/eco-delivery', ecoDeliveryRouter);
 
-// router.use('/notifications', notificationsRouter); — Section 4
-// router.use('/messages', messagesRouter); — Section 4
+// Bonus — Recommendation engine
+router.use('/recommendations', recommendationsRouter);
+
+// Section 4 — Realtime: notifications & messaging
+router.use('/notifications', notificationsRouter);
+router.use('/messages', messagesRouter);
 
 export default router;
