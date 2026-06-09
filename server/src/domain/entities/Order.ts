@@ -5,6 +5,7 @@ export interface OrderItemEntity {
   variantId: string;
   productName: string;
   variantName: string;
+  image?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;

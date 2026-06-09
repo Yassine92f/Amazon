@@ -6,6 +6,7 @@ export interface OrderItemSubdoc {
   variantId: mongoose.Types.ObjectId;
   productName: string;
   variantName: string;
+  image?: string;
   quantity: number;
   unitPrice: number;
   totalPrice: number;
@@ -43,6 +44,7 @@ const orderItemSchema = new Schema<OrderItemSubdoc>(
     variantId: { type: Schema.Types.ObjectId, required: true },
     productName: { type: String, required: true },
     variantName: { type: String, required: true },
+    image: { type: String },
     quantity: { type: Number, required: true, min: 1 },
     unitPrice: { type: Number, required: true, min: 0 },
     totalPrice: { type: Number, required: true, min: 0 },
