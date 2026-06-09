@@ -17,6 +17,7 @@ import recommendationsRouter from './recommendations';
 import notificationsRouter from './notifications';
 import messagesRouter from './messages';
 import uploadsRouter from './uploads';
+import disputesRouter from './disputes';
 
 const router: IRouter = Router();
 
@@ -37,6 +38,7 @@ router.use('/cart', cartRouter);
 router.use('/orders', ordersRouter);
 router.use('/coupons', couponsRouter);
 router.use('/wishlist', wishlistRouter);
+router.use('/disputes', disputesRouter);
 router.use('/payments', paymentsRouter);
 router.use('/reviews', reviewsRouter);
 

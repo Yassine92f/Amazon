@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Star,
   PenLine,
+  ShieldAlert,
 } from 'lucide-react';
 import Header from '../../../components/Header';
 import { ProtectedRoute } from '../../../components/ProtectedRoute';
@@ -28,6 +29,7 @@ import {
   confirmPayment,
   getReviewedProductIds,
 } from '../../../lib/commerce';
+import { openDispute, listMyDisputes, DisputeReason, type Dispute } from '../../../lib/disputes';
 import { t, formatPrice, formatLongDate } from '../../../lib/i18n';
 import { OrderStatus, DeliveryType, type Order } from '@ecommerce/shared';
 
@@ -96,6 +98,14 @@ function OrderDetailInner({ id }: { id: string }) {
   const [reviewingId, setReviewingId] = useState<string | null>(null);
   const pollCount = useRef(0);
 
+  // Disputes ("litiges")
+  const [dispute, setDispute] = useState<Dispute | null>(null);
+  const [disputeFormOpen, setDisputeFormOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState<DisputeReason>(DisputeReason.NOT_RECEIVED);
+  const [disputeDesc, setDisputeDesc] = useState('');
+  const [disputeSubmitting, setDisputeSubmitting] = useState(false);
+  const [disputeError, setDisputeError] = useState<string | null>(null);
+
   const fetchOrder = useCallback(async () => {
     try {
       const o = await getOrder(id);
@@ -112,6 +122,39 @@ function OrderDetailInner({ id }: { id: string }) {
   useEffect(() => {
     fetchOrder();
   }, [fetchOrder]);
+
+  // Load an existing dispute for this order, if any.
+  useEffect(() => {
+    listMyDisputes({ limit: 100 })
+      .then((res) => setDispute(res.items.find((d) => d.orderId === id) ?? null))
+      .catch(() => setDispute(null));
+  }, [id]);
+
+  const submitDispute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDisputeError(null);
+    if (disputeDesc.trim().length < 10) {
+      setDisputeError(t.disputes.error);
+      return;
+    }
+    setDisputeSubmitting(true);
+    try {
+      const created = await openDispute({
+        orderId: id,
+        reason: disputeReason,
+        description: disputeDesc.trim(),
+      });
+      setDispute(created);
+      setDisputeFormOpen(false);
+      setDisputeDesc('');
+    } catch (err) {
+      setDisputeError(
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ??
+          t.disputes.error,
+      );
+    }
+    setDisputeSubmitting(false);
+  };
 
   // Once delivered, load which products the buyer has already reviewed.
   useEffect(() => {
@@ -356,6 +399,106 @@ function OrderDetailInner({ id }: { id: string }) {
               </div>
             </dl>
           </section>
+
+          {/* Dispute / litige */}
+          {order.status !== OrderStatus.PENDING && order.status !== OrderStatus.CANCELLED && (
+            <section className="rounded-2xl border border-border bg-white p-5">
+              {dispute ? (
+                <>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <h2 className="text-sm font-bold text-brand-900">
+                      {dispute.status === 'resolved' || dispute.status === 'rejected'
+                        ? t.disputes.existingResolved
+                        : t.disputes.existing}
+                    </h2>
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        dispute.status === 'resolved'
+                          ? 'bg-green-50 text-green-700'
+                          : dispute.status === 'rejected'
+                            ? 'bg-gray-100 text-gray-500'
+                            : dispute.status === 'under_review'
+                              ? 'bg-blue-50 text-blue-700'
+                              : 'bg-amber-50 text-amber-700'
+                      }`}
+                    >
+                      {t.disputeStatus[dispute.status] ?? dispute.status}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-text">
+                    {t.disputeReason[dispute.reason] ?? dispute.reason}
+                  </p>
+                  <p className="mt-1 text-sm text-muted">{dispute.description}</p>
+                  {dispute.resolution && (
+                    <div className="mt-3 rounded-lg bg-brand-50 p-3">
+                      <p className="text-xs font-bold text-brand-700">
+                        {t.disputes.resolutionLabel}
+                      </p>
+                      <p className="mt-0.5 text-sm text-brand-900">{dispute.resolution}</p>
+                    </div>
+                  )}
+                </>
+              ) : disputeFormOpen ? (
+                <form onSubmit={submitDispute}>
+                  <h2 className="mb-3 text-sm font-bold text-brand-900">{t.disputes.title}</h2>
+                  <label className="block text-xs font-semibold text-muted">
+                    {t.disputes.reasonLabel}
+                    <select
+                      value={disputeReason}
+                      onChange={(e) => setDisputeReason(e.target.value as DisputeReason)}
+                      className="mt-1 h-10 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none focus:border-brand-500"
+                    >
+                      {Object.values(DisputeReason).map((r) => (
+                        <option key={r} value={r}>
+                          {t.disputeReason[r] ?? r}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="mt-3 block text-xs font-semibold text-muted">
+                    {t.disputes.descriptionLabel}
+                    <textarea
+                      value={disputeDesc}
+                      onChange={(e) => setDisputeDesc(e.target.value)}
+                      placeholder={t.disputes.descriptionPlaceholder}
+                      rows={3}
+                      className="mt-1 w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-brand-500"
+                    />
+                  </label>
+                  {disputeError && (
+                    <p className="mt-2 text-xs font-medium text-[var(--color-error)]">
+                      {disputeError}
+                    </p>
+                  )}
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={disputeSubmitting}
+                      className="rounded-lg bg-brand-500 px-4 py-2 text-sm font-bold text-white hover:bg-brand-600 disabled:opacity-60"
+                    >
+                      {disputeSubmitting ? t.disputes.submitting : t.disputes.submit}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDisputeFormOpen(false)}
+                      className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-text"
+                    >
+                      {t.disputes.cancel}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setDisputeFormOpen(true)}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-text transition-colors hover:border-brand-300"
+                >
+                  <ShieldAlert className="h-4 w-4 text-brand-500" aria-hidden />
+                  {t.disputes.open}
+                </button>
+              )}
+            </section>
+          )}
 
           {awaitingPayment && (
             <Link

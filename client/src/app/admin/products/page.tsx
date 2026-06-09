@@ -20,6 +20,7 @@ const navItems = [
   { label: t.admin.navUsers, href: '/admin/users' },
   { label: t.admin.navProducts, href: '/admin/products', active: true },
   { label: t.admin.navCategories, href: '/admin/categories' },
+  { label: t.adminDisputes.title, href: '/admin/disputes' },
   { label: t.admin.navCoupons, href: '/admin/coupons' },
   { label: t.admin.navSellers, href: '/admin' },
   { label: t.admin.navOrders, href: '/admin' },
