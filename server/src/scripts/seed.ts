@@ -238,7 +238,6 @@ const products: ProductSeed[] = [
     categorySlug: 'audio',
     brand: 'Sony',
     tags: ['headphones', 'wireless', 'noise-cancelling'],
-    image: '/products/sony-wh1000xm5-sm.jpg',
     variants: [
       {
         name: 'Black',
@@ -271,7 +270,6 @@ const products: ProductSeed[] = [
     categorySlug: 'phones',
     brand: 'Samsung',
     tags: ['smartphone', '5g', 'android'],
-    image: '/products/samsung-s24ultra-sm.jpg',
     variants: [
       {
         name: 'Titanium Black 256GB',
@@ -304,7 +302,6 @@ const products: ProductSeed[] = [
     categorySlug: 'computers',
     brand: 'Logitech',
     tags: ['keyboard', 'wireless', 'productivity'],
-    image: '/products/logitech-mxkeys-sm.jpg',
     variants: [
       {
         name: 'Graphite',
@@ -337,7 +334,6 @@ const products: ProductSeed[] = [
     categorySlug: 'computers',
     brand: 'LG',
     tags: ['monitor', 'gaming', '240hz'],
-    image: '/products/lg-ultragear-sm.jpg',
     variants: [
       {
         name: '27" QHD 240Hz',
@@ -361,7 +357,6 @@ const products: ProductSeed[] = [
     categorySlug: 'gaming',
     brand: 'Sony',
     tags: ['playstation', 'controller', 'ps5'],
-    image: '/products/sony-dualsense-sm.jpg',
     variants: [
       {
         name: 'White',
@@ -385,7 +380,6 @@ const products: ProductSeed[] = [
     categorySlug: 'fashion',
     brand: 'Nike',
     tags: ['shoes', 'sneakers', 'streetwear'],
-    image: '/products/nike-airmax90-sm.jpg',
     variants: [
       {
         name: 'White / Black — EU 42',
@@ -422,7 +416,6 @@ const products: ProductSeed[] = [
     categorySlug: 'wearables',
     brand: 'Apple',
     tags: ['smartwatch', 'fitness', 'apple'],
-    image: '/products/apple-watch-ultra2-sm.jpg',
     variants: [
       {
         name: 'Titanium / Trail Loop',
@@ -452,7 +445,6 @@ const products: ProductSeed[] = [
     categorySlug: 'audio',
     brand: 'Apple',
     tags: ['earbuds', 'wireless', 'apple'],
-    image: '/products/airpods-pro2-sm.jpg',
     variants: [
       { name: 'White', sku: 'APL-APP2-WHT', price: 249, stock: 88, attributes: { color: 'white' } },
     ],
@@ -470,7 +462,6 @@ const products: ProductSeed[] = [
     categorySlug: 'toys',
     brand: 'LEGO',
     tags: ['building', 'collectible', 'cars'],
-    image: '/products/lego-porsche-sm.jpg',
     variants: [
       {
         name: 'Standard set',
@@ -493,7 +484,6 @@ const products: ProductSeed[] = [
     categorySlug: 'beauty',
     brand: 'CeraVe',
     tags: ['skincare', 'moisturizer', 'dermatology'],
-    image: '/products/cerave-cream-sm.jpg',
     variants: [
       { name: '340g jar', sku: 'CERAVE-MC-340', price: 14.99, stock: 142 },
       { name: '454g jar', sku: 'CERAVE-MC-454', price: 19.49, stock: 76 },
@@ -511,7 +501,6 @@ const products: ProductSeed[] = [
     categorySlug: 'home',
     brand: "De'Longhi",
     tags: ['coffee', 'kitchen', 'espresso'],
-    image: '/products/delonghi-coffee-sm.jpg',
     variants: [
       { name: 'Silver', sku: 'DLG-MAG-EVO-SLV', price: 379, stock: 24 },
       { name: 'Black', sku: 'DLG-MAG-EVO-BLK', price: 379, stock: 7 },
@@ -529,7 +518,6 @@ const products: ProductSeed[] = [
     categorySlug: 'books',
     brand: 'Avery',
     tags: ['self-help', 'productivity', 'bestseller'],
-    image: '/products/atomic-habits-sm.jpg',
     variants: [
       { name: 'Paperback', sku: 'BOOK-AHJC-PB', price: 12.99, stock: 234 },
       { name: 'Hardcover', sku: 'BOOK-AHJC-HC', price: 22.99, stock: 41 },
@@ -547,7 +535,6 @@ const products: ProductSeed[] = [
     categorySlug: 'sports',
     brand: 'FitLife',
     tags: ['fitness', 'strength', 'home-gym'],
-    image: '/products/dumbbells-sm.jpg',
     variants: [
       { name: '2 × 20kg', sku: 'FL-AD-20-PAIR', price: 89.99, stock: 38 },
       { name: '2 × 32kg', sku: 'FL-AD-32-PAIR', price: 129.99, stock: 21 },
