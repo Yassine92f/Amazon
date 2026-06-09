@@ -47,9 +47,25 @@ describe('CartUseCase', () => {
     await useCase.addItem(guest, { productId: 'product-1', variantId: 'v1', quantity: 3 });
     await useCase.addItem(user, { productId: 'product-1', variantId: 'v1', quantity: 3 });
 
-    const merged = await useCase.mergeGuestIntoUser('guest-1', 'user-1');
+    const merged = await useCase.mergeGuestIntoUser('user-1', { guestId: 'guest-1' });
     // 3 + 3 = 6 but stock is 4 -> clamped to 4
     expect(merged.items[0].quantity).toBe(4);
     expect(await cartRepo.get(guest)).toBeNull();
+  });
+
+  it('merges from client-provided items when the guest cookie is absent', async () => {
+    const product = buildProduct({ variants: [{ ...buildProduct().variants[0], stock: 4 }] });
+    const cartRepo = makeCartRepo();
+    const useCase = new CartUseCase(cartRepo, makeProductRepo([product]));
+
+    await useCase.addItem(user, { productId: 'product-1', variantId: 'v1', quantity: 1 });
+
+    // No guestId (cookie dropped by the browser) — the lines come from the client.
+    const merged = await useCase.mergeGuestIntoUser('user-1', {
+      items: [{ productId: 'product-1', variantId: 'v1', quantity: 2 }],
+    });
+
+    expect(merged.items[0].quantity).toBe(3); // 1 (user) + 2 (client) merged
+    expect(merged.items[0].price).toBe(product.variants[0].price); // refreshed, not 0
   });
 });
