@@ -106,8 +106,15 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   mergeOnLogin: async () => {
+    // Pass the current guest lines explicitly so the merge survives even when the
+    // browser drops the cross-origin httpOnly cartId cookie on this call.
+    const guestItems = (get().cart?.items ?? []).map((i) => ({
+      productId: i.productId,
+      variantId: i.variantId,
+      quantity: i.quantity,
+    }));
     try {
-      const cart = await mergeCart();
+      const cart = await mergeCart(guestItems);
       set({ cart });
     } catch {
       // Fall back to a plain reload if the merge call fails.

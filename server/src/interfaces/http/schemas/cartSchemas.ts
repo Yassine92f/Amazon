@@ -9,3 +9,10 @@ export const addCartItemSchema = z.object({
 export const updateCartItemSchema = z.object({
   quantity: z.number().int().min(0).max(99),
 });
+
+// Body for POST /cart/merge. The guest cart is normally resolved from the
+// httpOnly `cartId` cookie, but the client also sends the lines it holds as a
+// fallback for browsers that drop the cross-origin cookie on this call.
+export const mergeCartSchema = z.object({
+  items: z.array(addCartItemSchema).max(99).optional(),
+});
