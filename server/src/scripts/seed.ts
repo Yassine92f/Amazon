@@ -2021,6 +2021,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     id: mongoose.Types.ObjectId;
     categorySlug: string;
     name: string;
+    image: string;
     variantId: mongoose.Types.ObjectId;
     variantName: string;
     price: number;
@@ -2067,6 +2068,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
       id: doc._id as mongoose.Types.ObjectId,
       categorySlug: p.categorySlug,
       name: p.name,
+      image: `/products/${p.slug}.jpg`,
       variantId: firstVariant._id,
       variantName: firstVariant.name,
       price: firstVariant.price,
@@ -2179,6 +2181,7 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
           variantId: sp.variantId,
           productName: sp.name,
           variantName: sp.variantName,
+          image: sp.image,
           quantity,
           unitPrice: sp.price,
           totalPrice: sp.price * quantity,

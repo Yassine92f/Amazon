@@ -2,6 +2,7 @@
 
 import { use, useCallback, useEffect, useRef, useState, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import {
@@ -243,8 +244,18 @@ function OrderDetailInner({ id }: { id: string }) {
               return (
                 <li key={`${it.productId}:${it.variantId}`} className="flex flex-col gap-3 p-5">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50">
-                      <Package className="h-6 w-6 text-brand-400" aria-hidden />
+                    <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50">
+                      {it.image ? (
+                        <Image
+                          src={it.image}
+                          alt={it.productName}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <Package className="h-6 w-6 text-brand-400" aria-hidden />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-brand-900">{it.productName}</p>
