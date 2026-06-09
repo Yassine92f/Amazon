@@ -3,12 +3,18 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'motion/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { MapPin, Tag, Check, ShoppingBag, Pencil, Plus, ArrowLeft } from 'lucide-react';
 import Header from '../../components/Header';
 import { ProtectedRoute } from '../../components/ProtectedRoute';
-import PaymentForm from '../../components/checkout/PaymentForm';
+// Stripe Payment Element is only needed at the payment step — code-split it so
+// its (heavy) chunk loads on demand rather than with the checkout shell.
+const PaymentForm = dynamic(() => import('../../components/checkout/PaymentForm'), {
+  ssr: false,
+  loading: () => <div className="h-40 animate-pulse rounded-xl bg-brand-50" />,
+});
 import { useCartStore } from '../../store/cart';
 import { api } from '../../lib/api';
 import { getStripe } from '../../lib/stripe';
