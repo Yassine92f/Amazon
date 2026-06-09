@@ -18,6 +18,7 @@ const SORT_OPTIONS: { value: NonNullable<ProductSearchParams['sortBy']>; label: 
   { value: 'price', label: t.catalog.sort.price },
   { value: 'rating', label: t.catalog.sort.rating },
   { value: 'totalSold', label: t.catalog.sort.totalSold },
+  { value: 'brand', label: t.catalog.sort.brand },
   { value: 'createdAt', label: t.catalog.sort.createdAt },
 ];
 

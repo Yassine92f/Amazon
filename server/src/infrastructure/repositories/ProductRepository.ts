@@ -249,6 +249,9 @@ export class ProductRepository implements IProductRepository {
         return { rating: order, reviewCount: -1 };
       case 'totalSold':
         return { totalSold: order };
+      case 'brand':
+        // Alphabetical by brand (asc by default), name as tie-breaker.
+        return { brand: order, name: 1 };
       case 'createdAt':
         return { createdAt: order };
       case 'relevance':

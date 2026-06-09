@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, use } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'motion/react';
 import { Package, ShoppingCart, Heart, Check, Minus, Plus, ArrowRight } from 'lucide-react';
 import Header from '../../../components/Header';
@@ -12,8 +13,17 @@ import { useWishlistStore } from '../../../store/wishlist';
 import { useAuthStore } from '../../../store';
 import StarRating from '../../../components/StarRating';
 import ReviewsList from '../../../components/catalog/ReviewsList';
-import PriceHistoryChart from '../../../components/catalog/PriceHistoryChart';
-import RecommendationRail from '../../../components/recommendations/RecommendationRail';
+// Below-the-fold + client-only chart: code-split so it doesn't weigh down the
+// initial product-page bundle.
+const PriceHistoryChart = dynamic(() => import('../../../components/catalog/PriceHistoryChart'), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-brand-50" />,
+});
+// Below-the-fold recommendations carousel: also code-split.
+const RecommendationRail = dynamic(
+  () => import('../../../components/recommendations/RecommendationRail'),
+  { loading: () => <div className="h-72 animate-pulse rounded-2xl bg-brand-50" /> },
+);
 import { t, formatPrice, formatNumber } from '../../../lib/i18n';
 import { getProductBySlug, type ProductDto, type ProductVariantDto } from '../../../lib/catalog';
 import {

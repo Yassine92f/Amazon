@@ -13,6 +13,8 @@ import { UserEntity } from '../../domain/entities/User';
 import { ProductEntity } from '../../domain/entities/Product';
 import { AuditAction, AuditLogEntity } from '../../domain/entities/AuditLog';
 import { UserModel } from '../../infrastructure/database/models/User';
+import { OrderModel } from '../../infrastructure/database/models/Order';
+import { OrderStatus } from '@ecommerce/shared';
 
 export interface UserDto {
   _id: string;
@@ -358,12 +360,35 @@ export class AdminUseCase {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-    const [totalUsers, newUsersThisMonth, newUsersLastMonth, totalSellers] = await Promise.all([
+    // Revenue counts orders that have actually been paid (everything past the
+    // pending/cancelled/refunded states).
+    const PAID_STATUSES = [
+      OrderStatus.CONFIRMED,
+      OrderStatus.PROCESSING,
+      OrderStatus.SHIPPED,
+      OrderStatus.DELIVERED,
+    ];
+
+    const [
+      totalUsers,
+      newUsersThisMonth,
+      newUsersLastMonth,
+      totalSellers,
+      totalOrders,
+      revenueAgg,
+    ] = await Promise.all([
       UserModel.countDocuments(),
       UserModel.countDocuments({ createdAt: { $gte: startOfMonth } }),
       UserModel.countDocuments({ createdAt: { $gte: lastMonthStart, $lt: startOfMonth } }),
       UserModel.countDocuments({ role: UserRole.SELLER }),
+      OrderModel.countDocuments(),
+      OrderModel.aggregate<{ _id: null; total: number }>([
+        { $match: { status: { $in: PAID_STATUSES } } },
+        { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+      ]),
     ]);
+
+    const totalRevenue = Math.round((revenueAgg[0]?.total ?? 0) * 100) / 100;
 
     const usersTrend =
       newUsersLastMonth > 0
@@ -377,8 +402,8 @@ export class AdminUseCase {
       newUsersThisMonth,
       usersTrend,
       totalSellers,
-      totalOrders: 0,
-      totalRevenue: 0,
+      totalOrders,
+      totalRevenue,
     };
   }
 
