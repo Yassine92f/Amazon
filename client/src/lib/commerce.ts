@@ -54,9 +54,16 @@ export async function clearCart(): Promise<void> {
   await api.delete('/cart');
 }
 
-/** Fold the guest cart (cartId cookie) into the authenticated user's cart. */
-export async function mergeCart(): Promise<Cart> {
-  const { data } = await api.post('/cart/merge');
+/**
+ * Fold the guest cart into the authenticated user's cart. The server resolves
+ * the guest cart from the `cartId` cookie, but we also send the lines the client
+ * holds as a fallback: the cookie is httpOnly and cross-origin, so some browsers
+ * drop it on this call and the cart would otherwise vanish at login.
+ */
+export async function mergeCart(
+  items?: { productId: string; variantId: string; quantity: number }[],
+): Promise<Cart> {
+  const { data } = await api.post('/cart/merge', items?.length ? { items } : {});
   return data.data;
 }
 
