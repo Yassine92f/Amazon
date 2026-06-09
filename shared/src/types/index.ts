@@ -7,3 +7,4 @@ export * from './notification';
 export * from './payment';
 export * from './websocket';
 export * from './ecoDelivery';
+export * from './dispute';
