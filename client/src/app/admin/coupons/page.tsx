@@ -19,6 +19,7 @@ const navItems = [
   { label: t.admin.navUsers, href: '/admin/users' },
   { label: t.admin.navProducts, href: '/admin/products' },
   { label: t.admin.navCategories, href: '/admin/categories' },
+  { label: t.adminDisputes.title, href: '/admin/disputes' },
   { label: t.admin.navCoupons, href: '/admin/coupons', active: true },
   { label: t.admin.navSettings, href: '/admin' },
 ];

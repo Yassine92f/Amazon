@@ -33,6 +33,7 @@ const navItems = [
   { key: 'users', label: t.admin.navUsers, href: '/admin/users' },
   { key: 'products', label: t.admin.navProducts, href: '/admin/products' },
   { key: 'categories', label: t.admin.navCategories, href: '/admin/categories' },
+  { key: 'disputes', label: t.adminDisputes.title, href: '/admin/disputes' },
   { key: 'coupons', label: t.admin.navCoupons, href: '/admin/coupons' },
   { key: 'sellers', label: t.admin.navSellers, href: '/admin' },
   { key: 'orders', label: t.admin.navOrders, href: '/admin' },

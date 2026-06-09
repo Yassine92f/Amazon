@@ -12,6 +12,7 @@ import { OrderModel } from '../infrastructure/database/models/Order';
 import { CouponModel, CouponRedemptionModel } from '../infrastructure/database/models/Coupon';
 import { ProductViewModel } from '../infrastructure/database/models/ProductView';
 import { ConversationModel, MessageModel } from '../infrastructure/database/models/Conversation';
+import { DisputeModel } from '../infrastructure/database/models/Dispute';
 
 const DEFAULT_PASSWORD = 'Password123';
 
@@ -1914,6 +1915,9 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
 
     await CouponRedemptionModel.deleteMany({});
     await CouponModel.deleteMany({ code: { $in: coupons.map((c) => c.code) } });
+    // Disputes are pure demo data — wipe all so re-seeding never leaves orphans
+    // (e.g. a dispute whose order/user was removed in a prior run).
+    await DisputeModel.deleteMany({});
     await OrderModel.deleteMany({ userId: { $in: buyerUserIds } });
     await ProductViewModel.deleteMany({ userId: { $in: buyerUserIds } });
     await ReviewModel.deleteMany({ productId: { $exists: true } });
@@ -2278,6 +2282,38 @@ async function run({ cleanFirst }: RunOptions): Promise<void> {
     }
   }
   console.log(`[seed]   ${orderSeq} orders`);
+
+  // ── Disputes (litiges) for the admin demo ──────────────────
+  // Two delivered orders get a dispute: one still open, one already resolved,
+  // so the admin "Litiges" hub shows both an actionable and a closed case.
+  const deliveredForDisputes = await OrderModel.find({
+    status: OrderStatus.DELIVERED,
+    userId: { $in: buyerIds },
+  })
+    .sort({ createdAt: 1 })
+    .limit(2);
+  if (deliveredForDisputes.length >= 1) {
+    await DisputeModel.create({
+      orderId: deliveredForDisputes[0]._id,
+      userId: deliveredForDisputes[0].userId,
+      reason: 'damaged',
+      description:
+        'Le colis est arrivé avec un produit visiblement abîmé sur un coin. La boîte était enfoncée.',
+      status: 'open',
+    });
+  }
+  if (deliveredForDisputes.length >= 2) {
+    await DisputeModel.create({
+      orderId: deliveredForDisputes[1]._id,
+      userId: deliveredForDisputes[1].userId,
+      reason: 'not_received',
+      description: 'Je n’ai jamais reçu un des articles de ma commande.',
+      status: 'resolved',
+      resolution: 'Article manquant renvoyé et livré. Un geste commercial a été appliqué.',
+      resolvedAt: new Date(),
+    });
+  }
+  console.log(`[seed]   ${deliveredForDisputes.length} disputes`);
 
   // ── Product views (behavioral signal for recommendations) ──
   let viewTotal = 0;
