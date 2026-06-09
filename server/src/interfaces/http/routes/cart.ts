@@ -6,7 +6,7 @@ import { ProductRepository } from '../../../infrastructure/repositories/ProductR
 import { authenticate } from '../middlewares/auth';
 import { cartContext } from '../middlewares/cartContext';
 import { validate } from '../middlewares/validate';
-import { addCartItemSchema, updateCartItemSchema } from '../schemas/cartSchemas';
+import { addCartItemSchema, updateCartItemSchema, mergeCartSchema } from '../schemas/cartSchemas';
 
 const cartRepository = new CartRepository();
 const productRepository = new ProductRepository();
@@ -17,7 +17,7 @@ const router: IRouter = Router();
 
 // Merge guest cart into the user cart (must be authenticated) — declared before
 // the generic cartContext routes.
-router.post('/merge', authenticate, cartController.merge);
+router.post('/merge', authenticate, validate(mergeCartSchema), cartController.merge);
 
 // Cart operations work for both guests (cookie) and authenticated users.
 router.get('/', cartContext, cartController.get);

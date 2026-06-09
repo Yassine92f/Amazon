@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { CartUseCase, CartError } from '../../../application/use-cases/CartUseCase';
+import { CartUseCase, CartError, AddItemInput } from '../../../application/use-cases/CartUseCase';
 import { AppError } from '../middlewares/errorHandler';
 import { CartRequest } from '../middlewares/cartContext';
 
@@ -66,9 +66,8 @@ export class CartController {
     try {
       const userId = (req as CartRequest).userId as string;
       const guestId = req.cookies?.cartId as string | undefined;
-      const cart = guestId
-        ? await this.cartUseCase.mergeGuestIntoUser(guestId, userId)
-        : await this.cartUseCase.getCart({ type: 'user', id: userId });
+      const items = (req.body?.items as AddItemInput[] | undefined) ?? undefined;
+      const cart = await this.cartUseCase.mergeGuestIntoUser(userId, { guestId, items });
       if (guestId) res.clearCookie('cartId');
       res.json({ success: true, data: cart });
     } catch (err) {
