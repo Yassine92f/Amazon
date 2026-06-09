@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_UjXbHSCRy8
+createdAt: 2026-05-28T08:31:57.017121
+updatedAt: 2026-05-28T08:36:38.138480
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "email": "teddynsoki@gmail.com",
+      "password": "Password123"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: Pxx2TnScSd
+method: POST
+name: Login
+sortPriority: 1000.0
+url: ${[ baseUrl ]}/auth/login
+urlParameters: []

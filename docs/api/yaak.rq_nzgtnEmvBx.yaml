@@ -1,0 +1,26 @@
+type: http_request
+model: http_request
+id: rq_nzgtnEmvBx
+createdAt: 2026-05-28T08:33:40.700573
+updatedAt: 2026-05-28T08:36:38.141499
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_v5oveV2oSm
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "refreshToken": "${[ refreshToken ]}"
+    }
+bodyType: application/json
+description: ''
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: dIbV2BMg9D
+method: POST
+name: Refresh Token
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/auth/refresh
+urlParameters: []

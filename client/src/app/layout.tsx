@@ -1,5 +1,10 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
+import { AuthProvider } from '../components/AuthProvider';
+import { CartProvider } from '../components/CartProvider';
+import { RealtimeProvider } from '../components/RealtimeProvider';
+import CartDrawer from '../components/cart/CartDrawer';
+import CompareBar from '../components/compare/CompareBar';
 import './globals.css';
 
 const font = Plus_Jakarta_Sans({
@@ -9,14 +14,25 @@ const font = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Marché.io — Your Marketplace',
-  description: 'Discover deals on electronics, fashion, home and more. Free shipping over €29.',
+  title: 'Abracadabra · Votre marketplace',
+  description:
+    'Des millions de produits high-tech, mode, maison et plus, proposés par des vendeurs vérifiés. Livraison offerte dès 29 €.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body className={font.className}>{children}</body>
+      <body className={font.className}>
+        <AuthProvider>
+          <RealtimeProvider>
+            <CartProvider>
+              {children}
+              <CartDrawer />
+              <CompareBar />
+            </CartProvider>
+          </RealtimeProvider>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

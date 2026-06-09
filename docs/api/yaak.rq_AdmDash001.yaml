@@ -1,0 +1,18 @@
+type: http_request
+model: http_request
+id: rq_AdmDash001
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_AdminFold01
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: 'Aggregate stats: totalUsers, newUsersThisMonth, usersTrend, totalSellers, totalOrders, totalRevenue.'
+headers: []
+method: GET
+name: Dashboard Stats
+sortPriority: 0.0
+url: ${[ baseUrl ]}/admin/dashboard
+urlParameters: []

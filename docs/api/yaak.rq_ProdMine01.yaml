@@ -1,0 +1,30 @@
+type: http_request
+model: http_request
+id: rq_ProdMine01
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_ProdFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Seller dashboard listing — includes inactive/draft products. Same query params as search.
+headers: []
+method: GET
+name: My Products (Seller)
+sortPriority: 6000.0
+url: ${[ baseUrl ]}/products/me/list
+urlParameters:
+- enabled: true
+  name: page
+  value: '1'
+  id: pmlspg
+- enabled: true
+  name: limit
+  value: '20'
+  id: pmlslm
+- enabled: false
+  name: query
+  value: ''
+  id: pmlsqr

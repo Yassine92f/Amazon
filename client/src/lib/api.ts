@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -21,28 +21,74 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor — handle 401 & refresh
+// Response interceptor — handle 401 & refresh (with mutex to prevent race conditions)
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string) => void; reject: (err: unknown) => void }[] = [];
+
+function processQueue(error: unknown, token: string | null) {
+  failedQueue.forEach((p) => {
+    if (error) {
+      p.reject(error);
+    } else {
+      p.resolve(token!);
+    }
+  });
+  failedQueue = [];
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token: string) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              resolve(api(originalRequest));
+            },
+            reject,
+          });
+        });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+        // The refresh token lives in an httpOnly cookie; `withCredentials` sends
+        // it. A legacy localStorage token is forwarded as a fallback for sessions
+        // created before the cookie migration.
+        const legacyToken =
+          typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
 
-        localStorage.setItem('accessToken', data.data.accessToken);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
+        const { data } = await axios.post(
+          `${API_URL}/auth/refresh`,
+          legacyToken ? { refreshToken: legacyToken } : {},
+          { withCredentials: true },
+        );
 
-        originalRequest.headers.Authorization = `Bearer ${data.data.accessToken}`;
+        const newAccessToken = data.data.accessToken;
+        localStorage.setItem('accessToken', newAccessToken);
+        // Drop any legacy token now that the cookie is authoritative.
+        localStorage.removeItem('refreshToken');
+
+        processQueue(null, newAccessToken);
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
-      } catch {
+      } catch (refreshError) {
+        processQueue(refreshError, null);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 

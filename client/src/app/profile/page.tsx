@@ -1,0 +1,1113 @@
+'use client';
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Check, Circle } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '../../store';
+import { ProtectedRoute } from '../../components/ProtectedRoute';
+import { api } from '../../lib/api';
+import { listOrders } from '../../lib/commerce';
+import { t } from '../../lib/i18n';
+
+type Tab = 'profile' | 'addresses' | 'preferences';
+
+interface Address {
+  id: string;
+  label: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+}
+
+interface Preferences {
+  language: string;
+  currency: string;
+  notifications: {
+    email: boolean;
+    push: boolean;
+    orderUpdates: boolean;
+    promotions: boolean;
+    priceDrops: boolean;
+  };
+}
+
+interface Toast {
+  message: string;
+  type: 'success' | 'error';
+}
+
+export default function ProfilePage() {
+  const { user, setUser, logout } = useAuthStore();
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [tab, setTab] = useState<Tab>('profile');
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [ordersCount, setOrdersCount] = useState(0);
+
+  useEffect(() => {
+    listOrders({ limit: 1 })
+      .then((res) => setOrdersCount(res.total))
+      .catch(() => {});
+  }, []);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const initials = user
+    ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
+    : '';
+
+  const inputStyle = {
+    backgroundColor: 'var(--color-bg)',
+    border: '1px solid var(--color-border)',
+    color: 'var(--color-text)',
+  };
+
+  // ── Profile tab state ──────────────────────────────────
+  const [firstName, setFirstName] = useState(user?.firstName ?? '');
+  const [lastName, setLastName] = useState(user?.lastName ?? '');
+  const [phone, setPhone] = useState(user?.phone ?? '');
+  const [profilePassword, setProfilePassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+
+  // Password change
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  // ── Address tab state ──────────────────────────────────
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [addrLoading, setAddrLoading] = useState(false);
+  const [addrForm, setAddrForm] = useState(false);
+  const [editingAddr, setEditingAddr] = useState<Address | null>(null);
+  const [addrLabel, setAddrLabel] = useState('');
+  const [addrStreet, setAddrStreet] = useState('');
+  const [addrCity, setAddrCity] = useState('');
+  const [addrPostal, setAddrPostal] = useState('');
+  const [addrCountry, setAddrCountry] = useState('France');
+  const [addrDefault, setAddrDefault] = useState(false);
+
+  // ── Preferences tab state ──────────────────────────────
+  const [prefs, setPrefs] = useState<Preferences | null>(null);
+  const [prefsLoading, setPrefsLoading] = useState(false);
+
+  const fetchAddresses = useCallback(async () => {
+    setAddrLoading(true);
+    try {
+      const { data } = await api.get('/users/addresses');
+      setAddresses(data.data);
+    } catch {
+      /* ignore */
+    }
+    setAddrLoading(false);
+  }, []);
+
+  const fetchPreferences = useCallback(async () => {
+    setPrefsLoading(true);
+    try {
+      const { data } = await api.get('/users/preferences');
+      setPrefs(data.data);
+    } catch {
+      /* ignore */
+    }
+    setPrefsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'addresses') fetchAddresses();
+    if (tab === 'preferences') fetchPreferences();
+  }, [tab, fetchAddresses, fetchPreferences]);
+
+  // ── Handlers ───────────────────────────────────────────
+
+  const handleAvatarClick = () => fileInputRef.current?.click();
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      showToast(t.account.toast.imageTooLarge, 'error');
+      return;
+    }
+    setAvatarUploading(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const { data } = await api.put('/users/profile', {
+          avatar: reader.result,
+          currentPassword: profilePassword || undefined,
+        });
+        setUser(data.data);
+        showToast(t.account.toast.avatarUpdated, 'success');
+      } catch {
+        showToast(t.account.toast.uploadError, 'error');
+      }
+      setAvatarUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profilePassword) {
+      showToast(t.account.toast.passwordRequired, 'error');
+      return;
+    }
+    if (!firstName.trim() || !lastName.trim()) {
+      showToast(t.account.toast.nameRequired, 'error');
+      return;
+    }
+    setSaving(true);
+    try {
+      const { data } = await api.put('/users/profile', {
+        firstName,
+        lastName,
+        phone,
+        currentPassword: profilePassword,
+      });
+      setUser(data.data);
+      setProfilePassword('');
+      showToast(t.account.toast.profileUpdated, 'success');
+    } catch (err: unknown) {
+      showToast(
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          t.account.toast.genericError,
+        'error',
+      );
+    }
+    setSaving(false);
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword) {
+      showToast(t.account.toast.allFieldsRequired, 'error');
+      return;
+    }
+    if (newPassword.length < 8) {
+      showToast(t.account.toast.minChars(8), 'error');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      showToast(t.account.toast.passwordMismatch, 'error');
+      return;
+    }
+    if (currentPassword === newPassword) {
+      showToast(t.account.toast.newMustDiffer, 'error');
+      return;
+    }
+    try {
+      await api.put('/auth/change-password', { currentPassword, newPassword });
+      showToast(t.account.toast.passwordChanged, 'success');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } catch (err: unknown) {
+      showToast(
+        (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          t.account.toast.wrongPassword,
+        'error',
+      );
+    }
+  };
+
+  const resetAddrForm = () => {
+    setAddrForm(false);
+    setEditingAddr(null);
+    setAddrLabel('');
+    setAddrStreet('');
+    setAddrCity('');
+    setAddrPostal('');
+    setAddrCountry('France');
+    setAddrDefault(false);
+  };
+
+  const openEditAddr = (a: Address) => {
+    setEditingAddr(a);
+    setAddrForm(true);
+    setAddrLabel(a.label);
+    setAddrStreet(a.street);
+    setAddrCity(a.city);
+    setAddrPostal(a.postalCode);
+    setAddrCountry(a.country);
+    setAddrDefault(a.isDefault);
+  };
+
+  const handleAddrSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addrLabel || !addrStreet || !addrCity || !addrPostal || !addrCountry) {
+      showToast(t.account.toast.allFieldsRequired, 'error');
+      return;
+    }
+    try {
+      const body = {
+        label: addrLabel,
+        street: addrStreet,
+        city: addrCity,
+        postalCode: addrPostal,
+        country: addrCountry,
+        isDefault: addrDefault,
+      };
+      if (editingAddr) {
+        const { data } = await api.put(`/users/addresses/${editingAddr.id}`, body);
+        setAddresses(data.data);
+        showToast(t.account.toast.addressUpdated, 'success');
+      } else {
+        const { data } = await api.post('/users/addresses', body);
+        setAddresses(data.data);
+        showToast(t.account.toast.addressAdded, 'success');
+      }
+      resetAddrForm();
+    } catch {
+      showToast(t.account.toast.genericError, 'error');
+    }
+  };
+
+  const handleDeleteAddr = async (id: string) => {
+    try {
+      const { data } = await api.delete(`/users/addresses/${id}`);
+      setAddresses(data.data);
+      showToast(t.account.toast.addressDeleted, 'success');
+    } catch {
+      showToast(t.account.toast.genericError, 'error');
+    }
+  };
+
+  const handlePrefChange = async (key: string, value: unknown) => {
+    if (!prefs) return;
+    try {
+      const payload = key.startsWith('notifications.')
+        ? { notifications: { [key.split('.')[1]]: value } }
+        : { [key]: value };
+      const { data } = await api.put('/users/preferences', payload);
+      setPrefs(data.data);
+    } catch {
+      showToast(t.account.toast.genericError, 'error');
+    }
+  };
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'profile', label: t.account.tabs.profile },
+    { key: 'addresses', label: t.account.tabs.addresses },
+    { key: 'preferences', label: t.account.tabs.preferences },
+  ];
+
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen" style={{ backgroundColor: 'var(--color-bg)' }}>
+        {/* Header */}
+        <header
+          className="flex items-center justify-between border-b px-8 py-4 bg-white"
+          style={{ borderColor: 'var(--color-border)' }}
+        >
+          <Link href="/" className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-sm font-extrabold text-white">
+              A
+            </span>
+            <span className="text-lg font-bold" style={{ color: 'var(--color-text)' }}>
+              Abracadabra
+            </span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="text-[13px] font-medium"
+              style={{ color: 'var(--color-text-muted)' }}
+            >
+              {t.account.home}
+            </Link>
+            {user?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="text-[13px] font-medium"
+                style={{ color: 'var(--color-text-muted)' }}
+              >
+                {t.account.admin}
+              </Link>
+            )}
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-[13px] font-bold text-white overflow-hidden">
+              {user?.avatar ? (
+                <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+              ) : (
+                initials
+              )}
+            </span>
+          </div>
+        </header>
+
+        <div className="mx-auto flex max-w-[1100px] flex-col items-start gap-6 p-4 sm:p-6 lg:flex-row lg:gap-8 lg:p-8">
+          {/* Side panel */}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex w-full shrink-0 flex-col items-center gap-5 rounded-xl p-6 lg:w-[320px]"
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+            }}
+          >
+            <div className="relative group">
+              <span
+                onClick={handleAvatarClick}
+                className="flex h-20 w-20 items-center justify-center rounded-full bg-brand-500 text-[28px] font-bold text-white cursor-pointer overflow-hidden transition-opacity group-hover:opacity-80"
+              >
+                {avatarUploading ? (
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : user?.avatar ? (
+                  <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  initials
+                )}
+              </span>
+              <div
+                onClick={handleAvatarClick}
+                className="absolute bottom-0 right-0 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-brand-500 text-white shadow-md transition-transform hover:scale-110"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-3.5 w-3.5"
+                >
+                  <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
+                </svg>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+              />
+            </div>
+            <span className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
+              {user?.firstName} {user?.lastName}
+            </span>
+            <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+              {user?.email}
+            </span>
+            <span className="rounded-full bg-brand-50 px-3.5 py-1 text-xs font-semibold text-brand-600 capitalize">
+              {user?.role === 'admin'
+                ? t.account.roleAdmin
+                : user?.role === 'seller'
+                  ? t.account.roleSeller
+                  : t.account.roleMember}
+            </span>
+            <div className="my-1 h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
+            <div className="flex w-full justify-around">
+              {[
+                { n: ordersCount, l: t.account.stats.orders, href: '/orders' },
+                { n: 0, l: t.account.stats.reviews },
+                {
+                  n: addresses.length || user?.addresses?.length || 0,
+                  l: t.account.stats.addresses,
+                  onClick: () => setTab('addresses'),
+                },
+              ].map((s) => {
+                const content = (
+                  <>
+                    <span className="text-xl font-bold" style={{ color: 'var(--color-text)' }}>
+                      {s.n}
+                    </span>
+                    <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
+                      {s.l}
+                    </span>
+                  </>
+                );
+                const cls = 'flex flex-col items-center gap-1';
+                if (s.href) {
+                  return (
+                    <Link
+                      key={s.l}
+                      href={s.href}
+                      className={`${cls} transition-opacity hover:opacity-70`}
+                    >
+                      {content}
+                    </Link>
+                  );
+                }
+                if (s.onClick) {
+                  return (
+                    <button
+                      key={s.l}
+                      type="button"
+                      onClick={s.onClick}
+                      className={`${cls} transition-opacity hover:opacity-70`}
+                    >
+                      {content}
+                    </button>
+                  );
+                }
+                return (
+                  <div key={s.l} className={cls}>
+                    {content}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="my-1 h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
+            <div className="flex w-full justify-between">
+              <span className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+                {t.account.registeredOn}
+              </span>
+              <span className="text-[13px] font-medium" style={{ color: 'var(--color-text)' }}>
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })
+                  : ''}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+                router.push('/');
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-[13px] font-medium transition-colors hover:bg-red-50"
+              style={{ border: '1px solid var(--color-border)', color: 'var(--color-error)' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                className="h-4 w-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+                />
+              </svg>
+              {t.account.logout}
+            </button>
+          </motion.div>
+
+          {/* Main panel */}
+          <motion.div
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex flex-1 flex-col rounded-xl"
+            style={{
+              backgroundColor: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+            }}
+          >
+            {/* Tabs */}
+            <div className="flex border-b" style={{ borderColor: 'var(--color-border)' }}>
+              {tabs.map((t) => (
+                <button
+                  key={t.key}
+                  type="button"
+                  onClick={() => setTab(t.key)}
+                  className={`px-6 py-3.5 text-[13px] font-semibold transition-colors ${tab === t.key ? 'border-b-2 border-brand-500 text-brand-600' : ''}`}
+                  style={tab !== t.key ? { color: 'var(--color-text-muted)' } : {}}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="p-6">
+              {/* ── Profile tab ── */}
+              {tab === 'profile' && (
+                <div className="flex flex-col gap-6">
+                  <div>
+                    <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                      {t.account.profile.heading}
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                      {t.account.profile.passwordHint}
+                    </p>
+                  </div>
+                  <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          className="text-[13px] font-medium"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.account.profile.firstName}
+                        </label>
+                        <input
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          required
+                          className="h-10 rounded-lg px-3 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          className="text-[13px] font-medium"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.account.profile.lastName}
+                        </label>
+                        <input
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          required
+                          className="h-10 rounded-lg px-3 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        className="text-[13px] font-medium"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        {t.account.profile.email}
+                      </label>
+                      <input
+                        value={user?.email ?? ''}
+                        disabled
+                        className="h-10 rounded-lg px-3 text-sm opacity-60"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        className="text-[13px] font-medium"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        {t.account.profile.phone}
+                      </label>
+                      <input
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder={t.account.profile.phonePlaceholder}
+                        className="h-10 rounded-lg px-3 text-sm outline-none"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div
+                      className="h-px w-full"
+                      style={{ backgroundColor: 'var(--color-border)' }}
+                    />
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        className="text-[13px] font-medium"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        {t.account.profile.currentPassword} <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        value={profilePassword}
+                        onChange={(e) => setProfilePassword(e.target.value)}
+                        placeholder={t.account.profile.currentPasswordPlaceholder}
+                        required
+                        className="h-10 rounded-lg px-3 text-sm outline-none"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFirstName(user?.firstName ?? '');
+                          setLastName(user?.lastName ?? '');
+                          setPhone(user?.phone ?? '');
+                          setProfilePassword('');
+                        }}
+                        className="rounded-lg px-5 py-2.5 text-[13px] font-medium"
+                        style={{
+                          border: '1px solid var(--color-border)',
+                          color: 'var(--color-text)',
+                        }}
+                      >
+                        {t.account.profile.cancel}
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={saving}
+                        className="rounded-lg bg-brand-500 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
+                      >
+                        {saving ? t.account.profile.saving : t.account.profile.save}
+                      </button>
+                    </div>
+                  </form>
+
+                  <div className="h-px w-full" style={{ backgroundColor: 'var(--color-border)' }} />
+                  <h3 className="text-base font-semibold" style={{ color: 'var(--color-text)' }}>
+                    {t.account.profile.changePassword}
+                  </h3>
+                  <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label
+                        className="text-[13px] font-medium"
+                        style={{ color: 'var(--color-text)' }}
+                      >
+                        {t.account.profile.currentPassword}
+                      </label>
+                      <input
+                        type="password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        required
+                        className="h-10 rounded-lg px-3 text-sm outline-none"
+                        style={inputStyle}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          className="text-[13px] font-medium"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.account.profile.newPassword}
+                        </label>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder={t.account.profile.newPasswordPlaceholder}
+                          required
+                          className="h-10 rounded-lg px-3 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          className="text-[13px] font-medium"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.account.profile.confirm}
+                        </label>
+                        <input
+                          type="password"
+                          value={confirmNewPassword}
+                          onChange={(e) => setConfirmNewPassword(e.target.value)}
+                          placeholder={t.account.profile.confirmPlaceholder}
+                          required
+                          className="h-10 rounded-lg px-3 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                      </div>
+                    </div>
+                    {newPassword && (
+                      <div className="flex items-center gap-3 text-[12px]">
+                        <span
+                          className="flex items-center gap-1"
+                          style={{
+                            color:
+                              newPassword.length >= 8
+                                ? 'var(--color-success)'
+                                : 'var(--color-text-muted)',
+                          }}
+                        >
+                          {newPassword.length >= 8 ? (
+                            <Check className="h-3.5 w-3.5" aria-hidden />
+                          ) : (
+                            <Circle className="h-3.5 w-3.5" aria-hidden />
+                          )}
+                          {t.account.profile.charsHint(8)}
+                        </span>
+                        <span
+                          className="flex items-center gap-1"
+                          style={{
+                            color:
+                              newPassword === confirmNewPassword && confirmNewPassword
+                                ? 'var(--color-success)'
+                                : 'var(--color-text-muted)',
+                          }}
+                        >
+                          {newPassword === confirmNewPassword && confirmNewPassword ? (
+                            <Check className="h-3.5 w-3.5" aria-hidden />
+                          ) : (
+                            <Circle className="h-3.5 w-3.5" aria-hidden />
+                          )}
+                          {t.account.profile.identical}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      type="submit"
+                      className="w-fit rounded-lg bg-brand-500 px-5 py-2.5 text-[13px] font-semibold text-white hover:bg-brand-600"
+                    >
+                      {t.account.profile.submitPassword}
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/* ── Addresses tab ── */}
+              {tab === 'addresses' && (
+                <div className="flex flex-col gap-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                        {t.account.addresses.heading}
+                      </h2>
+                      <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                        {t.account.addresses.subtitle}
+                      </p>
+                    </div>
+                    {!addrForm && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          resetAddrForm();
+                          setAddrForm(true);
+                        }}
+                        className="rounded-lg bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white hover:bg-brand-600"
+                      >
+                        {t.account.addresses.add}
+                      </button>
+                    )}
+                  </div>
+
+                  <AnimatePresence>
+                    {addrForm && (
+                      <motion.form
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        onSubmit={handleAddrSubmit}
+                        className="flex flex-col gap-3 rounded-lg p-4 overflow-hidden"
+                        style={{
+                          border: '1px solid var(--color-border)',
+                          backgroundColor: 'var(--color-bg)',
+                        }}
+                      >
+                        <span
+                          className="text-[13px] font-semibold"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {editingAddr
+                            ? t.account.addresses.editTitle
+                            : t.account.addresses.newTitle}
+                        </span>
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            value={addrLabel}
+                            onChange={(e) => setAddrLabel(e.target.value)}
+                            placeholder={t.account.addresses.labelPlaceholder}
+                            required
+                            className="h-9 rounded-lg px-3 text-sm outline-none"
+                            style={inputStyle}
+                          />
+                          <input
+                            value={addrCountry}
+                            onChange={(e) => setAddrCountry(e.target.value)}
+                            placeholder={t.account.addresses.countryPlaceholder}
+                            required
+                            className="h-9 rounded-lg px-3 text-sm outline-none"
+                            style={inputStyle}
+                          />
+                        </div>
+                        <input
+                          value={addrStreet}
+                          onChange={(e) => setAddrStreet(e.target.value)}
+                          placeholder={t.account.addresses.streetPlaceholder}
+                          required
+                          className="h-9 rounded-lg px-3 text-sm outline-none"
+                          style={inputStyle}
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                          <input
+                            value={addrCity}
+                            onChange={(e) => setAddrCity(e.target.value)}
+                            placeholder={t.account.addresses.cityPlaceholder}
+                            required
+                            className="h-9 rounded-lg px-3 text-sm outline-none"
+                            style={inputStyle}
+                          />
+                          <input
+                            value={addrPostal}
+                            onChange={(e) => setAddrPostal(e.target.value)}
+                            placeholder={t.account.addresses.postalPlaceholder}
+                            required
+                            className="h-9 rounded-lg px-3 text-sm outline-none"
+                            style={inputStyle}
+                          />
+                        </div>
+                        <label
+                          className="flex items-center gap-2 text-[13px]"
+                          style={{ color: 'var(--color-text-muted)' }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={addrDefault}
+                            onChange={(e) => setAddrDefault(e.target.checked)}
+                            className="rounded"
+                          />{' '}
+                          {t.account.addresses.defaultCheckbox}
+                        </label>
+                        <div className="flex gap-2">
+                          <button
+                            type="submit"
+                            className="rounded-lg bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white hover:bg-brand-600"
+                          >
+                            {editingAddr ? t.account.addresses.save : t.account.addresses.addBtn}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={resetAddrForm}
+                            className="rounded-lg px-4 py-2 text-[13px] font-medium"
+                            style={{
+                              border: '1px solid var(--color-border)',
+                              color: 'var(--color-text)',
+                            }}
+                          >
+                            {t.account.addresses.cancel}
+                          </button>
+                        </div>
+                      </motion.form>
+                    )}
+                  </AnimatePresence>
+
+                  {addrLoading ? (
+                    <div className="flex justify-center py-8">
+                      <div className="h-6 w-6 animate-spin rounded-full border-3 border-[var(--color-brand-500)] border-t-transparent" />
+                    </div>
+                  ) : addresses.length === 0 && !addrForm ? (
+                    <div
+                      className="rounded-lg py-12 text-center"
+                      style={{ border: '1px dashed var(--color-border)' }}
+                    >
+                      <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
+                        {t.account.addresses.empty}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {addresses.map((a) => (
+                        <div
+                          key={a.id}
+                          className="flex items-start justify-between rounded-lg p-4"
+                          style={{ border: '1px solid var(--color-border)' }}
+                        >
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="text-[13px] font-semibold"
+                                style={{ color: 'var(--color-text)' }}
+                              >
+                                {a.label}
+                              </span>
+                              {a.isDefault && (
+                                <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[10px] font-semibold text-brand-600">
+                                  {t.account.addresses.defaultBadge}
+                                </span>
+                              )}
+                            </div>
+                            <span
+                              className="text-[13px]"
+                              style={{ color: 'var(--color-text-muted)' }}
+                            >
+                              {a.street}
+                            </span>
+                            <span
+                              className="text-[13px]"
+                              style={{ color: 'var(--color-text-muted)' }}
+                            >
+                              {a.postalCode} {a.city}, {a.country}
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => openEditAddr(a)}
+                              className="text-[12px] font-medium hover:underline"
+                              style={{ color: 'var(--color-brand-500)' }}
+                            >
+                              {t.account.addresses.edit}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAddr(a.id)}
+                              className="text-[12px] font-medium hover:underline"
+                              style={{ color: 'var(--color-error)' }}
+                            >
+                              {t.account.addresses.delete}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Preferences tab ── */}
+              {tab === 'preferences' && (
+                <div className="flex flex-col gap-6">
+                  <div>
+                    <h2 className="text-lg font-semibold" style={{ color: 'var(--color-text)' }}>
+                      {t.account.preferences.heading}
+                    </h2>
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-muted)' }}>
+                      {t.account.preferences.subtitle}
+                    </p>
+                  </div>
+
+                  {prefsLoading || !prefs ? (
+                    <div className="flex justify-center py-8">
+                      <div className="h-6 w-6 animate-spin rounded-full border-3 border-[var(--color-brand-500)] border-t-transparent" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex flex-col gap-4">
+                        <h3
+                          className="text-[13px] font-semibold"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.account.preferences.langAndCurrency}
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              className="text-[12px] font-medium"
+                              style={{ color: 'var(--color-text-muted)' }}
+                            >
+                              {t.account.preferences.language}
+                            </label>
+                            <select
+                              value={prefs.language}
+                              onChange={(e) => handlePrefChange('language', e.target.value)}
+                              className="h-10 rounded-lg px-3 text-sm"
+                              style={inputStyle}
+                            >
+                              <option value="fr">{t.account.preferences.langFr}</option>
+                              <option value="en">English</option>
+                              <option value="es">Espanol</option>
+                              <option value="de">Deutsch</option>
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <label
+                              className="text-[12px] font-medium"
+                              style={{ color: 'var(--color-text-muted)' }}
+                            >
+                              {t.account.preferences.currency}
+                            </label>
+                            <select
+                              value={prefs.currency}
+                              onChange={(e) => handlePrefChange('currency', e.target.value)}
+                              className="h-10 rounded-lg px-3 text-sm"
+                              style={inputStyle}
+                            >
+                              <option value="EUR">EUR (€)</option>
+                              <option value="USD">USD ($)</option>
+                              <option value="GBP">GBP (£)</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div
+                        className="h-px w-full"
+                        style={{ backgroundColor: 'var(--color-border)' }}
+                      />
+
+                      <div className="flex flex-col gap-4">
+                        <h3
+                          className="text-[13px] font-semibold"
+                          style={{ color: 'var(--color-text)' }}
+                        >
+                          {t.account.preferences.notifications}
+                        </h3>
+                        {(
+                          [
+                            {
+                              key: 'email',
+                              label: t.account.preferences.notifEmail,
+                              desc: t.account.preferences.notifEmailDesc,
+                            },
+                            {
+                              key: 'push',
+                              label: t.account.preferences.notifPush,
+                              desc: t.account.preferences.notifPushDesc,
+                            },
+                            {
+                              key: 'orderUpdates',
+                              label: t.account.preferences.notifOrders,
+                              desc: t.account.preferences.notifOrdersDesc,
+                            },
+                            {
+                              key: 'promotions',
+                              label: t.account.preferences.notifPromotions,
+                              desc: t.account.preferences.notifPromotionsDesc,
+                            },
+                            {
+                              key: 'priceDrops',
+                              label: t.account.preferences.notifPriceDrops,
+                              desc: t.account.preferences.notifPriceDropsDesc,
+                            },
+                          ] as const
+                        ).map((n) => (
+                          <div
+                            key={n.key}
+                            className="flex items-center justify-between rounded-lg p-3"
+                            style={{ border: '1px solid var(--color-border)' }}
+                          >
+                            <div>
+                              <span
+                                className="text-[13px] font-medium"
+                                style={{ color: 'var(--color-text)' }}
+                              >
+                                {n.label}
+                              </span>
+                              <p
+                                className="text-[12px]"
+                                style={{ color: 'var(--color-text-muted)' }}
+                              >
+                                {n.desc}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handlePrefChange(
+                                  `notifications.${n.key}`,
+                                  !prefs.notifications[n.key],
+                                )
+                              }
+                              className={`relative inline-flex h-[22px] w-[40px] shrink-0 items-center rounded-full transition-colors ${prefs.notifications[n.key] ? 'bg-brand-500' : 'bg-gray-200'}`}
+                            >
+                              <span
+                                className={`inline-block h-[16px] w-[16px] rounded-full bg-white shadow-sm transition-transform ${prefs.notifications[n.key] ? 'translate-x-[20px]' : 'translate-x-[3px]'}`}
+                              />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Toast */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              className={`fixed bottom-6 right-6 z-50 rounded-lg px-5 py-3 text-sm font-medium text-white shadow-lg ${toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}
+            >
+              {toast.message}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </ProtectedRoute>
+  );
+}

@@ -1,0 +1,27 @@
+type: http_request
+model: http_request
+id: rq_AdmUsrSt01
+createdAt: 2026-05-28T10:00:00
+updatedAt: 2026-05-28T10:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_AdminFold01
+authentication: {}
+authenticationType: null
+body:
+  text: |-
+    {
+      "status": "suspended",
+      "reason": "Spam reports"
+    }
+bodyType: application/json
+description: 'Allowed statuses: active, suspended, pending. Action is audited.'
+headers:
+- enabled: true
+  name: Content-Type
+  value: application/json
+  id: admstat0hdr
+method: PUT
+name: Update User Status
+sortPriority: 3000.0
+url: ${[ baseUrl ]}/admin/users/${[ userId ]}/status
+urlParameters: []

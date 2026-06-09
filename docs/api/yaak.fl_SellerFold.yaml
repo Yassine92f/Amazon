@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_SellerFold
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: null
+authentication: {}
+authenticationType: null
+description: Seller endpoints — register a shop, manage own profile, browse public sellers.
+headers: []
+name: Sellers
+sortPriority: -1779950000000.0

@@ -1,0 +1,34 @@
+type: http_request
+model: http_request
+id: rq_SellerLs01
+createdAt: 2026-05-28T12:00:00
+updatedAt: 2026-05-28T12:00:00
+workspaceId: wk_2bjqMWyVwq
+folderId: fl_SellerFold
+authentication: {}
+authenticationType: null
+body: {}
+bodyType: null
+description: Public paginated list of shops with optional verified filter + name search.
+headers: []
+method: GET
+name: List Sellers
+sortPriority: 4000.0
+url: ${[ baseUrl ]}/sellers
+urlParameters:
+- enabled: true
+  name: page
+  value: '1'
+  id: srlspg
+- enabled: true
+  name: limit
+  value: '20'
+  id: srlslm
+- enabled: false
+  name: isVerified
+  value: 'true'
+  id: srlsiv
+- enabled: false
+  name: query
+  value: audio
+  id: srlsqr
