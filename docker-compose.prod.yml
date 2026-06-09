@@ -62,11 +62,36 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    volumes:
+      # Persist seller-uploaded images across redeploys.
+      - uploads_data:/app/uploads
+    # Bound to localhost only: the public entrypoint is Caddy (TLS). The host
+    # port stays available on the VPS itself for debugging / direct curl.
     ports:
-      - '${SERVER_PORT:-5001}:5001'
+      - '127.0.0.1:${SERVER_PORT:-5001}:5001'
+    networks: [backend]
+
+  # TLS reverse proxy — public entrypoint for the API. Caddy obtains and renews
+  # Let's Encrypt certificates automatically and proxies WebSocket transparently.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [server]
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN (e.g. api.tondomaine.com)}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks: [backend]
 
   client:
+    # Front is deployed on Vercel; this service only runs with `--profile full`
+    # (all-in-one VPS deployment alternative).
+    profiles: ['full']
     build:
       context: .
       dockerfile: client/Dockerfile
@@ -90,3 +115,6 @@ networks:
 volumes:
   mongodb_data:
   redis_data:
+  uploads_data:
+  caddy_data:
+  caddy_config:
