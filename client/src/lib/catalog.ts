@@ -122,7 +122,7 @@ export interface ProductSearchParams {
   minRating?: number;
   inStock?: boolean;
   sellerId?: string;
-  sortBy?: 'relevance' | 'price' | 'rating' | 'totalSold' | 'createdAt';
+  sortBy?: 'relevance' | 'price' | 'rating' | 'totalSold' | 'brand' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
   isFeatured?: boolean;
 }
@@ -294,6 +294,32 @@ export async function getCategoryTree(): Promise<CategoryNode[]> {
 export async function getCategoryBySlug(slug: string): Promise<CategoryDto> {
   const { data } = await api.get(`/categories/${slug}`);
   return data.data;
+}
+
+// ── Categories admin (ADMIN only) ──────────────────────────────────────
+export interface CategoryInput {
+  name: string;
+  slug?: string;
+  description?: string;
+  icon?: string;
+  isActive?: boolean;
+}
+
+export async function createCategory(input: CategoryInput): Promise<CategoryDto> {
+  const { data } = await api.post('/categories', input);
+  return data.data;
+}
+
+export async function updateCategory(
+  id: string,
+  input: Partial<CategoryInput>,
+): Promise<CategoryDto> {
+  const { data } = await api.put(`/categories/${id}`, input);
+  return data.data;
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await api.delete(`/categories/${id}`);
 }
 
 // ── Sellers API ────────────────────────────────────────────────────────
