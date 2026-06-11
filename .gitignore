@@ -41,3 +41,6 @@ data/
 
 # Generated / experimental assets (kept local, not versioned)
 images/
+
+# Local poster assets (not part of the codebase)
+poster-assets/
